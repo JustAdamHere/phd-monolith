@@ -1,0 +1,4 @@
+*.code-workspace
+images/*
+output/*
+*.out

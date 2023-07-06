@@ -1,0 +1,10 @@
+def raise_error(e):
+	print("")
+	print("###########################################")
+	print("## ❌ ERROR CAUGHT; STOPPING             ##")
+	print("###########################################")
+	print(f"{e.output}".replace('\\n', '\n'))
+	print("###########################################")
+	print("## ❌ ERROR CAUGHT; END OF MESSAGE       ##")
+	print("###########################################")
+	exit()

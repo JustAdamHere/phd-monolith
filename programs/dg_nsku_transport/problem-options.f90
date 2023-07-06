@@ -1,0 +1,261 @@
+module problem_options
+    use aptofem_kernel
+    use solution_storage_nsku
+
+    save
+
+    real(db) :: interior_penalty_parameter
+    integer  :: no_uniform_refinements_cavity, no_uniform_refinements_everywhere, no_uniform_refinements_inlet
+    logical  :: velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport
+    real(db) :: final_local_time, artery_location, central_cavity_width, central_cavity_transition, pipe_transition
+    integer  :: no_time_steps
+
+    contains
+    subroutine get_user_data(section_name, aptofem_stored_keys)
+        implicit none
+
+        character(len=*), intent(in) :: section_name
+        type(aptofem_keys), pointer  :: aptofem_stored_keys
+
+        integer :: ierr
+
+        call get_aptofem_key_definition('interior_penalty_parameter',        interior_penalty_parameter,        section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('no_uniform_refinements_cavity',     no_uniform_refinements_cavity,     section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('no_uniform_refinements_inlet',      no_uniform_refinements_inlet,      section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('no_uniform_refinements_everywhere', no_uniform_refinements_everywhere, section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('velocity_ss',                       velocity_ss,                       section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('velocity_ic_from_ss',               velocity_ic_from_ss,               section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('transport_ic_from_ss',              transport_ic_from_ss,              section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('dirk_final_time',                   final_local_time,                  'solver_nsku', &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('dirk_number_of_timesteps',          no_time_steps,                     'solver_nsku', &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('compute_transport',                 compute_transport,                 section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('artery_location',                   artery_location,                   section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('central_cavity_width',              central_cavity_width,              section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('central_cavity_transition',         central_cavity_transition,         section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('pipe_transition',                   pipe_transition,                   section_name, &
+            aptofem_stored_keys, ierr)
+    end subroutine
+
+    function smooth_tanh_function(x, steepness, x0, x2)
+        use param
+
+        implicit none
+
+        real(db)             :: smooth_tanh_function
+        real(db), intent(in) :: x, steepness, x0, x2
+
+        real(db) :: x1
+
+        x1 = (x0 + x2)/2
+
+        if (x <= x0) then
+            smooth_tanh_function = 0.0_db
+        else if (x0 < x .and. x < x2) then
+            smooth_tanh_function = &
+                (tanh(steepness*(x - x1)/(x2 - x1))/tanh(steepness) + 1)/2
+        else if (x2 <= x) then
+            smooth_tanh_function = 1.0_db
+        else
+            print *, "Error in smooth_tanh_function. Missed case. Stopping."
+            print *, "x0 = ", x0
+            print *, "x1 = ", x1
+            print *, "x2 = ", x2
+            print *, "x = ", x
+            print *, "steepness = ", steepness
+            stop 1
+        end if
+    end function
+
+    function calculate_placentone_cavity_transition(global_point, problem_dim, element_region_id, steepness)
+        use param
+
+        implicit none
+
+        real(db)                                     :: calculate_placentone_cavity_transition
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: global_point
+        integer, intent(in)                          :: element_region_id
+        real(db), intent(in)                         :: steepness
+
+        real(db)               :: x, y, r, r0, r1, r2, theta
+        real(db)               :: a0, b0, a1, b1, a2, b2
+        real(db), dimension(2) :: centre
+
+        x = global_point(1)
+        y = global_point(2)
+
+        ! Centre of ellipse.
+        centre(1) = artery_location
+        centre(2) = 0.0_db
+
+        ! Angle and radius from ellipse centre to point.
+        theta = atan2(y - centre(2), x - centre(1))
+        r     = sqrt((x - centre(1))**2 + (y - centre(2))**2)
+
+        ! Semi-major and semi-minor axes for all 3 ellipses.
+        a2 = (central_cavity_width + central_cavity_transition)/2
+        b2 = a2*2
+
+        a0 = a2 -   central_cavity_transition
+        a1 = a2 -   central_cavity_transition/2
+        b0 = b2 - 2*central_cavity_transition
+        b1 = b2 - 2*central_cavity_transition/2
+
+        ! Scaled "radius" for ellispe.
+        r0 = a0*b0/sqrt(a0**2*sin(theta)**2 + b0**2*cos(theta)**2)
+        r1 = a1*b1/sqrt(a1**2*sin(theta)**2 + b1**2*cos(theta)**2)
+        r2 = a2*b2/sqrt(a2**2*sin(theta)**2 + b2**2*cos(theta)**2)
+
+        ! Smooth tanh transition.
+        calculate_placentone_cavity_transition = smooth_tanh_function(r, steepness, r0, r2)
+    end function
+
+    function calculate_placentone_pipe_transition(global_point, problem_dim, element_region_id, steepness)
+        use param
+
+        implicit none
+
+        real(db)                                     :: calculate_placentone_pipe_transition
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: global_point
+        integer, intent(in)                          :: element_region_id
+        real(db), intent(in)                         :: steepness
+
+        real(db) :: y, y0, y2
+
+        y = global_point(2)
+
+        y2 = 0.0_db
+        y0 = y2 - pipe_transition
+
+        ! Smooth tanh transition.
+        calculate_placentone_pipe_transition = smooth_tanh_function(y, steepness, y0, y2)
+    end function
+
+    function translate_placenta_to_placentone_point(problem_dim, placenta_point, element_region_id)
+        use param
+
+        implicit none
+
+        real(db), dimension(problem_dim)             :: translate_placenta_to_placentone_point
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: placenta_point
+        integer, intent(in)                          :: element_region_id
+
+        real(db)               :: placentone_width, wall_width, placenta_width, pipe_width, wall_height
+        real(db)               :: x_centre, y_centre, radius
+        real(db), dimension(2) :: centre_top
+        real(db)               :: translate_angle
+
+        placentone_width = 1.0_db                            ! 40 mm
+        wall_width       = 0.075_db*placentone_width         ! 3  mm
+        placenta_width   = 6*placentone_width + 5*wall_width ! 255mm
+        pipe_width       = 0.05_db*placentone_width          ! 2  mm
+        wall_height      = 0.6_db*placentone_width           ! 24 mm
+
+        x_centre = placenta_width/2
+        y_centre = sqrt(2*x_centre**2)
+        radius   = y_centre
+
+        if (element_region_id == 401) then
+            translate_angle = pi
+        else if (element_region_id == 402) then
+            translate_angle = 0.0_db
+        else if (element_region_id == 411) then
+            centre_top(1)   = (placentone_width + wall_width)*0 + 0.2*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 413) then
+            centre_top(1)   = (placentone_width + wall_width)*0 + 0.8*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 421) then
+            centre_top(1)   = (placentone_width + wall_width)*1 + 0.2*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 423) then
+            centre_top(1)   = (placentone_width + wall_width)*1 + 0.8*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 431) then
+            centre_top(1)   = (placentone_width + wall_width)*2 + 0.2*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 433) then
+            centre_top(1)   = (placentone_width + wall_width)*2 + 0.8*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 441) then
+            centre_top(1)   = (placentone_width + wall_width)*3 + 0.2*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 443) then
+            centre_top(1)   = (placentone_width + wall_width)*3 + 0.8*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 451) then
+            centre_top(1)   = (placentone_width + wall_width)*4 + 0.2*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 453) then
+            centre_top(1)   = (placentone_width + wall_width)*4 + 0.8*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 461) then
+            centre_top(1)   = (placentone_width + wall_width)*5 + 0.2*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 463) then
+            centre_top(1)   = (placentone_width + wall_width)*5 + 0.8*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 501) then
+            centre_top(1)   = (placentone_width + wall_width)*0 + 0.5*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 502) then
+            centre_top(1)   = (placentone_width + wall_width)*1 + 0.5*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 503) then
+            centre_top(1)   = (placentone_width + wall_width)*2 + 0.5*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 504) then
+            centre_top(1)   = (placentone_width + wall_width)*3 + 0.5*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 505) then
+            centre_top(1)   = (placentone_width + wall_width)*4 + 0.5*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 506) then
+            centre_top(1)   = (placentone_width + wall_width)*5 + 0.5*placentone_width
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else
+            print *, "Error in translate_placenta_to_placentone_point. Missed case."
+            print *, "element_region_id = ", element_region_id
+            stop
+        end if
+
+        translate_placenta_to_placentone_point(1) =   (placenta_point(1) - x_centre)*sin(translate_angle) &
+            + (placenta_point(2) - y_centre)*cos(translate_angle) + artery_location
+        translate_placenta_to_placentone_point(2) = - (placenta_point(1) - x_centre)*cos(translate_angle) &
+            + (placenta_point(2) - y_centre)*sin(translate_angle) + y_centre
+    end function
+
+end module
