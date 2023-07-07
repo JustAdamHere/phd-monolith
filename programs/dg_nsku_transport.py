@@ -159,6 +159,9 @@ def aptofem_simulation(simulation_no, geometry, artery_location, central_cavity_
 
 	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration
 
+def convergence():
+	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration
+
 def setup(clean, terminal_output, compile=True):
 	from miscellaneous import output
 
