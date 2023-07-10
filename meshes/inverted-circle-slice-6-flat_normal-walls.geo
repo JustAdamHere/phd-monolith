@@ -19,15 +19,17 @@
 //////////////////////
 // Other parameters //
 //////////////////////
-placentone_width = 1.0;                               // 40 mm
-wall_width       = 0.075*placentone_width;            // 3  mm
-placenta_width   = 6*placentone_width + 5*wall_width; // 255mm
-ms_pipe_width    = 0.1*placentone_width;              // 4  mm
-artery_width     = 0.0625*placentone_width;           // 2.5  mm
-artery_width_sm  = 0.0125*placentone_width;           // 0.5  mm
-artery_length    = 0.25*placentone_width;             // 10 mm
-vein_width       = 0.0375*placentone_width;           // 1.5  mm
-vein_length      = 0.0375*placentone_width;           // 1.5  mm
+placentone_width      = 1.0;                               // 40 mm
+wall_width            = 0.075*placentone_width;            // 3  mm
+// placenta_width     = 6*placentone_width + 5*wall_width; // 255mm
+placenta_width        = 5.5;                               // 220mm
+ms_pipe_width         = 0.1*placentone_width;              // 4  mm
+artery_width          = 0.0625*placentone_width;           // 2.5  mm
+artery_width_sm       = 0.0125*placentone_width;           // 0.5  mm
+artery_length         = 0.25*placentone_width;             // 10 mm
+artery_length_diverge = 0.075*placentone_width;            // 3 mm
+vein_width            = 0.0375*placentone_width;           // 1.5  mm
+vein_length           = 0.0375*placentone_width;           // 1.5  mm
 
 // Default cavity size.
 If (!Exists(cavity_width))
@@ -38,6 +40,7 @@ cavity_height = 2*cavity_width;
 ////////////////////////
 // Default parameters //
 ////////////////////////
+h = 0.2;
 If (!Exists(h))
 	h        = 0.02;
 EndIf
@@ -48,24 +51,49 @@ EndIf
 Printf("h = %f", h);
 Printf("h_refine = %f", h_refine);
 
+// Placentone widths.
+//  Set such that 220-15=2*40+2*40*x+2*40*x^2.
+placentone_ratio = Sqrt(29)/4 - 0.5;
+placentone_widths = {0, 0, 0, 0, 0, 0};
+For k In {0:2:1}
+	If (!Exists(placentone_width~{k+1}))
+		placentone_width~{k+1} = placentone_width*placentone_ratio^(2-k);
+	EndIf
+	If (!Exists(placentone_width~{6-k}))
+		placentone_width~{6-k} = placentone_width*placentone_ratio^(2-k);
+	EndIf
+
+	placentone_widths[k]   = placentone_width~{k+1};
+	placentone_widths[5-k] = placentone_width~{6-k};
+EndFor
+
+For k In {1:6:1}
+	Printf("placentone_width %g = %f", k, placentone_widths[k-1]);
+EndFor
+
 // Default locations of the 3 vessels.
 location_1_x = {};
 location_2_x = {};
 location_3_x = {};
+cumulative_width = 0;
 For k In {1:6:1}
 	If (!Exists(location~{10*k + 1}))
-		location~{10*k + 1} = (placentone_width + wall_width)*(k-1) + 0.2*placentone_width;
+		location~{10*k + 1} = cumulative_width + 0.2*placentone_widths[k-1];
 	EndIf
 	If (!Exists(location~{10*k + 2}))
-		location~{10*k + 2} = (placentone_width + wall_width)*(k-1) + 0.5*placentone_width;
+		location~{10*k + 2} = cumulative_width + 0.5*placentone_widths[k-1];
 	EndIf
 	If (!Exists(location~{10*k + 3}))
-		location~{10*k + 3} = (placentone_width + wall_width)*(k-1) + 0.8*placentone_width;
+		location~{10*k + 3} = cumulative_width + 0.8*placentone_widths[k-1];
 	EndIf
 
 	location_1_x += {location~{10*k + 1}};
 	location_2_x += {location~{10*k + 2}};
 	location_3_x += {location~{10*k + 3}};
+
+	If (k < 6)
+		cumulative_width += placentone_widths[k-1] + wall_width;
+	EndIf
 EndFor
 
 // Default turn on/off for marginal sinuses.
@@ -109,13 +137,13 @@ EndFor
 // Default turn on/off for septal veins.
 For k In {0:4:1}
 	If (!Exists(septal_vein~{(k+1)*10+1}))
-		septal_vein~{(k+1)*10+1} = 1;
+		septal_vein~{(k+1)*10+1} = 0;
 	EndIf
 	If (!Exists(septal_vein~{(k+1)*10+2}))
-		septal_vein~{(k+1)*10+2} = 1;
+		septal_vein~{(k+1)*10+2} = 0;
 	EndIf
 	If (!Exists(septal_vein~{(k+1)*10+3}))
-		septal_vein~{(k+1)*10+3} = 1;
+		septal_vein~{(k+1)*10+3} = 0;
 	EndIf
 EndFor
 
@@ -150,9 +178,10 @@ placenta_height = 0.9065; // 36.26mm
 // x and y of the walls //
 //////////////////////////
 wall_low_x = {};
+offset = 0;
 For k In {0:4:1}
-	offset = (placentone_width + wall_width)*k;
-	wall_low_x += {offset + placentone_width, offset + placentone_width + wall_width};
+	wall_low_x += {offset + placentone_widths[k], offset + placentone_widths[k] + wall_width};
+	offset += placentone_widths[k] + wall_width;
 EndFor
 
 wall_low_y = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
@@ -198,6 +227,7 @@ For k In {0:4:1}
 		theta_separator[k] = Atan((separator_low_x[k] - centre_x)/(separator_low_y[k] - centre_y));
 	EndIf
 
+	// separator_high_y[k] = (radius-placenta_height)*Cos(theta_separator[k]+Pi) + centre_y;
 	separator_high_y[k] = placenta_height;
 	separator_high_x[k] = (separator_high_y[k] - separator_low_y[k])*Tan(theta_separator[k]) + separator_low_x[k];
 EndFor
@@ -267,12 +297,6 @@ location_2_x_pipe1 = {0, 0, 0, 0, 0, 0};
 location_2_x_pipe2 = {0, 0, 0, 0, 0, 0};
 location_3_x_pipe1 = {0, 0, 0, 0, 0, 0};
 location_3_x_pipe2 = {0, 0, 0, 0, 0, 0};
-location_4_x_pipe1 = {0, 0, 0, 0, 0, 0};
-location_4_x_pipe2 = {0, 0, 0, 0, 0, 0};
-location_5_x_pipe1 = {0, 0, 0, 0, 0, 0};
-location_5_x_pipe2 = {0, 0, 0, 0, 0, 0};
-location_6_x_pipe1 = {0, 0, 0, 0, 0, 0};
-location_6_x_pipe2 = {0, 0, 0, 0, 0, 0};
 
 location_1_y_pipe1 = {0, 0, 0, 0, 0, 0};
 location_1_y_pipe2 = {0, 0, 0, 0, 0, 0};
@@ -280,12 +304,6 @@ location_2_y_pipe1 = {0, 0, 0, 0, 0, 0};
 location_2_y_pipe2 = {0, 0, 0, 0, 0, 0};
 location_3_y_pipe1 = {0, 0, 0, 0, 0, 0};
 location_3_y_pipe2 = {0, 0, 0, 0, 0, 0};
-location_4_y_pipe1 = {0, 0, 0, 0, 0, 0};
-location_4_y_pipe2 = {0, 0, 0, 0, 0, 0};
-location_5_y_pipe1 = {0, 0, 0, 0, 0, 0};
-location_5_y_pipe2 = {0, 0, 0, 0, 0, 0};
-location_6_y_pipe1 = {0, 0, 0, 0, 0, 0};
-location_6_y_pipe2 = {0, 0, 0, 0, 0, 0};
 
 For k In {0:5:1}
 	location_1_x_pipe1[k] = location_1_x_1[k] + vein_length*Cos(theta_pipe[k*3]);
@@ -301,6 +319,19 @@ For k In {0:5:1}
 	location_2_y_pipe2[k] = centre_y - radius*Sin(theta_pipe[k*3+1] - (artery_width_sm/2)/radius) - artery_length*Sin(theta_pipe[k*3+1]);
 	location_3_x_pipe2[k] = location_3_x_2[k] + vein_length*Cos(theta_pipe[k*3+2]);
 	location_3_y_pipe2[k] = location_3_y_2[k] - vein_length*Sin(theta_pipe[k*3+2]);
+EndFor
+
+// Mid-points of arteries //
+location_2_x_pipe1_mid = {0, 0, 0, 0, 0, 0};
+location_2_y_pipe1_mid = {0, 0, 0, 0, 0, 0};
+location_2_x_pipe2_mid = {0, 0, 0, 0, 0, 0};
+location_2_y_pipe2_mid = {0, 0, 0, 0, 0, 0};
+
+For k In {0:5:1}
+	location_2_x_pipe1_mid[k] = centre_x + radius*Cos(theta_pipe[k*3+1] + (artery_width_sm/2)/radius) + artery_length_diverge*Cos(theta_pipe[k*3+1]);
+	location_2_y_pipe1_mid[k] = centre_y - radius*Sin(theta_pipe[k*3+1] + (artery_width_sm/2)/radius) - artery_length_diverge*Sin(theta_pipe[k*3+1]);
+	location_2_x_pipe2_mid[k] = centre_x + radius*Cos(theta_pipe[k*3+1] - (artery_width_sm/2)/radius) + artery_length_diverge*Cos(theta_pipe[k*3+1]);
+	location_2_y_pipe2_mid[k] = centre_y - radius*Sin(theta_pipe[k*3+1] - (artery_width_sm/2)/radius) - artery_length_diverge*Sin(theta_pipe[k*3+1]);
 EndFor
 
 ///////////////////////////
@@ -368,6 +399,9 @@ For k In {0:5:1}
 		Point(numbering_start + k*placentone_step + 6)   = {location_2_x_pipe1[k], location_2_y_pipe1[k], 0, h_refine};
 		Point(numbering_start + k*placentone_step + 7)   = {location_2_x_pipe2[k], location_2_y_pipe2[k], 0, h_refine};
 		Point(numbering_start + k*placentone_step + 8)   = {location_2_x_2[k],     location_2_y_2[k],     0, h_refine};
+
+		Point(numbering_start + k*placentone_step + 23)  = {location_2_x_pipe1_mid[k], location_2_y_pipe1_mid[k], 0, h_refine};
+		Point(numbering_start + k*placentone_step + 24)  = {location_2_x_pipe2_mid[k], location_2_y_pipe2_mid[k], 0, h_refine};
 	EndIf
 	If (vein_2[k] == 1)
 		Point(numbering_start + k*placentone_step + 9)   = {location_3_x_1[k],     location_3_y_1[k],     0, h_refine};
@@ -516,9 +550,11 @@ For k In {0:5:1}
 		Circle(offset + 18) = {offset + 4,  1000, offset + 1};
 	EndIf
 	If (artery[k] == 1)
-		Line(offset + 6)   = {offset + 5,  offset + 6};
+		Line(offset + 6)   = {offset + 5,  offset + 23};
+		Line(offset + 27)  = {offset + 23, offset + 6};
 		Line(offset + 7)   = {offset + 6,  offset + 7};
-		Line(offset + 8)   = {offset + 7,  offset + 8};
+		Line(offset + 28)  = {offset + 7,  offset + 24};
+		Line(offset + 8)   = {offset + 24, offset + 8};
 	
 		Circle(offset + 24) = {offset + 22, 1000, offset + 5};
 		Circle(offset + 25) = {offset + 8,  1000, offset + 22};
@@ -588,6 +624,13 @@ Line(303) = {numbering_start + 3*placentone_step + 18, numbering_start + 2*place
 Line(304) = {numbering_start + 2*placentone_step + 18, numbering_start + 1*placentone_step + 18};
 Line(305) = {numbering_start + 1*placentone_step + 18, numbering_start + 0*placentone_step + 18};
 Line(306) = {numbering_start + 0*placentone_step + 18, 1007};
+
+// Circle(301) = {1006,                                     1000, numbering_start + 4*placentone_step + 18};
+// Circle(302) = {numbering_start + 4*placentone_step + 18, 1000, numbering_start + 3*placentone_step + 18};
+// Circle(303) = {numbering_start + 3*placentone_step + 18, 1000, numbering_start + 2*placentone_step + 18};
+// Circle(304) = {numbering_start + 2*placentone_step + 18, 1000, numbering_start + 1*placentone_step + 18};
+// Circle(305) = {numbering_start + 1*placentone_step + 18, 1000, numbering_start + 0*placentone_step + 18};
+// Circle(306) = {numbering_start + 0*placentone_step + 18, 1000, 1007};
 
 ///////////////////////////
 // Placentone separators //
@@ -665,7 +708,7 @@ For k In {0:5:1}
 		Physical Curve("boundary", 100) += {offset + 2, offset + 4};
 	EndIf
 	If (artery[k] == 1)
-		Physical Curve("boundary", 100) += {offset + 6, offset + 8};
+		Physical Curve("boundary", 100) += {offset + 6, offset + 27, offset + 28, offset + 8};
 	EndIf
 	If (vein_2[k] == 1)
 		Physical Curve("boundary", 100) += {offset + 10, offset + 12};
@@ -817,7 +860,7 @@ For k In {0:5:1}
 		Physical Surface(411 + k*10) = {111 + k*10};
 	EndIf
 	If (artery[k] == 1)
-		Curve Loop      (112 + k*10) =  {offset + 6, offset + 7, offset + 8, offset + 25, offset + 24};
+		Curve Loop      (112 + k*10) =  {offset + 6, offset + 27, offset + 7, offset + 28, offset + 8, offset + 25, offset + 24};
 		Plane Surface   (112 + k*10) = {112 + k*10};
 		Physical Surface(412 + k*10) = {112 + k*10};
 	EndIf
