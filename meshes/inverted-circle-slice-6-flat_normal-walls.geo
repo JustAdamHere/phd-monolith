@@ -23,7 +23,7 @@ placentone_width      = 1.0;                               // 40 mm
 wall_width            = 0.075*placentone_width;            // 3  mm
 // placenta_width     = 6*placentone_width + 5*wall_width; // 255mm
 placenta_width        = 5.5;                               // 220mm
-ms_pipe_width         = 0.1*placentone_width;              // 4  mm
+ms_pipe_width         = 0.075*placentone_width;            // 3  mm
 artery_width          = 0.0625*placentone_width;           // 2.5  mm
 artery_width_sm       = 0.0125*placentone_width;           // 0.5  mm
 artery_length         = 0.25*placentone_width;             // 10 mm
@@ -137,13 +137,13 @@ EndFor
 // Default turn on/off for septal veins.
 For k In {0:4:1}
 	If (!Exists(septal_vein~{(k+1)*10+1}))
-		septal_vein~{(k+1)*10+1} = 0;
+		septal_vein~{(k+1)*10+1} = 1;
 	EndIf
 	If (!Exists(septal_vein~{(k+1)*10+2}))
-		septal_vein~{(k+1)*10+2} = 0;
+		septal_vein~{(k+1)*10+2} = 1;
 	EndIf
 	If (!Exists(septal_vein~{(k+1)*10+3}))
-		septal_vein~{(k+1)*10+3} = 0;
+		septal_vein~{(k+1)*10+3} = 1;
 	EndIf
 EndFor
 
@@ -396,12 +396,12 @@ For k In {0:5:1}
 	EndIf
 	If (artery[k] == 1)
 		Point(numbering_start + k*placentone_step + 5)   = {location_2_x_1[k],     location_2_y_1[k],     0, h_refine};
-		Point(numbering_start + k*placentone_step + 6)   = {location_2_x_pipe1[k], location_2_y_pipe1[k], 0, h_refine};
-		Point(numbering_start + k*placentone_step + 7)   = {location_2_x_pipe2[k], location_2_y_pipe2[k], 0, h_refine};
+		Point(numbering_start + k*placentone_step + 6)   = {location_2_x_pipe1[k], location_2_y_pipe1[k], 0, h_refine/10};
+		Point(numbering_start + k*placentone_step + 7)   = {location_2_x_pipe2[k], location_2_y_pipe2[k], 0, h_refine/10};
 		Point(numbering_start + k*placentone_step + 8)   = {location_2_x_2[k],     location_2_y_2[k],     0, h_refine};
 
-		Point(numbering_start + k*placentone_step + 23)  = {location_2_x_pipe1_mid[k], location_2_y_pipe1_mid[k], 0, h_refine};
-		Point(numbering_start + k*placentone_step + 24)  = {location_2_x_pipe2_mid[k], location_2_y_pipe2_mid[k], 0, h_refine};
+		Point(numbering_start + k*placentone_step + 23)  = {location_2_x_pipe1_mid[k], location_2_y_pipe1_mid[k], 0, h_refine/10};
+		Point(numbering_start + k*placentone_step + 24)  = {location_2_x_pipe2_mid[k], location_2_y_pipe2_mid[k], 0, h_refine/10};
 	EndIf
 	If (vein_2[k] == 1)
 		Point(numbering_start + k*placentone_step + 9)   = {location_3_x_1[k],     location_3_y_1[k],     0, h_refine};
@@ -674,29 +674,29 @@ EndFor
 // Physical curves and surfaces //
 //////////////////////////////////
 // Initial setup of the "ordinary" boundary.
-Physical Curve("boundary", 100) = {};
+Physical Curve(100) = {};
 
 // Walls and septal veins.
 For k In {0:4:1}
 	offset = numbering_start + k*placentone_step;
 
 	If (septal_vein_1[k] == 1)
-		Physical Curve("boundary", 100) += {offset + 30, offset + 31, offset + 33, offset + 35};
+		Physical Curve(100) += {offset + 30, offset + 31, offset + 33, offset + 35};
 		Physical Curve(240 + k*10 + 1) = {offset + 32};
 	Else
-		Physical Curve("boundary", 100) += {offset + 14};
+		Physical Curve(100) += {offset + 14};
 	EndIf
 	If (septal_vein_2[k] == 1)
-		Physical Curve("boundary", 100) += {offset + 36, offset + 37, offset + 39, offset + 42};
+		Physical Curve(100) += {offset + 36, offset + 37, offset + 39, offset + 42};
 		Physical Curve(240 + k*10 + 2) = {offset + 38};
 	Else
-		Physical Curve("boundary", 100) += {offset + 15, offset + 16};
+		Physical Curve(100) += {offset + 15, offset + 16};
 	EndIf
 	If (septal_vein_3[k] == 1)
-		Physical Curve("boundary", 100) += {offset + 43, offset + 44, offset + 45, offset + 46, offset + 48};
+		Physical Curve(100) += {offset + 43, offset + 44, offset + 45, offset + 46, offset + 48};
 		Physical Curve(240 + k*10 + 3) = {offset + 45};
 	Else
-		Physical Curve("boundary", 100) += {offset + 17};
+		Physical Curve(100) += {offset + 17};
 	EndIf
 EndFor
 
@@ -705,29 +705,32 @@ For k In {0:5:1}
 	offset = numbering_start + k*placentone_step;
 
 	If (vein_1[k] == 1)
-		Physical Curve("boundary", 100) += {offset + 2, offset + 4};
+		Physical Curve(100) += {offset + 2, offset + 4};
 	EndIf
 	If (artery[k] == 1)
-		Physical Curve("boundary", 100) += {offset + 6, offset + 27, offset + 28, offset + 8};
+		Physical Curve(100) += {offset + 6, offset + 27, offset + 28, offset + 8};
 	EndIf
 	If (vein_2[k] == 1)
-		Physical Curve("boundary", 100) += {offset + 10, offset + 12};
+		Physical Curve(100) += {offset + 10, offset + 12};
 	EndIf
 EndFor
 
 // Marginal sinus sides.
 If (ms_1 == 1)
-	Physical Curve("boundary", 100) += {1007, 1009};
+	Physical Curve(100) += {1007, 1009};
 EndIf
 If (ms_2 == 1)
-	Physical Curve("boundary", 100) += {1003, 1005};
+	Physical Curve(100) += {1003, 1005};
 EndIf
 
+// Side walls of entire placenta.
+Physical Curve(100) += {numbering_start, numbering_start + 5*placentone_step + 14};
+
 // Basal plate.
-Physical Curve("boundary", 100) += {301, 302, 303, 304, 305, 306};
+Physical Curve(100) += {301, 302, 303, 304, 305, 306};
 
 // Curved boundary.
-Physical Curve("boundary-curve", 101) = {};
+Physical Curve(101) = {};
 For k In {0:5:1}
 	offset = numbering_start + k*placentone_step;
 
@@ -762,10 +765,10 @@ EndFor
 
 // Margin sinuses.
 If (ms_1 == 1)
-	Physical Curve("flow-out-corner1", 230) = {1008};
+	Physical Curve(230) = {1008};
 EndIf
 If (ms_2 == 1)
-	Physical Curve("flow-out-corner2", 231) = {1004};
+	Physical Curve(231) = {1004};
 EndIf
 
 //////////////
@@ -843,12 +846,12 @@ Plane Surface(3)                     = {3};
 Plane Surface(4)                     = {4};
 Plane Surface(5)                     = {5};
 Plane Surface(6)                     = {6};
-Physical Surface("placentone1", 301) = {1};
-Physical Surface("placentone2", 302) = {2};
-Physical Surface("placentone3", 303) = {3};
-Physical Surface("placentone4", 304) = {4};
-Physical Surface("placentone5", 305) = {5};
-Physical Surface("placentone6", 306) = {6};
+Physical Surface(301) = {1};
+Physical Surface(302) = {2};
+Physical Surface(303) = {3};
+Physical Surface(304) = {4};
+Physical Surface(305) = {5};
+Physical Surface(306) = {6};
 
 // Pipes.
 For k In {0:5:1}
