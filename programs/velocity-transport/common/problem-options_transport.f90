@@ -1,6 +1,6 @@
 module problem_options_transport
     use aptofem_kernel
-    use solution_storage_nsku
+    use solution_storage_velocity
 
     save
 
@@ -83,7 +83,7 @@ contains
         real(db), dimension(problem_dim+1) :: sol
 
         call compute_uh_glob_pt(sol, problem_dim+1, element_no, global_point, problem_dim, &
-        mesh_data, solution_nsku)
+            mesh_data, solution_velocity)
         velocity(1:problem_dim) = sol(1:problem_dim)
     end subroutine
 
@@ -104,7 +104,7 @@ contains
         real(db), dimension(problem_dim+1, problem_dim+1) :: sol_1
 
         call compute_uh_gradient_uh_glob_pt(sol, sol_1, problem_dim+1, element_no, global_point, problem_dim, &
-        mesh_data, solution_nsku)
+            mesh_data, solution_velocity)
         velocity  (1:problem_dim)                = sol  (1:problem_dim)
         velocity_1(1:problem_dim, 1:problem_dim) = sol_1(1:problem_dim, 1:problem_dim)
     end subroutine

@@ -9,7 +9,7 @@ def calculate_sum_fluxes(run_no, geometry):
 	#################
 	## DATA IMPORT ##
 	#################
-	flux_data = pd.read_csv(f'./output/flux_dg_nsku_{geometry}_{run_no}.dat', sep='\t', header=[0])
+	flux_data = pd.read_csv(f'./output/flux_velocity-transport_{geometry}_{run_no}.dat', sep='\t', header=[0])
 
 	time_step = flux_data.iloc[0]['Time step']
 	time      = flux_data.iloc[0]['Time']
@@ -30,7 +30,7 @@ def calculate_transport_flux(run_no, geometry):
 	#################
 	## DATA IMPORT ##
 	#################
-	flux_data = pd.read_csv(f'./output/flux_dg_nsku_{geometry}_{run_no}.dat', sep='\t', header=[0])
+	flux_data = pd.read_csv(f'./output/flux_velocity-transport_{geometry}_{run_no}.dat', sep='\t', header=[0])
 
 	time_step = flux_data.iloc[:]['Time step']
 	time      = flux_data.iloc[:]['Time']
@@ -160,7 +160,7 @@ def calculate_velocity_flux(run_no, geometry):
 	#################
 	## DATA IMPORT ##
 	#################
-	flux_data = pd.read_csv(f'./output/flux_dg_nsku_{geometry}_{run_no}.dat', sep='\t', header=[0])
+	flux_data = pd.read_csv(f'./output/flux_velocity-transport_{geometry}_{run_no}.dat', sep='\t', header=[0])
 
 	time_step = flux_data.iloc[:]['Time step']
 	time      = flux_data.iloc[:]['Time']

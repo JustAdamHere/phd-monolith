@@ -1,6 +1,6 @@
 module problem_options
     use aptofem_kernel
-    use solution_storage_nsku
+    use solution_storage_velocity
 
     save
 
@@ -33,9 +33,9 @@ module problem_options
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('transport_ic_from_ss',              transport_ic_from_ss,              section_name, &
             aptofem_stored_keys, ierr)
-        call get_aptofem_key_definition('dirk_final_time',                   final_local_time,                  'solver_nsku', &
+        call get_aptofem_key_definition('dirk_final_time',                   final_local_time,                  'solver_velocity', &
             aptofem_stored_keys, ierr)
-        call get_aptofem_key_definition('dirk_number_of_timesteps',          no_time_steps,                     'solver_nsku', &
+        call get_aptofem_key_definition('dirk_number_of_timesteps',          no_time_steps,                     'solver_velocity', &
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('compute_transport',                 compute_transport,                 section_name, &
             aptofem_stored_keys, ierr)
@@ -159,91 +159,154 @@ module problem_options
         real(db)               :: x_centre, y_centre, radius
         real(db), dimension(2) :: centre_top
         real(db)               :: translate_angle
+        real(db), dimension(6) :: placentone_widths, cumulative_placentone_widths
+        integer                :: i
 
         placentone_width = 1.0_db                            ! 40 mm
         wall_width       = 0.075_db*placentone_width         ! 3  mm
-        placenta_width   = 6*placentone_width + 5*wall_width ! 255mm
-        pipe_width       = 0.05_db*placentone_width          ! 2  mm
-        wall_height      = 0.6_db*placentone_width           ! 24 mm
+        !placenta_width   = 6*placentone_width + 5*wall_width ! 255mm
+        placenta_width   = 5.5_db
+        ! pipe_width       = 0.05_db*placentone_width          ! 2  mm
+        ! wall_height      = 0.6_db*placentone_width           ! 24 mm
 
         x_centre = placenta_width/2
-        y_centre = sqrt(2*x_centre**2)
+        ! y_centre = sqrt(2*x_centre**2)
+        y_centre = 2.5_db*(2.0_db*x_centre**2)**0.5_db
         radius   = y_centre
+
+        placentone_widths(1) = 0.716209_db
+        placentone_widths(2) = 0.846291_db
+        placentone_widths(3) = 1.000000_db
+        placentone_widths(4) = 1.000000_db
+        placentone_widths(5) = 0.846291_db
+        placentone_widths(6) = 0.716209_db
+
+        cumulative_placentone_widths(1) = 0.0_db
+        do i = 2, 6
+            cumulative_placentone_widths(i) = cumulative_placentone_widths(i-1) + placentone_widths(i-1) + wall_width
+        end do
 
         if (element_region_id == 401) then
             translate_angle = pi
         else if (element_region_id == 402) then
             translate_angle = 0.0_db
         else if (element_region_id == 411) then
-            centre_top(1)   = (placentone_width + wall_width)*0 + 0.2*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(1) + 0.2*placentone_widths(1)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 413) then
-            centre_top(1)   = (placentone_width + wall_width)*0 + 0.8*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(1) + 0.8*placentone_widths(1)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 421) then
-            centre_top(1)   = (placentone_width + wall_width)*1 + 0.2*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(2) + 0.2*placentone_widths(2)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 423) then
-            centre_top(1)   = (placentone_width + wall_width)*1 + 0.8*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(2) + 0.8*placentone_widths(2)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 431) then
-            centre_top(1)   = (placentone_width + wall_width)*2 + 0.2*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(3) + 0.2*placentone_widths(3)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 433) then
-            centre_top(1)   = (placentone_width + wall_width)*2 + 0.8*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(3) + 0.8*placentone_widths(3)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 441) then
-            centre_top(1)   = (placentone_width + wall_width)*3 + 0.2*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(4) + 0.2*placentone_widths(4)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 443) then
-            centre_top(1)   = (placentone_width + wall_width)*3 + 0.8*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(4) + 0.8*placentone_widths(4)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 451) then
-            centre_top(1)   = (placentone_width + wall_width)*4 + 0.2*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(5) + 0.2*placentone_widths(5)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 453) then
-            centre_top(1)   = (placentone_width + wall_width)*4 + 0.8*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(5) + 0.8*placentone_widths(5)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 461) then
-            centre_top(1)   = (placentone_width + wall_width)*5 + 0.2*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(6) + 0.2*placentone_widths(6)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 463) then
-            centre_top(1)   = (placentone_width + wall_width)*5 + 0.8*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(6) + 0.8*placentone_widths(6)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 471) then
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
+        else if (element_region_id == 472) then
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
+        else if (element_region_id == 473) then
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
+        else if (element_region_id == 474) then
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
+        else if (element_region_id == 475) then
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
+        else if (element_region_id == 481) then
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
+        else if (element_region_id == 482) then
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
+        else if (element_region_id == 483) then
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
+        else if (element_region_id == 484) then
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
+        else if (element_region_id == 485) then
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
+        else if (element_region_id == 491) then
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
+        else if (element_region_id == 492) then
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
+        else if (element_region_id == 493) then
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
+        else if (element_region_id == 494) then
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
+        else if (element_region_id == 495) then
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
         else if (element_region_id == 501) then
-            centre_top(1)   = (placentone_width + wall_width)*0 + 0.5*placentone_width
+            centre_top = 0.0_db
+            translate_angle = 0.0_db
+            centre_top(1)   = cumulative_placentone_widths(1) + artery_location*placentone_widths(1)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 502) then
-            centre_top(1)   = (placentone_width + wall_width)*1 + 0.5*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(2) + artery_location*placentone_widths(2)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 503) then
-            centre_top(1)   = (placentone_width + wall_width)*2 + 0.5*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(3) + artery_location*placentone_widths(3)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 504) then
-            centre_top(1)   = (placentone_width + wall_width)*3 + 0.5*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(4) + artery_location*placentone_widths(4)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 505) then
-            centre_top(1)   = (placentone_width + wall_width)*4 + 0.5*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(5) + artery_location*placentone_widths(5)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 506) then
-            centre_top(1)   = (placentone_width + wall_width)*5 + 0.5*placentone_width
+            centre_top(1)   = cumulative_placentone_widths(6) + artery_location*placentone_widths(6)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else

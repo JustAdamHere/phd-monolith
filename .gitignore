@@ -2,3 +2,4 @@
 images/*
 output/*
 *.out
+.python3-venv/*

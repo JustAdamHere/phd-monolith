@@ -382,8 +382,10 @@ def plot(filename_no_ext_regex, filename_no_ext_output, base_directory, log_colo
 	else:
 		#changing interaction mode based on data extents
 		renderView1.InteractionMode = '2D'
-		renderView1.CameraPosition = [3.2324151951752396, 0.390660466849554, 12.594792705554676]
-		renderView1.CameraFocalPoint = [3.2324151951752396, 0.390660466849554, 0.0]
+		#renderView1.CameraPosition = [3.2324151951752396, 0.390660466849554, 12.594792705554676]
+		#renderView1.CameraFocalPoint = [3.2324151951752396, 0.390660466849554, 0.0]
+		renderView1.CameraPosition = [5.5/2, 0.9065/2, 10000.0]
+		renderView1.CameraFocalPoint = [5.5/2, 0.9065/2, 0.0]
 
 	# get the material library
 	materialLibrary1 = GetMaterialLibrary()
@@ -876,8 +878,10 @@ def plot(filename_no_ext_regex, filename_no_ext_output, base_directory, log_colo
 	else:
 		# current camera placement for renderView1
 		renderView1.InteractionMode = '2D'
-		renderView1.CameraPosition = [3.2324151951752396, 0.390660466849554, 12.594792705554676]
-		renderView1.CameraFocalPoint = [3.2324151951752396, 0.390660466849554, 0.0]
+		# renderView1.CameraPosition = [3.2324151951752396, 0.390660466849554, 12.594792705554676]
+		# renderView1.CameraFocalPoint = [3.2324151951752396, 0.390660466849554, 0.0]
+		renderView1.CameraPosition = [5.5/2, 0.9065/2, 10000.0]
+		renderView1.CameraFocalPoint = [5.5/2, 0.9065/2, 0.0]
 		renderView1.CameraParallelScale = 1.0386638884273762
 
 	if (log_coloring == 1):
@@ -893,7 +897,7 @@ def plot(filename_no_ext_regex, filename_no_ext_output, base_directory, log_colo
 		if (plot_type == 'placentone'):
 			evenlySpacedStreamlines2D1.StartPosition = [0.5, 0.5, 0.0]
 		else:
-			evenlySpacedStreamlines2D1.StartPosition = [3.0, 0.9, 0.0]
+			evenlySpacedStreamlines2D1.StartPosition = [5.5/2, 0.9065/2, 0.0]
 
 		# show data in view
 		evenlySpacedStreamlines2D1Display = Show(evenlySpacedStreamlines2D1, renderView1, 'GeometryRepresentation')

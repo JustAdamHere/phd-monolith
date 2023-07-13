@@ -32,15 +32,19 @@ vein_width            = 0.0375*placentone_width;           // 1.5  mm
 vein_length           = 0.0375*placentone_width;           // 1.5  mm
 
 // Default cavity size.
-If (!Exists(cavity_width))
-	cavity_width = 0.25*placentone_width; // 10 mm
+If (!Exists(central_cavity_width))
+	central_cavity_width = 0.25*placentone_width; // 10 mm
 EndIf
-cavity_height = 2*cavity_width;
+central_cavity_height = 2*central_cavity_width;
+
+If (!Exists(central_cavity_transition))
+	central_cavity_transition = 0.02*central_cavity_width; // 0.8mm
+EndIf
 
 ////////////////////////
 // Default parameters //
 ////////////////////////
-h = 0.2;
+h = 0.05;
 If (!Exists(h))
 	h        = 0.02;
 EndIf
@@ -137,13 +141,13 @@ EndFor
 // Default turn on/off for septal veins.
 For k In {0:4:1}
 	If (!Exists(septal_vein~{(k+1)*10+1}))
-		septal_vein~{(k+1)*10+1} = 1;
+		septal_vein~{(k+1)*10+1} = 0;
 	EndIf
 	If (!Exists(septal_vein~{(k+1)*10+2}))
-		septal_vein~{(k+1)*10+2} = 1;
+		septal_vein~{(k+1)*10+2} = 0;
 	EndIf
 	If (!Exists(septal_vein~{(k+1)*10+3}))
-		septal_vein~{(k+1)*10+3} = 1;
+		septal_vein~{(k+1)*10+3} = 0;
 	EndIf
 EndFor
 
@@ -349,11 +353,11 @@ For k In {0:5:1}
 	cavity_x_2[k] = (location_2_x_1[k] + location_2_x_2[k])/2;
 	cavity_y_2[k] = centre_y - (radius^2 - (centre_x - cavity_x_2[k])^2)^0.5;
 
-	cavity_x_1[k] = centre_x + radius*Cos(theta_pipe[k*3+1] + (cavity_width/2)/radius);
-	cavity_y_1[k] = centre_y - radius*Sin(theta_pipe[k*3+1] + (cavity_width/2)/radius);
+	cavity_x_1[k] = centre_x + radius*Cos(theta_pipe[k*3+1] + ((central_cavity_width + central_cavity_transition)/2)/radius);
+	cavity_y_1[k] = centre_y - radius*Sin(theta_pipe[k*3+1] + ((central_cavity_width + central_cavity_transition)/2)/radius);
 
-	cavity_x_3[k] = centre_x + radius*Cos(theta_pipe[k*3+1] - (cavity_width/2)/radius);
-	cavity_y_3[k] = centre_y - radius*Sin(theta_pipe[k*3+1] - (cavity_width/2)/radius);
+	cavity_x_3[k] = centre_x + radius*Cos(theta_pipe[k*3+1] - ((central_cavity_width + central_cavity_transition)/2)/radius);
+	cavity_y_3[k] = centre_y - radius*Sin(theta_pipe[k*3+1] - ((central_cavity_width + central_cavity_transition)/2)/radius);
 EndFor
 
 ////////////////////////////////////////
@@ -433,7 +437,7 @@ For k In {0:5:1}
 	Point(offset + 22) = {cavity_x_2[k], cavity_y_2[k], 0, h_refine};
 	Point(offset + 21) = {cavity_x_3[k], cavity_y_3[k], 0, h_refine};
 	If (artery[k] == 1)
-		Point(offset + 20) = {cavity_x_2[k] - (cavity_height/2)*Cos(theta_pipe[3*k+1]), cavity_y_2[k] + (cavity_height/2)*Sin(theta_pipe[3*k+1]), 0, h_refine};
+		Point(offset + 20) = {cavity_x_2[k] - (central_cavity_height/2 + central_cavity_transition)*Cos(theta_pipe[3*k+1]), cavity_y_2[k] + (central_cavity_height/2 + central_cavity_transition)*Sin(theta_pipe[3*k+1]), 0, h_refine};
 	EndIf
 EndFor
 

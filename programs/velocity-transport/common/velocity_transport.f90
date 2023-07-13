@@ -1,51 +1,58 @@
-program adam_nsku_transport
+program velocity_transport
     use aptofem_kernel
     use fe_solution_restart_io
     use problem_options
-    use problem_options_nsku
+    use problem_options_velocity
     use problem_options_transport
-    use matrix_rhs_transport
-    use matrix_rhs_transport_ss
-    use jacobi_residual_nsku
-    use jacobi_residual_nsku_ss
     use refine_region
-    use bcs_nsku
+    use bcs_velocity
     use bcs_transport
-    use solution_storage_nsku
+    use solution_storage_velocity
     use crossflow_flux
     use outflow_flux
     use outflow_transport_flux
     use program_name_module
+    use assembly_name_module
     use integrate_transport_reaction
+
+    use matrix_rhs_transport
+    use matrix_rhs_transport_ss
+    use matrix_rhs_s_b_ss
+    ! TODO: matrix_rhs_ns_b
+    ! use matrix_rhs_ns_b_ss
+    ! TODO: matrix_rhs_ns_nsb
+    ! use matrix_rhs_ns_nsb_ss
+    use jacobi_residual_nsb
+    use jacobi_residual_nsb_ss
 
     implicit none
 
     type(aptofem_keys), pointer   :: aptofem_stored_keys
     type(mesh)                    :: mesh_data, mesh_data_orig
     type(solution)                :: solution_transport, solution_permeability, solution_uptake
-    type(fe_assembly_subroutines) :: fe_solver_routines_nsku, fe_solver_routines_transport!, fe_solver_routines_uptake
+    type(fe_assembly_subroutines) :: fe_solver_routines_velocity, fe_solver_routines_transport!, fe_solver_routines_uptake
 
     type(refinement_tree)              :: mesh_tree
     integer, dimension(:), allocatable :: refinement_marks
     integer                            :: mesh_no, no_eles
 
-    class(sp_matrix_rhs), pointer   :: sp_matrix_rhs_data_nsku, sp_matrix_rhs_data_transport!, sp_matrix_rhs_data_uptake
-    type(default_user_data)         :: scheme_data_nsku, scheme_data_transport!, scheme_data_uptake
-    type(dirk_time_stepping_scheme) :: dirk_scheme_nsku
+    class(sp_matrix_rhs), pointer   :: sp_matrix_rhs_data_velocity, sp_matrix_rhs_data_transport!, sp_matrix_rhs_data_uptake
+    type(default_user_data)         :: scheme_data_velocity, scheme_data_transport!, scheme_data_uptake
+    type(dirk_time_stepping_scheme) :: dirk_scheme_velocity
     real(db)                        :: norm_diff_u
 
     character(15), dimension(1) :: errors_format, errors_name
     real(db), dimension(1)      :: errors
-    integer                     :: no_errors_nsku, no_errors_transport
+    integer                     :: no_errors_velocity, no_errors_transport
 
     logical :: ifail
 
     integer :: time_step_no
-    integer :: no_dofs_nsku, no_dofs_transport
+    integer :: no_dofs_velocity, no_dofs_transport
 
     logical, dimension(20) :: mesh_smoother
 
-    character(len=20) :: control_file
+    character(len=20) :: control_file, assembly_name
 
     character(len=100) :: flux_file
     character(len=100) :: aptofem_run_number_string
@@ -54,22 +61,22 @@ program adam_nsku_transport
     !!!!!!!!!!!!!!!!!!!!!!
     !! SET CONTROL FILE !!
     !!!!!!!!!!!!!!!!!!!!!!
-    call program_name(control_file)
-    if (control_file /= 'placentone' .and. control_file /= 'placenta' .and. control_file /= 'placenta-sv4' .and. &
-            control_file /= 'placentone-3d') then
-        call write_message(io_err, 'Error: program_name should be placentone or placenta or placenta-sv4 or placentone-3d.')
+    call program_name(control_file, .true.)
+    if (control_file /= 'placentone' .and. control_file /= 'placenta' .and. control_file /= 'placentone-3d') then
+        call write_message(io_err, 'Error: program_name should be placentone or placenta or placentone-3d.')
         stop
     end if
 
     !!!!!!!!!!!!!!!!!!!
     !! APTOFEM SETUP !!
     !!!!!!!!!!!!!!!!!!!
-    call AptoFEM_initialize     (aptofem_stored_keys, 'acf_' // trim(control_file) // '.dat', './')
-    call create_mesh            (mesh_data, get_boundary_no_nsku, 'mesh_gen', aptofem_stored_keys)
+    call AptoFEM_initialize     (aptofem_stored_keys, 'acf_' // trim(control_file) // '.dat', './common/')
+    call create_mesh            (mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
     call get_user_data          ('user_data', aptofem_stored_keys)
-    call get_user_data_nsku     ('user_data', aptofem_stored_keys)
+    call get_user_data_velocity ('user_data', aptofem_stored_keys)
     call get_user_data_transport('user_data', aptofem_stored_keys)
-    call set_space_type_nsku    (aptofem_stored_keys)
+    call set_space_type_velocity(aptofem_stored_keys)
+    call get_assembly_name      (assembly_name)
 
     !!!!!!!!!!!!!!!!!
     !! REFINE MESH !!
@@ -137,74 +144,96 @@ program adam_nsku_transport
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! VELOCITY PROBLEM SETUP AND INITIAL CONDITION !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    call create_fe_solution(solution_nsku, mesh_data, 'fe_solution_nsku', aptofem_stored_keys, &
-        dirichlet_bc_nsku)
+    call create_fe_solution(solution_velocity, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, &
+        dirichlet_bc_velocity)
 
-    call set_up_newton_solver_parameters('solver_nsku', aptofem_stored_keys, scheme_data_nsku)
+    call set_up_newton_solver_parameters('solver_velocity', aptofem_stored_keys, scheme_data_velocity)
 
-    call linear_fe_solver(solution_nsku, mesh_data, fe_solver_routines_nsku, 'solver_nsku', &
-        aptofem_stored_keys, sp_matrix_rhs_data_nsku, 1, scheme_data_nsku)
-    call linear_fe_solver(solution_nsku, mesh_data, fe_solver_routines_nsku, 'solver_nsku', &
-        aptofem_stored_keys, sp_matrix_rhs_data_nsku, 2, scheme_data_nsku)
+    call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity, 1, scheme_data_velocity)
+    call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity, 2, scheme_data_velocity)
 
-    solution_nsku%current_time    = 0.0_db
-    scheme_data_nsku%current_time = 0.0_db
-    scheme_data_nsku%time_step    = 0.1_db
+    solution_velocity%current_time    = 0.0_db
+    scheme_data_velocity%current_time = 0.0_db
+    scheme_data_velocity%time_step    = 0.1_db
 
-    call set_current_time(solution_nsku, 0.0_db)
+    call set_current_time(solution_velocity, 0.0_db)
 
     if (velocity_ic_from_ss) then
-        call store_subroutine_names(fe_solver_routines_nsku, 'assemble_jac_matrix_element', &
-            jacobian_nsku_ss, 1)
-        call store_subroutine_names(fe_solver_routines_nsku, 'assemble_residual_element', &
-            element_residual_nsku_ss, 1)
+        if (trim(assembly_name) == 'nsb') then
+            call store_subroutine_names(fe_solver_routines_velocity,  'assemble_jac_matrix_element', &
+                jacobian_nsb_ss, 1)
+            call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
+                jacobian_face_nsb_ss, 1)
+            call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element', &
+                element_residual_nsb_ss, 1)
+            call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
+                element_residual_face_nsb_ss, 1)
+        else if (trim(assembly_name) == 's_b') then
+            call store_subroutine_names(fe_solver_routines_velocity, 'assemble_matrix_rhs_element', &
+                stiffness_matrix_load_vector_s_b_ss, 1)
+            call store_subroutine_names(fe_solver_routines_velocity, 'assemble_matrix_rhs_face',    &
+                stiffness_matrix_load_vector_face_s_b_ss, 1)
+        else
+            print *, "ERROR: Unknown assembly name for velocity solver."
+            error stop
+        end if
 
-        ! if (fe_space_nsku == 'DG') then
-            call store_subroutine_names(fe_solver_routines_nsku, 'assemble_jac_matrix_int_bdry_face', &
-                jacobian_face_nsku_ss, 1)
-            call store_subroutine_names(fe_solver_routines_nsku, 'assemble_residual_int_bdry_face', &
-                element_residual_face_nsku_ss, 1)
+
+        ! if (fe_space_velocity == 'DG') then
+
         ! else
-        !     call store_subroutine_names(fe_solver_routines_nsku, 'assemble_residual_int_bdry_face', &
-        !         element_residual_cg_boundary_nsku_ss, 1)
+        !     call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
+        !         element_residual_cg_boundary_velocity_ss, 1)
 
         !     !! ONLY STORED TO NOT GIVE ERROR !!
         !     !!    NOT ACTUALLY CALLED        !!
-        !     call store_subroutine_names(fe_solver_routines_nsku, 'assemble_jac_matrix_int_bdry_face', &
-        !         jacobian_face_nsku_ss, 1)
+        !     call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
+        !         jacobian_face_velocity_ss, 1)
         !     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! end if
 
-        call newton_fe_solver(solution_nsku, mesh_data, fe_solver_routines_nsku, 'solver_nsku', aptofem_stored_keys, &
-            sp_matrix_rhs_data_nsku, scheme_data_nsku, ifail)
+        if (trim(assembly_name) == 'nsb') then
+            call newton_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
+                aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, ifail)
+        else if (trim(assembly_name) == 's_b') then
+            call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
+                aptofem_stored_keys, sp_matrix_rhs_data_velocity, 3, scheme_data_velocity)
+            call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
+                aptofem_stored_keys, sp_matrix_rhs_data_velocity, 4, scheme_data_velocity)
+        else
+            print *, "ERROR: Unknown assembly name for velocity solver."
+            error stop
+        end if
 
 
     else
-        !call project_function(solution_nsku, mesh_data, solution_nsku%analytical_solution_ptr)
+        !call project_function(solution_velocity, mesh_data, solution_velocity%analytical_solution_ptr)
 
-        solution_nsku%soln_values = 0.0_db
+        solution_velocity%soln_values = 0.0_db
 
-        call project_dirichlet_boundary_values(solution_nsku, mesh_data)
+        call project_dirichlet_boundary_values(solution_velocity, mesh_data)
     end if
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! VELOCITY SCREEN OUTPUT !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    no_errors_nsku   = 0
+    no_errors_velocity   = 0
     errors(1)        = 0.0_db
     errors_name(1)   = ''
     errors_format(1) = ''
 
     call write_message(io_msg, '========================================================')
     call write_message(io_msg, '||                 (velocity solution)                ||')
-    call write_data('output_data', aptofem_stored_keys, errors, no_errors_nsku, errors_name, errors_format, mesh_data, &
-        solution_nsku)
+    call write_data('output_data', aptofem_stored_keys, errors, no_errors_velocity, errors_name, errors_format, mesh_data, &
+        solution_velocity)
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! SAVE VELOCITY INITIAL CONDITION AND RAW SOLUTION !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    call write_fe_data('output_mesh_solution_nsku_2D', aptofem_stored_keys, 0, mesh_data, solution_nsku)
-    call write_solution_for_restart(solution_nsku, mesh_data, 0, 'dg_nsku-transport_nsku_' &
+    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 0, mesh_data, solution_velocity)
+    call write_solution_for_restart(solution_velocity, mesh_data, 0, 'dg_velocity-transport_velocity_' &
         // trim(control_file), '../../output/')
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -256,7 +285,7 @@ program adam_nsku_transport
         !! SAVE TRANSPORT INITIAL CONDITION AND RAW SOLUTION !!
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         call write_fe_data('output_mesh_solution_transport_2D', aptofem_stored_keys, 0, mesh_data, solution_transport)
-        call write_solution_for_restart(solution_transport, mesh_data, 0, 'dg_nsku-transport_transport_' &
+        call write_solution_for_restart(solution_transport, mesh_data, 0, 'dg_velocity-transport_transport_' &
             // trim(control_file), '../../output/')
     end if
 
@@ -287,46 +316,58 @@ program adam_nsku_transport
     end if
 
     ! Velocity routines.
-    call store_subroutine_names(fe_solver_routines_nsku,  'assemble_jac_matrix_element', &
-        jacobian_nsku, 1)
-    call store_subroutine_names(fe_solver_routines_nsku, 'assemble_jac_matrix_int_bdry_face', &
-        jacobian_face_nsku, 1)
-    call store_subroutine_names(fe_solver_routines_nsku, 'assemble_residual_element', &
-        element_residual_nsku, 1)
-    call store_subroutine_names(fe_solver_routines_nsku, 'assemble_residual_int_bdry_face', &
-        element_residual_face_nsku, 1)
-
-    ! Velocity DIRK timestepping setup.
-    call set_up_dirk_timestepping('solver_nsku', aptofem_stored_keys, dirk_scheme_nsku)
-
-    solution_nsku%current_time    = 0.0_db
-    scheme_data_nsku%current_time = 0.0_db
-    if (no_time_steps == 0) then
-        scheme_data_nsku%time_step = 0.0_db
+    if (trim(assembly_name) == 'nsb') then
+        call store_subroutine_names(fe_solver_routines_velocity,  'assemble_jac_matrix_element', &
+            jacobian_nsb, 1)
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
+            jacobian_face_nsb, 1)
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element', &
+            element_residual_nsb, 1)
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
+            element_residual_face_nsb, 1)
+    else if (trim(assembly_name) == 's_b') then
+        ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_matrix_rhs_element', &
+        !     stiffness_matrix_load_vector_s_b, 1)
+        ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_matrix_rhs_face',    &
+        !     stiffness_matrix_load_vector_face_s_b, 1)
+        print *, "ERROR: not yet implemented."
+        error stop
     else
-        scheme_data_nsku%time_step = final_local_time/real(no_time_steps, db)
+        print *, "ERROR: Unknown assembly name for velocity solver."
+        error stop
     end if
 
-    call set_current_time(solution_nsku, 0.0_db)
+    ! Velocity DIRK timestepping setup.
+    call set_up_dirk_timestepping('solver_velocity', aptofem_stored_keys, dirk_scheme_velocity)
 
-    no_dofs_nsku = get_no_dofs(solution_nsku)
+    solution_velocity%current_time    = 0.0_db
+    scheme_data_velocity%current_time = 0.0_db
+    if (no_time_steps == 0) then
+        scheme_data_velocity%time_step = 0.0_db
+    else
+        scheme_data_velocity%time_step = final_local_time/real(no_time_steps, db)
+    end if
+
+    call set_current_time(solution_velocity, 0.0_db)
+
+    no_dofs_velocity = get_no_dofs(solution_velocity)
 
     !!!!!!!!!!!!!!!!!
     !! SAVE FLUXES !!
     !!!!!!!!!!!!!!!!!
     write(aptofem_run_number_string, '(i10)') aptofem_run_number
-    flux_file = '../../output/flux' // '_' // 'dg_nsku_' // trim(control_file) // '_' // &
+    flux_file = '../../output/flux' // '_' // 'velocity-transport' // '_' // trim(control_file) // '_' // &
         trim(adjustl(aptofem_run_number_string)) // '.dat'
     open(23111997, file=flux_file, status='replace')
     tsvFormat = '(*(G0.6,:,"'//achar(9)//'"))'
 
     call setup_outflow_fluxes(243)
     call setup_outflow_transport_fluxes(243)
-    call calculate_outflow_fluxes(mesh_data, solution_nsku)
-    call calculate_outflow_transport_fluxes(mesh_data, solution_nsku, solution_transport)
+    call calculate_outflow_fluxes(mesh_data, solution_velocity)
+    call calculate_outflow_transport_fluxes(mesh_data, solution_velocity, solution_transport)
 
     call write_to_file_headers(23111997, tsvFormat)
-    call write_to_file        (23111997, tsvFormat, mesh_data, solution_nsku, solution_transport, 0, 0.0_db)
+    call write_to_file        (23111997, tsvFormat, mesh_data, solution_velocity, solution_transport, 0, 0.0_db)
 
     call finalise_outflow_fluxes()
     call finalise_outflow_transport_fluxes()
@@ -335,7 +376,7 @@ program adam_nsku_transport
     !! TRANSPORT REACTION TERM INTEGRAL !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     write(aptofem_run_number_string, '(i10)') aptofem_run_number
-    flux_file = '../../output/transport-reaction-integral' // '_' // 'dg_nsku_' // trim(control_file) // '_' // &
+    flux_file = '../../output/transport-reaction-integral' // '_' // 'velocity-transport' // '_' // trim(control_file) // '_' // &
         trim(adjustl(aptofem_run_number_string)) // '.dat'
     open(23111998, file=flux_file, status='replace')
     write(23111998, tsvFormat) 'Time step', 'Integral'
@@ -361,12 +402,13 @@ program adam_nsku_transport
         ! ASSEMBLE AND SOLVE THIS TIMESTEP !
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if (.not. velocity_ss) then
-            call dirk_single_time_step(solution_nsku, mesh_data, fe_solver_routines_nsku, 'solver_nsku', aptofem_stored_keys, &
-                sp_matrix_rhs_data_nsku, scheme_data_nsku, dirk_scheme_nsku, scheme_data_nsku%current_time, &
-                scheme_data_nsku%time_step, no_dofs_nsku, time_step_no, .false., norm_diff_u)
+            call dirk_single_time_step(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
+                aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, dirk_scheme_velocity, &
+                scheme_data_velocity%current_time, scheme_data_velocity%time_step, no_dofs_velocity, time_step_no, .false., &
+                norm_diff_u)
 
-            call set_current_time(solution_nsku, solution_nsku%current_time + &
-                scheme_data_nsku%time_step)
+            call set_current_time(solution_velocity, solution_velocity%current_time + &
+                scheme_data_velocity%time_step)
         end if
 
         if (compute_transport) then
@@ -379,7 +421,7 @@ program adam_nsku_transport
         !!!!!!!!!!!!!!!!!
         ! SCREEN OUTPUT !
         !!!!!!!!!!!!!!!!!
-        no_errors_nsku      = 0
+        no_errors_velocity      = 0
         no_errors_transport = 0
         errors(1)           = 0.0_db
         errors_name(1)      = ''
@@ -388,8 +430,8 @@ program adam_nsku_transport
         if (.not. velocity_ss) then
             call write_message(io_msg, '========================================================')
             call write_message(io_msg, '||                (velocity solution)                 ||')
-            call write_data   ('output_data', aptofem_stored_keys, errors, no_errors_nsku, errors_name,&
-                errors_format, mesh_data, solution_nsku)
+            call write_data   ('output_data', aptofem_stored_keys, errors, no_errors_velocity, errors_name,&
+                errors_format, mesh_data, solution_velocity)
         end if
 
         if (compute_transport) then
@@ -404,14 +446,15 @@ program adam_nsku_transport
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if (mod(time_step_no, 10) == 0) then
             if (.not. velocity_ss) then
-                call write_fe_data('output_mesh_solution_nsku_2D', aptofem_stored_keys, time_step_no, mesh_data, solution_nsku)
-                call write_solution_for_restart(solution_nsku, mesh_data, time_step_no, 'dg_nsku-transport_nsku_' &
+                call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, time_step_no, mesh_data, &
+                    solution_velocity)
+                call write_solution_for_restart(solution_velocity, mesh_data, time_step_no, 'dg_velocity-transport_velocity_' &
                     // trim(control_file), '../../output/')
             end if
             if (compute_transport) then
                 call write_fe_data('output_mesh_solution_transport_2D', aptofem_stored_keys, time_step_no, mesh_data, &
                     solution_transport)
-                call write_solution_for_restart(solution_transport, mesh_data, time_step_no, 'dg_nsku-transport_transport_' &
+                call write_solution_for_restart(solution_transport, mesh_data, time_step_no, 'dg_velocity-transport_transport_' &
                     // trim(control_file), '../../output/')
             end if
         end if
@@ -421,9 +464,9 @@ program adam_nsku_transport
         !!!!!!!!!!!!!!!
         call setup_outflow_fluxes(243)
         call setup_outflow_transport_fluxes(243)
-        call calculate_outflow_fluxes(mesh_data, solution_nsku)
-        call calculate_outflow_transport_fluxes(mesh_data, solution_nsku, solution_transport)
-        call write_to_file(23111997, tsvFormat, mesh_data, solution_nsku, solution_transport, time_step_no, &
+        call calculate_outflow_fluxes(mesh_data, solution_velocity)
+        call calculate_outflow_transport_fluxes(mesh_data, solution_velocity, solution_transport)
+        call write_to_file(23111997, tsvFormat, mesh_data, solution_velocity, solution_transport, time_step_no, &
             scheme_data_transport%current_time)
         call finalise_outflow_fluxes()
         call finalise_outflow_transport_fluxes()
@@ -480,11 +523,11 @@ program adam_nsku_transport
 
     call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
         aptofem_stored_keys, sp_matrix_rhs_data_transport, 5, scheme_data_transport)
-    call linear_fe_solver(solution_nsku,      mesh_data, fe_solver_routines_nsku,      'solver_nsku', &
-        aptofem_stored_keys, sp_matrix_rhs_data_nsku,      5, scheme_data_nsku)
+    call linear_fe_solver(solution_velocity,      mesh_data, fe_solver_routines_velocity,      'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity,      5, scheme_data_velocity)
 
     call delete_solution (solution_transport)
-    call delete_solution (solution_nsku)
+    call delete_solution (solution_velocity)
     call delete_mesh     (mesh_data)
     call AptoFEM_finalize(aptofem_stored_keys)
 end program
@@ -562,7 +605,7 @@ end program
 
 ! end subroutine
 
-! subroutine write_to_file(file_no, tsvFormat, mesh_data, solution_nsku, solution_transport, timestep_no, current_time)
+! subroutine write_to_file(file_no, tsvFormat, mesh_data, solution_velocity, solution_transport, timestep_no, current_time)
 !     use param
 !     use fe_mesh
 !     use fe_solution
@@ -573,65 +616,65 @@ end program
 !     integer, intent(in)        :: file_no
 !     character(len=100)         :: tsvFormat
 !     type(mesh), intent(inout)  :: mesh_data
-!     type(solution), intent(in) :: solution_nsku, solution_transport
+!     type(solution), intent(in) :: solution_velocity, solution_transport
 !     integer, intent(in)        :: timestep_no
 !     real(db), intent(in)       :: current_time
 
 !     write(file_no, tsvFormat) timestep_no, &
 !         current_time, &
-!         calculate_crossflow_flux       (mesh_data, solution_nsku, 301, 302), &
-!         calculate_crossflow_flux       (mesh_data, solution_nsku, 302, 303), &
-!         calculate_crossflow_flux       (mesh_data, solution_nsku, 303, 304), &
-!         calculate_crossflow_flux       (mesh_data, solution_nsku, 304, 305), &
-!         calculate_crossflow_flux       (mesh_data, solution_nsku, 305, 306), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 111), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 112), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 113), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 114), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 115), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 116), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 211), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 212), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 213), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 214), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 215), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 216), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 217), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 218), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 219), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 220), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 221), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 222), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 230), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 231), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 240), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 241), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 242), &
-!         calculate_outflow_flux         (mesh_data, solution_nsku, 243), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 111), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 112), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 113), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 114), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 115), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 116), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 211), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 212), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 213), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 214), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 215), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 216), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 217), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 218), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 219), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 220), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 221), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 222), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 230), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 231), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 240), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 241), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 242), &
-!         calculate_outflow_transport_flux(mesh_data, solution_nsku, solution_transport, 243)
+!         calculate_crossflow_flux       (mesh_data, solution_velocity, 301, 302), &
+!         calculate_crossflow_flux       (mesh_data, solution_velocity, 302, 303), &
+!         calculate_crossflow_flux       (mesh_data, solution_velocity, 303, 304), &
+!         calculate_crossflow_flux       (mesh_data, solution_velocity, 304, 305), &
+!         calculate_crossflow_flux       (mesh_data, solution_velocity, 305, 306), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 111), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 112), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 113), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 114), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 115), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 116), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 211), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 212), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 213), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 214), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 215), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 216), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 217), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 218), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 219), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 220), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 221), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 222), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 230), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 231), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 240), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 241), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 242), &
+!         calculate_outflow_flux         (mesh_data, solution_velocity, 243), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 111), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 112), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 113), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 114), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 115), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 116), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 211), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 212), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 213), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 214), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 215), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 216), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 217), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 218), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 219), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 220), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 221), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 222), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 230), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 231), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 240), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 241), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 242), &
+!         calculate_outflow_transport_flux(mesh_data, solution_velocity, solution_transport, 243)
 
 !     flush(file_no)
 
@@ -712,7 +755,7 @@ subroutine write_to_file_headers(file_no, tsvFormat)
 
 end subroutine
 
-subroutine write_to_file(file_no, tsvFormat, mesh_data, solution_nsku, solution_transport, timestep_no, current_time)
+subroutine write_to_file(file_no, tsvFormat, mesh_data, solution_velocity, solution_transport, timestep_no, current_time)
     use param
     use fe_mesh
     use fe_solution
@@ -723,17 +766,17 @@ subroutine write_to_file(file_no, tsvFormat, mesh_data, solution_nsku, solution_
     integer, intent(in)        :: file_no
     character(len=100)         :: tsvFormat
     type(mesh), intent(inout)  :: mesh_data
-    type(solution), intent(in) :: solution_nsku, solution_transport
+    type(solution), intent(in) :: solution_velocity, solution_transport
     integer, intent(in)        :: timestep_no
     real(db), intent(in)       :: current_time
 
     write(file_no, tsvFormat) timestep_no, &
     current_time, &
-    calculate_crossflow_flux(mesh_data, solution_nsku, 301, 302), &
-    calculate_crossflow_flux(mesh_data, solution_nsku, 302, 303), &
-    calculate_crossflow_flux(mesh_data, solution_nsku, 303, 304), &
-    calculate_crossflow_flux(mesh_data, solution_nsku, 304, 305), &
-    calculate_crossflow_flux(mesh_data, solution_nsku, 305, 306), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 301, 302), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 302, 303), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 303, 304), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 304, 305), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 305, 306), &
     outflow_fluxes(111), &
     outflow_fluxes(112), &
     outflow_fluxes(113), &

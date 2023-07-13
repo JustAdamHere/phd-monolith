@@ -2,7 +2,7 @@ module matrix_rhs_transport
     use bcs_transport
     use problem_options
     use problem_options_transport
-    use solution_storage_nsku
+    use solution_storage_velocity
 
     contains
 

@@ -1,9 +1,9 @@
-module bcs_nsku
+module bcs_velocity
   implicit none
 
   contains
 
-  subroutine convert_nsku_boundary_no(boundary_no, boundary_no_new)
+  subroutine convert_velocity_boundary_no(boundary_no, boundary_no_new)
     integer, intent(in)  :: boundary_no
     integer, intent(out) :: boundary_no_new
 
@@ -21,7 +21,7 @@ module bcs_nsku
 
   end subroutine
 
-  subroutine convert_nsku_region_id(region_id, region_id_new)
+  subroutine convert_velocity_region_id(region_id, region_id_new)
     integer, intent(in)  :: region_id
     integer, intent(out) :: region_id_new
 
@@ -43,7 +43,7 @@ module bcs_nsku
 
   end subroutine
 
-  subroutine forcing_function_nsku(f, global_point, problem_dim, no_vars, t, element_region_id)
+  subroutine forcing_function_velocity(f, global_point, problem_dim, no_vars, t, element_region_id)
     use param
     use problem_options
 
@@ -69,7 +69,7 @@ module bcs_nsku
 
   end subroutine
 
-  subroutine anal_soln_nsku(u, global_point, problem_dim, no_vars, boundary_no, t, element_region_id)
+  subroutine anal_soln_velocity(u, global_point, problem_dim, no_vars, boundary_no, t, element_region_id)
     use param
     use problem_options
 
@@ -83,111 +83,30 @@ module bcs_nsku
     real(db), intent(in)                         :: t
     integer, intent(in)                          :: element_region_id
 
-    real(db)                         :: x, y, x_centre, y_centre, radius
-    real(db)                         :: placentone_width, wall_width, placenta_width, pipe_width, wall_height
-    real(db)                         :: left_bc, right_bc, left_top, right_top
-    real(db), dimension(problem_dim) :: centre_top
-    real(db)                         :: theta_bc, theta_top
-
+    real(db) :: x, y
+    real(db) :: left, right
     real(db) :: amplitude
+    real(db) :: global_time ! TODO: check relationship between local and global t
 
     u = 0.0_db
 
-    x        = global_point(1)
-    y        = global_point(2)
-
-    placentone_width = 1.0_db                            ! 40 mm
-    wall_width       = 0.075_db*placentone_width         ! 3  mm
-    placenta_width   = 6*placentone_width + 5*wall_width ! 255mm
-    pipe_width       = 0.05_db*placentone_width          ! 2  mm
-    wall_height      = 0.6_db*placentone_width           ! 24 mm
-
-    x_centre = placenta_width/2
-    y_centre = sqrt(2*x_centre**2)
-    radius   = y_centre
+    x = global_point(1)
+    y = global_point(2)
 
     if (boundary_no == 111) then
-        centre_top(1) = (placentone_width + wall_width)*0 + artery_location*placentone_width
-        centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-        left_top      = centre_top(1) - pipe_width/2
-        right_top     = centre_top(1) + pipe_width/2
-        theta_top     = -pi - atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
+        left  = artery_location - 0.025_db
+        right = artery_location + 0.025_db
+        u(2) = -4.0_db/(right-left)**2*(x-left)*(x-right)
 
-        left_bc  = x_centre + radius*cos(theta_top + (pipe_width/2.0_db)/radius) + pipe_width*cos(theta_top)
-        right_bc = x_centre + radius*cos(theta_top - (pipe_width/2.0_db)/radius) + pipe_width*cos(theta_top)
-        theta_bc = theta_top
-    else if (boundary_no == 112) then
-        centre_top(1) = (placentone_width + wall_width)*1 + artery_location*placentone_width
-        centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-        left_top      = centre_top(1) - pipe_width/2
-        right_top     = centre_top(1) + pipe_width/2
-        theta_top     = -pi - atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-
-        left_bc  = x_centre + radius*cos(theta_top + (pipe_width/2.0_db)/radius) + pipe_width*cos(theta_top)
-        right_bc = x_centre + radius*cos(theta_top - (pipe_width/2.0_db)/radius) + pipe_width*cos(theta_top)
-        theta_bc = theta_top
-    else if (boundary_no == 113) then
-        centre_top(1) = (placentone_width + wall_width)*2 + artery_location*placentone_width
-        centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-        left_top      = centre_top(1) - pipe_width/2
-        right_top     = centre_top(1) + pipe_width/2
-        theta_top     = -pi - atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-
-        left_bc  = x_centre + radius*cos(theta_top + (pipe_width/2.0_db)/radius) + pipe_width*cos(theta_top)
-        right_bc = x_centre + radius*cos(theta_top - (pipe_width/2.0_db)/radius) + pipe_width*cos(theta_top)
-        theta_bc = theta_top
-    else if (boundary_no == 114) then
-        centre_top(1) = (placentone_width + wall_width)*3 + artery_location*placentone_width
-        centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-        left_top      = centre_top(1) - pipe_width/2
-        right_top     = centre_top(1) + pipe_width/2
-        theta_top     = -atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-
-        left_bc  = x_centre + radius*cos(theta_top + (pipe_width/2.0_db)/radius) + pipe_width*cos(theta_top)
-        right_bc = x_centre + radius*cos(theta_top - (pipe_width/2.0_db)/radius) + pipe_width*cos(theta_top)
-        theta_bc = theta_top
-    else if (boundary_no == 115) then
-        centre_top(1) = (placentone_width + wall_width)*4 + artery_location*placentone_width
-        centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-        left_top      = centre_top(1) - pipe_width/2
-        right_top     = centre_top(1) + pipe_width/2
-        theta_top     = -atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-
-        left_bc  = x_centre + radius*cos(theta_top + (pipe_width/2.0_db)/radius) + pipe_width*cos(theta_top)
-        right_bc = x_centre + radius*cos(theta_top - (pipe_width/2.0_db)/radius) + pipe_width*cos(theta_top)
-        theta_bc = theta_top
-    else if (boundary_no == 116) then
-        centre_top = (placentone_width + wall_width)*5 + artery_location*placentone_width
-        centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-        left_top      = centre_top(1) - pipe_width/2
-        right_top     = centre_top(1) + pipe_width/2
-        theta_top     = -atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-
-        left_bc  = x_centre + radius*cos(theta_top + (pipe_width/2.0_db)/radius) + pipe_width*cos(theta_top)
-        right_bc = x_centre + radius*cos(theta_top - (pipe_width/2.0_db)/radius) + pipe_width*cos(theta_top)
-        theta_bc = theta_top
-    end if
-
-    if (111 <= boundary_no .and. boundary_no <= 116) then
-        u    = -4.0_db/(right_bc-left_bc)**2*(x-left_bc)*(x-right_bc)
-        u(1) = -u(1) * cos(theta_bc)
-        u(2) =  u(2) * sin(theta_bc)
-
+        ! u(2) = u(2) * (0.6_db + (cos(t*pi))*0.4_db) ! Oscillates between 0.2 and 1.0.
         call Boileau_velocity_amplitude(amplitude, t)
-        u(1) = u(1) * amplitude
         u(2) = u(2) * amplitude
-    end if
 
-    if (u(2) <= -1e-5) then
-        print *, "Error: inflow velocity negative"
-        print *, u(2)
-        stop
-    end if
-
-    if (u(1)**2 + u(2)**2 >= 1.0 + 1e-5) then
-        print *, "Error: inflow velocity maxima too high"
-        print *, u(1)**2 + u(2)**2
-        stop
+        if (u(2) <= -1e-5) then
+          print *, "Error: inflow velocity negative"
+          print *, u(2)
+          stop
+        end if
     end if
   end subroutine
 
@@ -236,7 +155,7 @@ module bcs_nsku
     ) ! [m3/s]
 end subroutine
 
-  subroutine anal_soln_nsku_1(u_1, global_point, problem_dim, no_vars, t, element_region_id)
+  subroutine anal_soln_velocity_1(u_1, global_point, problem_dim, no_vars, t, element_region_id)
     use param
     use problem_options
 
@@ -258,10 +177,11 @@ end subroutine
     u_1 = 0.0_db
   end subroutine
 
-  subroutine get_boundary_no_nsku(boundary_no, strongly_enforced_bcs, global_point, face_coords, no_face_vert,&
+  subroutine get_boundary_no_velocity(boundary_no, strongly_enforced_bcs, global_point, face_coords, no_face_vert,&
       problem_dim, mesh_data)
     use param
     use fe_mesh
+    use problem_options_velocity
 
     implicit none
 
@@ -275,7 +195,17 @@ end subroutine
 
     real(db) :: x, y, tol
 
-    strongly_enforced_bcs = '000'
+    if (fe_space_velocity == 'DG') then
+      strongly_enforced_bcs = '000'
+    else
+      strongly_enforced_bcs = '110'
+
+      if (200 <= abs(boundary_no) .and. abs(boundary_no) <= 299) then
+        strongly_enforced_bcs = '000'
+      end if
+    end if
+
+    !strongly_enforced_bcs = '111'
 
     ! x = global_point(1)
     ! y = global_point(2)
@@ -302,7 +232,7 @@ end subroutine
     ! end if
   end subroutine
 
-  subroutine dirichlet_bc_nsku(u, global_point, problem_dim, no_vars, boundary_no, t)
+  subroutine dirichlet_bc_velocity(u, global_point, problem_dim, no_vars, boundary_no, t)
     use param
 
     implicit none
@@ -315,13 +245,13 @@ end subroutine
 
     real(db), dimension(no_vars) :: sol
 
-    call anal_soln_nsku(sol, global_point, problem_dim, no_vars, boundary_no, t, -1)
+    call anal_soln_velocity(sol, global_point, problem_dim, no_vars, boundary_no, t, -1)
 
     u(1:no_vars) = sol(1:no_vars)
 
   end subroutine
 
-  subroutine neumann_bc_nsku(un, global_point, problem_dim, boundary_no, t, element_region_id, normal)
+  subroutine neumann_bc_velocity(un, global_point, problem_dim, boundary_no, t, element_region_id, normal)
     use param
     use problem_options
 

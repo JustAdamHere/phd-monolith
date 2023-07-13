@@ -1,9 +1,9 @@
-module bcs_nsku
+module bcs_velocity
   implicit none
 
   contains
 
-  subroutine convert_nsku_boundary_no(boundary_no, boundary_no_new)
+  subroutine convert_velocity_boundary_no(boundary_no, boundary_no_new)
     integer, intent(in)  :: boundary_no
     integer, intent(out) :: boundary_no_new
 
@@ -21,7 +21,7 @@ module bcs_nsku
 
   end subroutine
 
-  subroutine convert_nsku_region_id(region_id, region_id_new)
+  subroutine convert_velocity_region_id(region_id, region_id_new)
     integer, intent(in)  :: region_id
     integer, intent(out) :: region_id_new
 
@@ -43,7 +43,7 @@ module bcs_nsku
 
   end subroutine
 
-  subroutine forcing_function_nsku(f, global_point, problem_dim, no_vars, t, element_region_id)
+  subroutine forcing_function_velocity(f, global_point, problem_dim, no_vars, t, element_region_id)
     use param
     use problem_options
 
@@ -69,7 +69,7 @@ module bcs_nsku
 
   end subroutine
 
-  subroutine anal_soln_nsku(u, global_point, problem_dim, no_vars, boundary_no, t, element_region_id)
+  subroutine anal_soln_velocity(u, global_point, problem_dim, no_vars, boundary_no, t, element_region_id)
     use param
     use problem_options
 
@@ -83,30 +83,139 @@ module bcs_nsku
     real(db), intent(in)                         :: t
     integer, intent(in)                          :: element_region_id
 
-    real(db) :: x, y
-    real(db) :: left, right
+    real(db)                         :: x, y, x_centre, y_centre, radius
+    real(db)                         :: placentone_width, wall_width, placenta_width, wall_height, artery_length, artery_width_sm
+    real(db)                         :: left_bc, right_bc, left_top, right_top
+    real(db), dimension(problem_dim) :: centre_top
+    real(db)                         :: theta_bc, theta_top
+    real(db), dimension(6)           :: placentone_widths, cumulative_placentone_widths
+    integer                          :: i
+
     real(db) :: amplitude
-    real(db) :: global_time ! TODO: check relationship between local and global t
 
     u = 0.0_db
 
-    x = global_point(1)
-    y = global_point(2)
+    x        = global_point(1)
+    y        = global_point(2)
+
+    placentone_width = 1.0_db                            ! 40 mm
+    wall_width       = 0.075_db*placentone_width         ! 3  mm
+    placenta_width   = 5.5_db                           ! 230mm
+    ! pipe_width       = 0.05_db*placentone_width          ! 2  mm
+    wall_height      = 0.6_db*placentone_width           ! 24 mm
+
+    artery_width_sm = 0.0125_db*placentone_width ! 0.5mm
+    artery_length   = 0.25_db*placentone_width   ! 10mm
+
+    x_centre = placenta_width/2
+    ! y_centre = sqrt(2*x_centre**2)
+    y_centre = 2.5_db*(2.0_db*x_centre**2)**0.5_db
+    radius   = y_centre
+
+    placentone_widths(1) = 0.716209_db
+    placentone_widths(2) = 0.846291_db
+    placentone_widths(3) = 1.000000_db
+    placentone_widths(4) = 1.000000_db
+    placentone_widths(5) = 0.846291_db
+    placentone_widths(6) = 0.716209_db
+
+    cumulative_placentone_widths(1) = 0.0_db
+    do i = 2, 6
+      cumulative_placentone_widths(i) = cumulative_placentone_widths(i-1) + placentone_widths(i-1) + wall_width
+    end do
 
     if (boundary_no == 111) then
-        left  = artery_location - 0.025_db
-        right = artery_location + 0.025_db
-        u(2) = -4.0_db/(right-left)**2*(x-left)*(x-right)
+        centre_top(1) = cumulative_placentone_widths(1) + artery_location*placentone_widths(1)
+        centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+        left_top      = centre_top(1) - artery_width_sm/2
+        right_top     = centre_top(1) + artery_width_sm/2
+        theta_top     = -pi - atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
 
-        ! u(2) = u(2) * (0.6_db + (cos(t*pi))*0.4_db) ! Oscillates between 0.2 and 1.0.
+        left_bc  = x_centre + radius*cos(theta_top + (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
+        right_bc = x_centre + radius*cos(theta_top - (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
+        theta_bc = theta_top
+    else if (boundary_no == 112) then
+        centre_top(1) = cumulative_placentone_widths(2) + artery_location*placentone_widths(2)
+        centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+        left_top      = centre_top(1) - artery_width_sm/2
+        right_top     = centre_top(1) + artery_width_sm/2
+        theta_top     = -pi - atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
+
+        left_bc  = x_centre + radius*cos(theta_top + (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
+        right_bc = x_centre + radius*cos(theta_top - (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
+        theta_bc = theta_top
+    else if (boundary_no == 113) then
+        centre_top(1) = cumulative_placentone_widths(3) + artery_location*placentone_widths(3)
+        centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+        left_top      = centre_top(1) - artery_width_sm/2
+        right_top     = centre_top(1) + artery_width_sm/2
+        theta_top     = -pi - atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
+
+        left_bc  = x_centre + radius*cos(theta_top + (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
+        right_bc = x_centre + radius*cos(theta_top - (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
+        theta_bc = theta_top
+    else if (boundary_no == 114) then
+        centre_top(1) = cumulative_placentone_widths(4) + artery_location*placentone_widths(4)
+        centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+        left_top      = centre_top(1) - artery_width_sm/2
+        right_top     = centre_top(1) + artery_width_sm/2
+        theta_top     = -atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
+
+        left_bc  = x_centre + radius*cos(theta_top + (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
+        right_bc = x_centre + radius*cos(theta_top - (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
+        theta_bc = theta_top
+    else if (boundary_no == 115) then
+        centre_top(1) = cumulative_placentone_widths(5) + artery_location*placentone_widths(5)
+        centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+        left_top      = centre_top(1) - artery_width_sm/2
+        right_top     = centre_top(1) + artery_width_sm/2
+        theta_top     = -atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
+
+        left_bc  = x_centre + radius*cos(theta_top + (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
+        right_bc = x_centre + radius*cos(theta_top - (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
+        theta_bc = theta_top
+    else if (boundary_no == 116) then
+        centre_top = cumulative_placentone_widths(6) + artery_location*placentone_widths(6)
+        centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+        left_top      = centre_top(1) - artery_width_sm/2
+        right_top     = centre_top(1) + artery_width_sm/2
+        theta_top     = -atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
+
+        left_bc  = x_centre + radius*cos(theta_top + (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
+        right_bc = x_centre + radius*cos(theta_top - (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
+        theta_bc = theta_top
+    end if
+
+    if (111 <= boundary_no .and. boundary_no <= 116) then
+        u    = -4.0_db/(right_bc-left_bc)**2*(x-left_bc)*(x-right_bc)
+        u(1) = -u(1) * cos(theta_bc)
+        u(2) =  u(2) * sin(theta_bc)
+
         call Boileau_velocity_amplitude(amplitude, t)
+        u(1) = u(1) * amplitude
         u(2) = u(2) * amplitude
+    end if
 
-        if (u(2) <= -1e-5) then
-          print *, "Error: inflow velocity negative"
-          print *, u(2)
-          stop
-        end if
+    if (u(2) <= -1e-5) then
+        print *, "Error: inflow velocity negative"
+        print *, "boundary_no = ", boundary_no
+        print *, "point = ", x, y
+        print *, "centre = ", x_centre, y_centre
+        print *, "centre_top = ", centre_top(1), centre_top(2)
+        print *, "theta_top = ", theta_top
+        print *, "left and right = ", left_bc, right_bc
+        print *, "artery_location = ", artery_location
+        print *, "artery_width_sm = ", artery_width_sm
+        print *, "placentone_widths = ", placentone_widths
+        print *, "cumulative_placentone_widths = ", cumulative_placentone_widths
+        print *, u(1), u(2)
+        stop
+    end if
+
+    if (u(1)**2 + u(2)**2 >= 1.0 + 1e-5) then
+        print *, "Error: inflow velocity maxima too high"
+        print *, u(1)**2 + u(2)**2
+        stop
     end if
   end subroutine
 
@@ -155,7 +264,7 @@ module bcs_nsku
     ) ! [m3/s]
 end subroutine
 
-  subroutine anal_soln_nsku_1(u_1, global_point, problem_dim, no_vars, t, element_region_id)
+  subroutine anal_soln_velocity_1(u_1, global_point, problem_dim, no_vars, t, element_region_id)
     use param
     use problem_options
 
@@ -177,11 +286,10 @@ end subroutine
     u_1 = 0.0_db
   end subroutine
 
-  subroutine get_boundary_no_nsku(boundary_no, strongly_enforced_bcs, global_point, face_coords, no_face_vert,&
+  subroutine get_boundary_no_velocity(boundary_no, strongly_enforced_bcs, global_point, face_coords, no_face_vert,&
       problem_dim, mesh_data)
     use param
     use fe_mesh
-    use problem_options_nsku
 
     implicit none
 
@@ -195,17 +303,7 @@ end subroutine
 
     real(db) :: x, y, tol
 
-    if (fe_space_nsku == 'DG') then
-      strongly_enforced_bcs = '000'
-    else
-      strongly_enforced_bcs = '110'
-
-      if (200 <= abs(boundary_no) .and. abs(boundary_no) <= 299) then
-        strongly_enforced_bcs = '000'
-      end if
-    end if
-
-    !strongly_enforced_bcs = '111'
+    strongly_enforced_bcs = '000'
 
     ! x = global_point(1)
     ! y = global_point(2)
@@ -232,7 +330,7 @@ end subroutine
     ! end if
   end subroutine
 
-  subroutine dirichlet_bc_nsku(u, global_point, problem_dim, no_vars, boundary_no, t)
+  subroutine dirichlet_bc_velocity(u, global_point, problem_dim, no_vars, boundary_no, t)
     use param
 
     implicit none
@@ -245,13 +343,13 @@ end subroutine
 
     real(db), dimension(no_vars) :: sol
 
-    call anal_soln_nsku(sol, global_point, problem_dim, no_vars, boundary_no, t, -1)
+    call anal_soln_velocity(sol, global_point, problem_dim, no_vars, boundary_no, t, -1)
 
     u(1:no_vars) = sol(1:no_vars)
 
   end subroutine
 
-  subroutine neumann_bc_nsku(un, global_point, problem_dim, boundary_no, t, element_region_id, normal)
+  subroutine neumann_bc_velocity(un, global_point, problem_dim, boundary_no, t, element_region_id, normal)
     use param
     use problem_options
 

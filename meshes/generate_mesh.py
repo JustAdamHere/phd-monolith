@@ -45,6 +45,14 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 		'-string', 'Mesh.MshFileVersion=2;',\
 		'-setnumber', 'h', str(mesh_resolution),\
 		'-setnumber', 'h_refine', str(mesh_resolution/10),\
+		# '-setnumber', 'location_12', str(artery_location),\
+		# '-setnumber', 'location_22', str(artery_location),\
+		# '-setnumber', 'location_32', str(artery_location),\
+		# '-setnumber', 'location_42', str(artery_location),\
+		# '-setnumber', 'location_52', str(artery_location),\
+		# '-setnumber', 'location_62', str(artery_location),\
+		'-setnumber', 'central_cavity_width', str(central_cavity_width),\
+		'-setnumber', 'central_cavity_transition', str(central_cavity_transition),\
 		'-2',\
 		'-o', f'meshes/mesh_{simulation_no}.msh'\
 	],
