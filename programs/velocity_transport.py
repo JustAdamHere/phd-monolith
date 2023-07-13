@@ -227,8 +227,8 @@ def setup(clean, terminal_output, compile=True):
 		output_timer.time(0, "compilation", terminal_output)
 		try:
 			#make_clean_output = subprocess.run(['make', 'cleanall'], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-			# make_output       = subprocess.run(['make', 'all'], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-			make_output       = subprocess.run(['make', 'nsb-transport_placenta'], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+			make_output       = subprocess.run(['make', 'all'], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+			# make_output       = subprocess.run(['make', 'nsb-transport_placenta'], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
 			save_output.save_output(make_output, f'compile_{program}', 'all', 0)
 		except subprocess.CalledProcessError as e:
 			output.output(f"## ERROR ##", True)
