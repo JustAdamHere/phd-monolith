@@ -108,7 +108,7 @@ damping_strategy incremental
 minimum_damping 0.01
 initial_damping 1.0
 damping_increment 0.2
-newton_itns_max 200
+newton_itns_max 20
 newton_tolerance 1.0d-10
 newton_terminate_on_fail .true.
 

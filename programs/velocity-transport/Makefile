@@ -2,7 +2,7 @@
 include $(AptoFEM_DIR)/source/package_defaults/makefile_openmp.flags
 #include $(AptoFEM_DIR)/source/package_defaults/makefile_mpi.flags
 
-assembly =  ../../matrix_rhs/jacobi_residual_nsb.f90 ../../matrix_rhs/jacobi_residual_nsb-ss.f90 ../../matrix_rhs/matrix_rhs_s-b-ss.f90 ../../matrix_rhs/matrix_rhs_transport.f90 ../../matrix_rhs/matrix_rhs_transport-ss.f90
+assembly =  ../../matrix_rhs/jacobi_residual_nsb.f90 ../../matrix_rhs/jacobi_residual_nsb-ss.f90 ../../matrix_rhs/jacobi_residual_ns_nsb-ss.f90 ../../matrix_rhs/jacobi_residual_ns-b-ss.f90 ../../matrix_rhs/matrix_rhs_s-b-ss.f90 ../../matrix_rhs/matrix_rhs_transport.f90 ../../matrix_rhs/matrix_rhs_transport-ss.f90
 
 
 storage         = ./common/solution-storage_velocity.f90
@@ -16,7 +16,7 @@ placenta_bcs   = ./common/2d-bcs_transport.f90 ./common/2d-bcs_velocity_placenta
 
 .PHONY: all cleanall
 
-all:: nsb-transport_placentone nsb-transport_placenta s-b-transport_placentone s-b-transport_placenta
+all:: nsb-transport_placentone nsb-transport_placenta s-b-transport_placentone s-b-transport_placenta ns-b-transport_placentone ns-b-transport_placenta ns-nsb-transport_placentone ns-nsb-transport_placenta
 
 nsb-transport_placentone ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
@@ -25,6 +25,22 @@ nsb-transport_placentone ::
 nsb-transport_placenta ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
 	 ./common/assembly-name_nsb.f90 ./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(assembly) $(miscellaneous) $(driver) $(AptoFEM) -lpthread)
+
+ns-b-transport_placentone ::
+	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
+	 ./common/assembly-name_ns-b.f90 ./common/program-name_placentone.f90 $(storage) $(fluxes) $(problem_options) $(placentone_bcs) $(assembly) $(miscellaneous) $(driver) $(AptoFEM) -lpthread)
+
+ns-b-transport_placenta ::
+	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
+	 ./common/assembly-name_ns-b.f90 ./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(assembly) $(miscellaneous) $(driver) $(AptoFEM) -lpthread)
+
+ns-nsb-transport_placentone ::
+	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
+	 ./common/assembly-name_ns-nsb.f90 ./common/program-name_placentone.f90 $(storage) $(fluxes) $(problem_options) $(placentone_bcs) $(assembly) $(miscellaneous) $(driver) $(AptoFEM) -lpthread)
+
+ns-nsb-transport_placenta ::
+	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
+	 ./common/assembly-name_ns-nsb.f90 ./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(assembly) $(miscellaneous) $(driver) $(AptoFEM) -lpthread)
 
 s-b-transport_placentone ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \

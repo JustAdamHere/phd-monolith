@@ -18,10 +18,10 @@ program velocity_transport
     use matrix_rhs_transport
     use matrix_rhs_transport_ss
     use matrix_rhs_s_b_ss
-    ! TODO: matrix_rhs_ns_b
-    ! use matrix_rhs_ns_b_ss
-    ! TODO: matrix_rhs_ns_nsb
-    ! use matrix_rhs_ns_nsb_ss
+    ! TODO: jacobi_residual_ns_b
+    use jacobi_residual_ns_b_ss
+    ! TODO: jacobi_residual_ns_nsb
+    use jacobi_residual_ns_nsb_ss
     use jacobi_residual_nsb
     use jacobi_residual_nsb_ss
 
@@ -170,6 +170,24 @@ program velocity_transport
                 element_residual_nsb_ss, 1)
             call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
                 element_residual_face_nsb_ss, 1)
+        else if (trim(assembly_name) == 'ns-nsb') then
+            call store_subroutine_names(fe_solver_routines_velocity,  'assemble_jac_matrix_element', &
+                jacobian_ns_nsb_ss, 1)
+            call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
+                jacobian_face_ns_nsb_ss, 1)
+            call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element', &
+                element_residual_ns_nsb_ss, 1)
+            call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
+                element_residual_face_ns_nsb_ss, 1)
+        else if (trim(assembly_name) == 'ns-b') then
+            call store_subroutine_names(fe_solver_routines_velocity,  'assemble_jac_matrix_element', &
+                jacobian_ns_b_ss, 1)
+            call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
+                jacobian_face_ns_b_ss, 1)
+            call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element', &
+                element_residual_ns_b_ss, 1)
+            call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
+                element_residual_face_ns_b_ss, 1)
         else if (trim(assembly_name) == 's-b') then
             call store_subroutine_names(fe_solver_routines_velocity, 'assemble_matrix_rhs_element', &
                 stiffness_matrix_load_vector_s_b_ss, 1)
@@ -194,7 +212,7 @@ program velocity_transport
         !     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! end if
 
-        if (trim(assembly_name) == 'nsb') then
+        if (trim(assembly_name) == 'nsb' .or. trim(assembly_name) == 'ns-nsb' .or. trim(assembly_name) == 'ns-b') then
             call newton_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
                 aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, ifail)
         else if (trim(assembly_name) == 's-b') then
@@ -325,12 +343,12 @@ program velocity_transport
             element_residual_nsb, 1)
         call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
             element_residual_face_nsb, 1)
-    else if (trim(assembly_name) == 's-b') then
+    else if (trim(assembly_name) == 's-b' .or. trim(assembly_name) == 'ns-b' .or. trim(assembly_name) == 'ns-nsb') then
         ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_matrix_rhs_element', &
         !     stiffness_matrix_load_vector_s_b, 1)
         ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_matrix_rhs_face',    &
         !     stiffness_matrix_load_vector_face_s_b, 1)
-        print *, "WARNING: time-dependence not yet implemented."
+        !! WARNING: time-dependence not yet implemented !!
         ! error stop
     else
         print *, "ERROR: Unknown assembly name for velocity solver."

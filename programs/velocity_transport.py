@@ -3,6 +3,8 @@ integral_cache = []
 
 def run(simulation_no, velocity_model, geometry, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False):
 
+	assert(velocity_model in ['nsb', 'ns-nsb', 'ns-b', 's-b'])
+
 	program = "velocity-transport"
 
 	velocity_ss                   = True
@@ -169,7 +171,7 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location,
 		raise_error.raise_error(e)
 
 	# TODO: only true for steady-state 0 time-steps with DG.
-	if (velocity_space == 'DG'):
+	if (velocity_space == 'DG' and (velocity_model == 'nsb' or velocity_model == 'ns-b')):
 		velocity_dofs   = get_dofs.get_velocity_dofs (program, geometry, run_no)
 		transport_dofs  = get_dofs.get_transport_dofs(program, geometry, run_no)
 		newton_residual = get_newton_residual.get_newton_residual(program, geometry, run_no)
