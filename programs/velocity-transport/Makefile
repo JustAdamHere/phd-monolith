@@ -9,7 +9,6 @@ storage         = ./common/solution-storage_velocity.f90
 fluxes          = ./common/crossflow_flux.f90 ./common/outflow_flux.f90 ./common/outflow_transport_flux.f90
 problem_options = ./common/problem-options.f90 ./common/problem-options_velocity.f90 ./common/problem-options_transport.f90
 miscellaneous   = ./common/refine_region.f90 ./common/integrate_transport-reaction.f90
-driver          = ./common/velocity_transport.f90
 
 placentone_bcs = ./common/2d-bcs_transport.f90 ./common/2d-bcs_velocity_placentone.f90
 placenta_bcs   = ./common/2d-bcs_transport.f90 ./common/2d-bcs_velocity_placenta.f90
@@ -17,38 +16,47 @@ placenta_bcs   = ./common/2d-bcs_transport.f90 ./common/2d-bcs_velocity_placenta
 .PHONY: all cleanall
 
 all:: nsb-transport_placentone nsb-transport_placenta s-b-transport_placentone s-b-transport_placenta ns-b-transport_placentone ns-b-transport_placenta ns-nsb-transport_placentone ns-nsb-transport_placenta
+comparison :: velocity-comparison_placentone velocity-comparison_placenta
 
 nsb-transport_placentone ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
-	 ./common/assembly-name_nsb.f90 ./common/program-name_placentone.f90 $(storage) $(fluxes) $(problem_options) $(placentone_bcs) $(assembly) $(miscellaneous) $(driver) $(AptoFEM) -lpthread)
+	 ./common/assembly-name_nsb.f90 ./common/program-name_placentone.f90 $(storage) $(fluxes) $(problem_options) $(placentone_bcs) $(assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
 
 nsb-transport_placenta ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
-	 ./common/assembly-name_nsb.f90 ./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(assembly) $(miscellaneous) $(driver) $(AptoFEM) -lpthread)
+	 ./common/assembly-name_nsb.f90 ./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
 
 ns-b-transport_placentone ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
-	 ./common/assembly-name_ns-b.f90 ./common/program-name_placentone.f90 $(storage) $(fluxes) $(problem_options) $(placentone_bcs) $(assembly) $(miscellaneous) $(driver) $(AptoFEM) -lpthread)
+	 ./common/assembly-name_ns-b.f90 ./common/program-name_placentone.f90 $(storage) $(fluxes) $(problem_options) $(placentone_bcs) $(assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
 
 ns-b-transport_placenta ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
-	 ./common/assembly-name_ns-b.f90 ./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(assembly) $(miscellaneous) $(driver) $(AptoFEM) -lpthread)
+	 ./common/assembly-name_ns-b.f90 ./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
 
 ns-nsb-transport_placentone ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
-	 ./common/assembly-name_ns-nsb.f90 ./common/program-name_placentone.f90 $(storage) $(fluxes) $(problem_options) $(placentone_bcs) $(assembly) $(miscellaneous) $(driver) $(AptoFEM) -lpthread)
+	 ./common/assembly-name_ns-nsb.f90 ./common/program-name_placentone.f90 $(storage) $(fluxes) $(problem_options) $(placentone_bcs) $(assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
 
 ns-nsb-transport_placenta ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
-	 ./common/assembly-name_ns-nsb.f90 ./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(assembly) $(miscellaneous) $(driver) $(AptoFEM) -lpthread)
+	 ./common/assembly-name_ns-nsb.f90 ./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
 
 s-b-transport_placentone ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
-	 ./common/assembly-name_s-b.f90 ./common/program-name_placentone.f90 $(storage) $(fluxes) $(problem_options) $(placentone_bcs) $(assembly) $(miscellaneous) $(driver) $(AptoFEM) -lpthread)
+	 ./common/assembly-name_s-b.f90 ./common/program-name_placentone.f90 $(storage) $(fluxes) $(problem_options) $(placentone_bcs) $(assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
 
 s-b-transport_placenta ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
-	 ./common/assembly-name_s-b.f90 ./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(assembly) $(miscellaneous) $(driver) $(AptoFEM) -lpthread)
+	 ./common/assembly-name_s-b.f90 ./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
+
+velocity-comparison_placentone ::
+	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
+		./common/program-name_placentone.f90 $(storage) $(fluxes) $(problem_options) $(placentone_bcs) $(assembly) $(miscellaneous) ./comparison/velocity-comparison.f90 $(AptoFEM) -lpthread)
+
+velocity-comparison_placenta ::
+	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
+		./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(assembly) $(miscellaneous) ./comparison/velocity-comparison.f90 $(AptoFEM) -lpthread)
 
 cleanall ::
 	(rm -f *.o)

@@ -108,9 +108,13 @@ module jacobi_residual_ns_b_ss
                 element_region_id)* &
               floc(ieqn, qk)*phi(ieqn, qk, i)
 
-            reaction_terms = -calculate_velocity_reaction_coefficient(global_points_ele(:, qk), problem_dim, &
-                300)* &
-              interpolant_uh(ieqn, qk)*phi(ieqn, qk, i)
+            if (300 <= element_region_id .and. element_region_id <= 399) then
+              reaction_terms = -calculate_velocity_reaction_coefficient(global_points_ele(:, qk), problem_dim, &
+                  300)* &
+                interpolant_uh(ieqn, qk)*phi(ieqn, qk, i)
+            else 
+              reaction_terms = 0.0_db
+            end if
 
             element_rhs(ieqn, i) = element_rhs(ieqn, i) + integral_weighting(qk) * ( &
               diffusion_terms + &
@@ -670,11 +674,16 @@ module jacobi_residual_ns_b_ss
                   qgradu - &
                   calculate_velocity_convection_coefficient(global_points_ele(:, qk), problem_dim, &
                     element_region_id) * &
-                      convection_term + &
-                  calculate_velocity_reaction_coefficient(global_points_ele(:, qk), problem_dim, &
-                    300) * &
-                      uvterm &
+                      convection_term &
                 )
+                
+                if (300 <= element_region_id .and. element_region_id <= 399) then
+                  element_matrix(ieqn,ivar,i,j) = element_matrix(ieqn,ivar,i,j) + integral_weighting(qk)*( &
+                    calculate_velocity_reaction_coefficient(global_points_ele(:, qk), problem_dim, &
+                      300) * &
+                        uvterm &
+                  )
+                end if
                 
               end do
             end do
