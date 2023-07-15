@@ -1,6 +1,5 @@
 module problem_options
     use aptofem_kernel
-    use solution_storage_velocity
 
     save
 

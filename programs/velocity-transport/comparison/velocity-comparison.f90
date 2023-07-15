@@ -3,12 +3,7 @@ program velocity_transport
     use fe_solution_restart_io
     use problem_options
     use problem_options_velocity
-    use refine_region
     use bcs_velocity
-    use solution_storage_velocity
-    use crossflow_flux
-    use outflow_flux
-    use outflow_transport_flux
     use program_name_module
     use assembly_name_module
     
@@ -19,28 +14,33 @@ program velocity_transport
     
     implicit none
     
-    type(aptofem_keys), pointer   :: aptofem_stored_keys
-    type(mesh)                    :: mesh_data, mesh_data_orig
-    type(solution)                :: solution_s_b, solution_ns_b, solution_ns_nsb, solution_nsb
-    type(fe_assembly_subroutines) :: fe_solver_routines_s_b, fe_solver_routines_ns_b, fe_solver_routines_ns_nsb, &
-    fe_solver_routines_nsb
+    type(aptofem_keys), pointer                 :: aptofem_stored_keys
+    type(mesh)                                  :: mesh_data, mesh_data_orig
+    type(solution), dimension(4)                :: solution_velocity
+    type(solution)                              :: solution_difference
+    type(fe_assembly_subroutines), dimension(4) :: fe_solver_routines_velocity
     
     type(refinement_tree)              :: mesh_tree
     integer, dimension(:), allocatable :: refinement_marks
     integer                            :: mesh_no, no_eles
+
+    type array_sp_matrix_rhs
+        class(sp_matrix_rhs), pointer :: p
+    end type array_sp_matrix_rhs
     
-    class(sp_matrix_rhs), pointer   :: sp_matrix_rhs_data_s_b, sp_matrix_rhs_data_ns_b, sp_matrix_rhs_data_ns_nsb, &
-    sp_matrix_rhs_data_nsb
-    type(default_user_data)         :: scheme_data_s_b, scheme_data_ns_b, scheme_data_ns_nsb, scheme_data_nsb
-    type(dirk_time_stepping_scheme) :: dirk_scheme_s_b, dirk_scheme_ns_b, dirk_scheme_ns_nsb, dirk_scheme_nsb
+    type(array_sp_matrix_rhs), dimension(4)       :: sp_matrix_rhs_data_velocity
+    type(default_user_data), dimension(4)         :: scheme_data_velocity
+    type(dirk_time_stepping_scheme), dimension(4) :: dirk_scheme_velocity
     
-    !   character(15), dimension(1) :: errors_format, errors_name
-    !   real(db), dimension(1)      :: errors
-    !   integer                     :: no_errors_velocity, no_errors_transport
+    real(db), dimension(5) :: norms
     
     logical :: ifail
     
     character(len=20) :: control_file
+
+    character(len=100) :: flux_file
+    character(len=100) :: aptofem_run_number_string
+    character(len=100) :: tsvFormat
 
     integer :: i, j
     
@@ -61,224 +61,189 @@ program velocity_transport
     call get_user_data          ('user_data', aptofem_stored_keys)
     call get_user_data_velocity ('user_data', aptofem_stored_keys)
     call set_space_type_velocity(aptofem_stored_keys)
-    
-    !!!!!!!!!!!!!!!!!
-    !! REFINE MESH !!
-    !!!!!!!!!!!!!!!!!
-    do mesh_no = 1, no_uniform_refinements_everywhere
-        no_eles = mesh_data%no_eles
-        allocate(refinement_marks(no_eles))
-        
-        call write_message(io_msg, '========================================================')
-        call write_message(io_msg, '  Refinement step ')
-        call refine_region_indicator(refinement_marks, no_eles, mesh_data, 300, 599)
-        
-        call h_mesh_adaptation('uniform_refinement', aptofem_stored_keys, mesh_tree, mesh_data, mesh_data_orig, &
-        mesh_no, no_eles, refinement_marks)
-        call write_message(io_msg, '========================================================')
-        
-        deallocate(refinement_marks)
-        
-        call delete_mesh(mesh_data_orig)
-    end do
-    
-    do mesh_no = 1, no_uniform_refinements_cavity
-        no_eles = mesh_data%no_eles
-        allocate(refinement_marks(no_eles))
-        
-        call write_message(io_msg, '========================================================')
-        call write_message(io_msg, '  Refinement step ')
-        call refine_region_indicator(refinement_marks, no_eles, mesh_data, 500, 599)
-        
-        call h_mesh_adaptation('uniform_refinement', aptofem_stored_keys, mesh_tree, mesh_data, mesh_data_orig, &
-        mesh_no + no_uniform_refinements_everywhere, no_eles, refinement_marks)
-        call write_message(io_msg, '========================================================')
-        
-        deallocate(refinement_marks)
-        
-        call delete_mesh(mesh_data_orig)
-    end do
-    
-    do mesh_no = 1, no_uniform_refinements_inlet
-        no_eles = mesh_data%no_eles
-        allocate(refinement_marks(no_eles))
-        
-        call write_message(io_msg, '========================================================')
-        call write_message(io_msg, '  Refinement step ')
-        call refine_region_indicator(refinement_marks, no_eles, mesh_data, 400, 499)
-        
-        call h_mesh_adaptation('uniform_refinement', aptofem_stored_keys, mesh_tree, mesh_data, mesh_data_orig, &
-        mesh_no + no_uniform_refinements_everywhere + no_uniform_refinements_cavity, no_eles, refinement_marks)
-        call write_message(io_msg, '========================================================')
-        
-        deallocate(refinement_marks)
-        
-        call delete_mesh(mesh_data_orig)
-    end do
+
     
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! VELOCITY PROBLEM SETUPS !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    call create_fe_solution(solution_s_b,    mesh_data, 'fe_solution_velocity', aptofem_stored_keys, &
+    call create_fe_solution(solution_velocity(1),    mesh_data, 'fe_solution_velocity', aptofem_stored_keys, &
         dirichlet_bc_velocity)
-    call create_fe_solution(solution_ns_b,   mesh_data, 'fe_solution_velocity', aptofem_stored_keys, &
+    call create_fe_solution(solution_velocity(2),   mesh_data, 'fe_solution_velocity', aptofem_stored_keys, &
         dirichlet_bc_velocity)
-    call create_fe_solution(solution_ns_nsb, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, &
+    call create_fe_solution(solution_velocity(3), mesh_data, 'fe_solution_velocity', aptofem_stored_keys, &
         dirichlet_bc_velocity)
-    call create_fe_solution(solution_nsb,    mesh_data, 'fe_solution_velocity', aptofem_stored_keys, &
+    call create_fe_solution(solution_velocity(4),    mesh_data, 'fe_solution_velocity', aptofem_stored_keys, &
         dirichlet_bc_velocity)
     
-    call set_up_newton_solver_parameters('solver_velocity', aptofem_stored_keys, scheme_data_ns_b)
-    call set_up_newton_solver_parameters('solver_velocity', aptofem_stored_keys, scheme_data_ns_nsb)
-    call set_up_newton_solver_parameters('solver_velocity', aptofem_stored_keys, scheme_data_nsb)
+    call set_up_newton_solver_parameters('solver_velocity', aptofem_stored_keys, scheme_data_velocity(2))
+    call set_up_newton_solver_parameters('solver_velocity', aptofem_stored_keys, scheme_data_velocity(3))
+    call set_up_newton_solver_parameters('solver_velocity', aptofem_stored_keys, scheme_data_velocity(4))
     
-    call linear_fe_solver(solution_s_b, mesh_data, fe_solver_routines_s_b, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_s_b, 1, scheme_data_s_b)
-    call linear_fe_solver(solution_ns_b, mesh_data, fe_solver_routines_ns_b, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_ns_b, 1, scheme_data_ns_b)
-    call linear_fe_solver(solution_ns_nsb, mesh_data, fe_solver_routines_ns_nsb, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_ns_nsb, 1, scheme_data_ns_nsb)
-    call linear_fe_solver(solution_nsb, mesh_data, fe_solver_routines_nsb, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_nsb, 1, scheme_data_nsb)
+    call linear_fe_solver(solution_velocity(1), mesh_data, fe_solver_routines_velocity(1), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(1)%p, 1, scheme_data_velocity(1))
+    call linear_fe_solver(solution_velocity(2), mesh_data, fe_solver_routines_velocity(2), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(2)%p, 1, scheme_data_velocity(2))
+    call linear_fe_solver(solution_velocity(3), mesh_data, fe_solver_routines_velocity(3), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(3)%p, 1, scheme_data_velocity(3))
+    call linear_fe_solver(solution_velocity(4), mesh_data, fe_solver_routines_velocity(4), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(4)%p, 1, scheme_data_velocity(4))
     
-    call linear_fe_solver(solution_s_b, mesh_data, fe_solver_routines_s_b, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_s_b, 2, scheme_data_s_b)
-    call linear_fe_solver(solution_ns_b, mesh_data, fe_solver_routines_ns_b, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_ns_b, 2, scheme_data_ns_b)
-    call linear_fe_solver(solution_ns_nsb, mesh_data, fe_solver_routines_ns_nsb, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_ns_nsb, 2, scheme_data_ns_nsb)
-    call linear_fe_solver(solution_nsb, mesh_data, fe_solver_routines_nsb, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_nsb, 2, scheme_data_nsb)
+    call linear_fe_solver(solution_velocity(1), mesh_data, fe_solver_routines_velocity(1), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(1)%p, 2, scheme_data_velocity(1))
+    call linear_fe_solver(solution_velocity(2), mesh_data, fe_solver_routines_velocity(2), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(2)%p, 2, scheme_data_velocity(2))
+    call linear_fe_solver(solution_velocity(3), mesh_data, fe_solver_routines_velocity(3), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(3)%p, 2, scheme_data_velocity(3))
+    call linear_fe_solver(solution_velocity(4), mesh_data, fe_solver_routines_velocity(4), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(4)%p, 2, scheme_data_velocity(4))
     
-    solution_s_b%current_time    = 0.0_db
-    solution_ns_b%current_time   = 0.0_db
-    solution_ns_nsb%current_time = 0.0_db
-    solution_nsb%current_time    = 0.0_db
+    solution_velocity(1)%current_time    = 0.0_db
+    solution_velocity(2)%current_time   = 0.0_db
+    solution_velocity(3)%current_time = 0.0_db
+    solution_velocity(4)%current_time    = 0.0_db
 
-    scheme_data_s_b%current_time    = 0.0_db
-    scheme_data_ns_b%current_time   = 0.0_db
-    scheme_data_ns_nsb%current_time = 0.0_db
-    scheme_data_nsb%current_time    = 0.0_db
+    scheme_data_velocity(1)%current_time    = 0.0_db
+    scheme_data_velocity(2)%current_time   = 0.0_db
+    scheme_data_velocity(3)%current_time = 0.0_db
+    scheme_data_velocity(4)%current_time    = 0.0_db
 
-    scheme_data_s_b%time_step    = 0.1_db
-    scheme_data_ns_b%time_step   = 0.1_db
-    scheme_data_ns_nsb%time_step = 0.1_db
-    scheme_data_nsb%time_step    = 0.1_db
+    scheme_data_velocity(1)%time_step    = 0.1_db
+    scheme_data_velocity(2)%time_step   = 0.1_db
+    scheme_data_velocity(3)%time_step = 0.1_db
+    scheme_data_velocity(4)%time_step    = 0.1_db
     
-    call set_current_time(solution_s_b, 0.0_db)
-    call set_current_time(solution_ns_b, 0.0_db)
-    call set_current_time(solution_ns_nsb, 0.0_db)
-    call set_current_time(solution_nsb, 0.0_db)
+    call set_current_time(solution_velocity(1), 0.0_db)
+    call set_current_time(solution_velocity(2), 0.0_db)
+    call set_current_time(solution_velocity(3), 0.0_db)
+    call set_current_time(solution_velocity(4), 0.0_db)
 
-    call store_subroutine_names(fe_solver_routines_s_b, 'assemble_matrix_rhs_element', &
+    call store_subroutine_names(fe_solver_routines_velocity(1), 'assemble_matrix_rhs_element', &
         stiffness_matrix_load_vector_s_b_ss, 1)
-    call store_subroutine_names(fe_solver_routines_s_b, 'assemble_matrix_rhs_face',    &
+    call store_subroutine_names(fe_solver_routines_velocity(1), 'assemble_matrix_rhs_face',    &
         stiffness_matrix_load_vector_face_s_b_ss, 1)
 
-    call store_subroutine_names(fe_solver_routines_ns_b, 'assemble_jac_matrix_element', &
+    call store_subroutine_names(fe_solver_routines_velocity(2), 'assemble_jac_matrix_element', &
         jacobian_ns_b_ss, 1)
-    call store_subroutine_names(fe_solver_routines_ns_b, 'assemble_jac_matrix_int_bdry_face', &
+    call store_subroutine_names(fe_solver_routines_velocity(2), 'assemble_jac_matrix_int_bdry_face', &
         jacobian_face_ns_b_ss, 1)
-    call store_subroutine_names(fe_solver_routines_ns_b, 'assemble_residual_element', &
+    call store_subroutine_names(fe_solver_routines_velocity(2), 'assemble_residual_element', &
         element_residual_ns_b_ss, 1)
-    call store_subroutine_names(fe_solver_routines_ns_b, 'assemble_residual_int_bdry_face', &
+    call store_subroutine_names(fe_solver_routines_velocity(2), 'assemble_residual_int_bdry_face', &
         element_residual_face_ns_b_ss, 1)
 
-    call store_subroutine_names(fe_solver_routines_ns_nsb, 'assemble_jac_matrix_element', &
+    call store_subroutine_names(fe_solver_routines_velocity(3), 'assemble_jac_matrix_element', &
         jacobian_ns_nsb_ss, 1)
-    call store_subroutine_names(fe_solver_routines_ns_nsb, 'assemble_jac_matrix_int_bdry_face', &
+    call store_subroutine_names(fe_solver_routines_velocity(3), 'assemble_jac_matrix_int_bdry_face', &
         jacobian_face_ns_nsb_ss, 1)
-    call store_subroutine_names(fe_solver_routines_ns_nsb, 'assemble_residual_element', &
+    call store_subroutine_names(fe_solver_routines_velocity(3), 'assemble_residual_element', &
         element_residual_ns_nsb_ss, 1)
-    call store_subroutine_names(fe_solver_routines_ns_nsb, 'assemble_residual_int_bdry_face', &
+    call store_subroutine_names(fe_solver_routines_velocity(3), 'assemble_residual_int_bdry_face', &
         element_residual_face_ns_nsb_ss, 1)
     
-    call store_subroutine_names(fe_solver_routines_nsb, 'assemble_jac_matrix_element', &
+    call store_subroutine_names(fe_solver_routines_velocity(4), 'assemble_jac_matrix_element', &
         jacobian_nsb_ss, 1)
-    call store_subroutine_names(fe_solver_routines_nsb, 'assemble_jac_matrix_int_bdry_face', &
+    call store_subroutine_names(fe_solver_routines_velocity(4), 'assemble_jac_matrix_int_bdry_face', &
         jacobian_face_nsb_ss, 1)
-    call store_subroutine_names(fe_solver_routines_nsb, 'assemble_residual_element', &
+    call store_subroutine_names(fe_solver_routines_velocity(4), 'assemble_residual_element', &
         element_residual_nsb_ss, 1)
-    call store_subroutine_names(fe_solver_routines_nsb, 'assemble_residual_int_bdry_face', &
+    call store_subroutine_names(fe_solver_routines_velocity(4), 'assemble_residual_int_bdry_face', &
         element_residual_face_nsb_ss, 1)
     
     !!!!!!!!!!!!!!!!!!!!!
     !! VELOCITY SOLVES !!
     !!!!!!!!!!!!!!!!!!!!!
-    call linear_fe_solver(solution_s_b, mesh_data, fe_solver_routines_s_b, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_s_b, 3, scheme_data_s_b)
-    call linear_fe_solver(solution_s_b, mesh_data, fe_solver_routines_s_b, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_s_b, 4, scheme_data_s_b)
-
-    call newton_fe_solver(solution_ns_b, mesh_data, fe_solver_routines_ns_b, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_ns_b, scheme_data_ns_b, ifail)
-    call newton_fe_solver(solution_ns_nsb, mesh_data, fe_solver_routines_ns_nsb, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_ns_nsb, scheme_data_ns_nsb, ifail)
-    call newton_fe_solver(solution_nsb, mesh_data, fe_solver_routines_nsb, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_nsb, scheme_data_nsb, ifail)        
+    call linear_fe_solver(solution_velocity(1), mesh_data, fe_solver_routines_velocity(1), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(1)%p, 3, scheme_data_velocity(1))
+    call linear_fe_solver(solution_velocity(1), mesh_data, fe_solver_routines_velocity(1), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(1)%p, 4, scheme_data_velocity(1))
+    call newton_fe_solver(solution_velocity(2), mesh_data, fe_solver_routines_velocity(2), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(2)%p, scheme_data_velocity(2), ifail)
+    call newton_fe_solver(solution_velocity(3), mesh_data, fe_solver_routines_velocity(3), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(3)%p, scheme_data_velocity(3), ifail)
+    call newton_fe_solver(solution_velocity(4), mesh_data, fe_solver_routines_velocity(4), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(4)%p, scheme_data_velocity(4), ifail)        
     
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !! SAVE VELOCITY INITIAL CONDITION AND RAW SOLUTION !!
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 0, mesh_data, solution_s_b)
-    call write_solution_for_restart(solution_s_b, mesh_data, 0, 'dg_velocity-transport_velocity_' &
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    !! SAVE VELOCITY AND RAW SOLUTION !!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 0, mesh_data, solution_velocity(1))
+    call write_solution_for_restart(solution_velocity(1), mesh_data, 0, 'dg_velocity-transport_velocity_' &
         // trim(control_file), '../../output/')
-    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 1, mesh_data, solution_ns_b)
-    call write_solution_for_restart(solution_ns_b, mesh_data, 1, 'dg_velocity-transport_velocity_' &
+    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 1, mesh_data, solution_velocity(2))
+    call write_solution_for_restart(solution_velocity(2), mesh_data, 1, 'dg_velocity-transport_velocity_' &
         // trim(control_file), '../../output/')
-    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 2, mesh_data, solution_ns_nsb)
-    call write_solution_for_restart(solution_ns_nsb, mesh_data, 2, 'dg_velocity-transport_velocity_' &
+    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 2, mesh_data, solution_velocity(3))
+    call write_solution_for_restart(solution_velocity(3), mesh_data, 2, 'dg_velocity-transport_velocity_' &
         // trim(control_file), '../../output/')
-    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 3, mesh_data, solution_ns_nsb)
-    call write_solution_for_restart(solution_ns_nsb, mesh_data, 3, 'dg_velocity-transport_velocity_' &
+    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 3, mesh_data, solution_velocity(3))
+    call write_solution_for_restart(solution_velocity(3), mesh_data, 3, 'dg_velocity-transport_velocity_' &
         // trim(control_file), '../../output/')
+
+    !!!!!!!!!!!!!!!!!!!!!!
+    !! OPEN OUTPUT FILE !!
+    !!!!!!!!!!!!!!!!!!!!!!
+    write(aptofem_run_number_string, '(i10)') aptofem_run_number
+    flux_file = '../../output/norms' // '_' // 'velocity' // '_' // trim(control_file) // '_' // &
+        trim(adjustl(aptofem_run_number_string)) // '.dat'
+    open(23111997, file=flux_file, status='replace')
+    tsvFormat = '(*(G0.6,:,"'//achar(9)//'"))'
+    write(23111997, tsvFormat) 'solution_1', 'solution_2', 'u_L2', 'p_L2', 'up_L2', 'DG', 'div_L2'
 
     !!!!!!!!!!!!!!!!!!!!!
     !! CALCULATE NORMS !!
     !!!!!!!!!!!!!!!!!!!!!
+    call create_fe_solution(solution_difference, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, &
+        dirichlet_bc_velocity) ! Just picking one for Dirichlet BCs.
     do i = 1, 4
-        do j = 1, 4
+        do j = i, 4
+            solution_difference%soln_values = solution_velocity(i)%soln_values - solution_velocity(j)%soln_values
 
+            norms = 0.0_db
+            call error_norms(norms, mesh_data, solution_difference, solution_velocity(1))
+            write(23111997, tsvFormat) i, j, norms(1), norms(2), norms(3), norms(4), norms(5)
+
+            call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, i*10 + j, mesh_data, solution_difference)
         end do
     end do
+    call delete_solution(solution_difference)
     
     !!!!!!!!!!!!!!
     !! CLEAN UP !!
     !!!!!!!!!!!!!!
     close(23111997)
     
-    call linear_fe_solver(solution_s_b, mesh_data, fe_solver_routines_s_b, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_s_b, 5, scheme_data_s_b)
-    call linear_fe_solver(solution_ns_b, mesh_data, fe_solver_routines_ns_b, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_ns_b, 5, scheme_data_ns_b)
-    call linear_fe_solver(solution_ns_nsb, mesh_data, fe_solver_routines_ns_nsb, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_ns_nsb, 5, scheme_data_ns_nsb)
-    call linear_fe_solver(solution_nsb, mesh_data, fe_solver_routines_nsb, 'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_nsb, 5, scheme_data_nsb)
+    call linear_fe_solver(solution_velocity(1), mesh_data, fe_solver_routines_velocity(1), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(1)%p, 5, scheme_data_velocity(1))
+    call linear_fe_solver(solution_velocity(2), mesh_data, fe_solver_routines_velocity(2), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(2)%p, 5, scheme_data_velocity(2))
+    call linear_fe_solver(solution_velocity(3), mesh_data, fe_solver_routines_velocity(3), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(3)%p, 5, scheme_data_velocity(3))
+    call linear_fe_solver(solution_velocity(4), mesh_data, fe_solver_routines_velocity(4), 'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity(4)%p, 5, scheme_data_velocity(4))
     
-    call delete_solution (solution_s_b)
-    call delete_solution (solution_ns_b)
-    call delete_solution (solution_ns_nsb)
-    call delete_solution (solution_nsb)
+    call delete_solution (solution_velocity(1))
+    call delete_solution (solution_velocity(2))
+    call delete_solution (solution_velocity(3))
+    call delete_solution (solution_velocity(4))
     call delete_mesh     (mesh_data)
     call AptoFEM_finalize(aptofem_stored_keys)
 end program
 
 !------------------------------------------------------------------
 ! PURPOSE:
-!   Compute errors
+!   Compute norms. Includes "hack" to get penalisation parameter.
 !
-!   errors(1) = || u-u_h ||_L_2
-!   errors(2) = || p-p_h ||_L_2
-!   errors(3) = || u-u_h,p-p_h ||_L_2
-!   errors(4) = || u-u_h,p-p_h ||_DG
-!   errors(5) = || div(u-u_h) ||_L_2
+!   errors(1) = || u_h ||_L_2
+!   errors(2) = || p_h ||_L_2
+!   errors(3) = || u_h,p_h ||_L_2
+!   errors(4) = || u_h,p_h ||_DG
+!   errors(5) = || div(u_h) ||_L_2
 !
 ! AUTHOR:
-!   P.Houston
+!   P.Houston, A.Blakey
 !--------------------------------------------------------------------
 
-subroutine error_norms_navier_stokes_brinkman(errors,mesh_data,soln_data,soln_for_dg_penalisation)
+subroutine error_norms(errors, mesh_data, soln_data, soln_for_dg_penalisation)
 
     use param
     use fe_mesh
@@ -286,7 +251,6 @@ subroutine error_norms_navier_stokes_brinkman(errors,mesh_data,soln_data,soln_fo
     use basis_fns_storage_type
     use aptofem_fe_matrix_assembly
     use problem_options
-    use bcs_navier_stokes_brinkman
 
     implicit none
 
@@ -351,20 +315,16 @@ subroutine error_norms_navier_stokes_brinkman(errors,mesh_data,soln_data,soln_fo
 
         ! Determine analytical solution
 
-        call anal_soln_navier_stokes_brinkman(u,global_points_ele(:,qk),problem_dim,no_pdes,0,0.0_db,-1)
-        call anal_soln_navier_stokes_brinkman_1(gradient_u,global_points_ele(:,qk),problem_dim,no_pdes,0.0_db,-1)
         uh = uh_element(fe_basis_info,no_pdes,qk)
 
         errors(1) = errors(1) + jacobian(qk)*quad_weights_ele(qk) &
-        *dot_product(u(1:problem_dim)-uh(1:problem_dim), &
-        u(1:problem_dim)-uh(1:problem_dim))
+        *dot_product(uh(1:problem_dim), uh(1:problem_dim))
 
         errors(2) = errors(2) + jacobian(qk)*quad_weights_ele(qk) &
-        *(u(problem_dim+1)-uh(problem_dim+1))**2
+        *(uh(problem_dim+1))**2
 
         errors(3) = errors(3) + jacobian(qk)*quad_weights_ele(qk) &
-        *dot_product(u(1:problem_dim+1)-uh(1:problem_dim+1), &
-        u(1:problem_dim+1)-uh(1:problem_dim+1))
+        *dot_product(uh(1:problem_dim+1), uh(1:problem_dim+1))
 
         do iv = 1,problem_dim
           gradient_uh(iv,:) = grad_uh_element(fe_basis_info,problem_dim,iv,qk,1)
@@ -375,12 +335,12 @@ subroutine error_norms_navier_stokes_brinkman(errors,mesh_data,soln_data,soln_fo
         do iv = 1,problem_dim
           div_uh = div_uh+gradient_uh(iv,iv)
           do iv2 = 1,problem_dim
-            grad_e = grad_e+(gradient_u(iv,iv2)-gradient_uh(iv,iv2))**2
+            grad_e = grad_e+(gradient_uh(iv,iv2))**2
           end do
         end do
 
         errors(4) = errors(4) + jacobian(qk)*quad_weights_ele(qk) &
-        *(grad_e+(u(problem_dim+1)-uh(problem_dim+1))**2)
+        *(grad_e+(uh(problem_dim+1))**2)
 
         errors(5) = errors(5) + jacobian(qk)*quad_weights_ele(qk)*div_uh**2
 
@@ -431,10 +391,8 @@ subroutine error_norms_navier_stokes_brinkman(errors,mesh_data,soln_data,soln_fo
 
         do qk = 1,no_quad_points
           uh1 = uh_face1(fe_basis_info,no_pdes,qk)
-          call anal_soln_navier_stokes_brinkman(u,global_points_face(:,qk),problem_dim,no_pdes,0,0.0_db,-1)
           errors(4) = errors(4)+full_dispenal*face_jacobian(qk)*quad_weights_face(qk) &
-          *dot_product(u(1:problem_dim)-uh1(1:problem_dim), &
-          u(1:problem_dim)-uh1(1:problem_dim))
+          *dot_product(uh1(1:problem_dim), uh1(1:problem_dim))
         end do
 
       else
