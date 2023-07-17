@@ -104,6 +104,13 @@ Point(20) = {inlet_location,                                                    
 Point(23) = {outlet_location_1,                                                      0,                                             0, h_refine};
 Point(24) = {outlet_location_2,                                                      0,                                             0, h_refine};
 
+Point(27) = {inlet_location, (cavity_height)/2,                                     0, h_refine/10};
+Point(28) = {inlet_location, (cavity_height)/2 - central_cavity_transition,         0, h_refine};
+Point(29) = {inlet_location - (central_cavity_width)/2,                             0, 0, h_refine/10};
+Point(30) = {inlet_location - (central_cavity_width - central_cavity_transition)/2, 0, 0, h_refine};
+Point(31) = {inlet_location + (central_cavity_width - central_cavity_transition)/2, 0, 0, h_refine};
+Point(32) = {inlet_location + (central_cavity_width)/2,                             0, 0, h_refine/10};
+
 ///////////
 // Lines //
 ///////////
@@ -119,10 +126,18 @@ Line(16)    = {17, 1};
 // Cavity.
 Ellipse(21) = {19, 22, 22, 20};
 Ellipse(22) = {20, 22, 22, 21};
-Line(23)    = {19, 6};
+Ellipse(30) = {29, 22, 22, 27};
+Ellipse(31) = {27, 22, 22, 32};
+Ellipse(32) = {30, 22, 22, 28};
+Ellipse(33) = {28, 22, 22, 31};
+Line(34)    = {19, 29};
+Line(35)    = {29, 30};
+Line(23)    = {30, 6};
 Line(24)    = {6, 22};
 Line(25)    = {22, 9};
-Line(26)    = {9, 21};
+Line(26)    = {9, 31};
+Line(36)    = {31, 32};
+Line(37)    = {32, 21};
 
 // Pipe 1.
 Line(2)     = {2,  3};
@@ -148,7 +163,7 @@ Line(27)    = {24, 10};
 /////////////////////
 // Physical curves //
 /////////////////////
-Physical Curve("boundary",       100) = {1, 2, 4, 5, 23, 6, 28, 29, 8, 26, 9, 10, 12, 13, 14, 16};
+Physical Curve("boundary",       100) = {1, 2, 4, 5, 34, 35, 23, 6, 28, 29, 8, 26, 36, 37, 9, 10, 12, 13, 14, 16};
 Physical Curve("boundary-curve", 101) = {15};
 Physical Curve("flow-in",        111) = {7};
 Physical Curve("flow-out-1",     211) = {3};
@@ -166,15 +181,21 @@ Curve Loop(3) = {2, 3, 4, 18, 19};
 Curve Loop(4) = {10, 11, 12, 20, 27};
 
 // Cavity.
-Curve Loop (5) = {23, 24, 25, 26, -22, -21};
+Curve Loop(50) = {23, 24, 25, 26, -33, -32};
+Curve Loop(51) = {35, 32, 33, 36, -31, -30};
+Curve Loop(52) = {34, 30, 31, 37, -22, -21};
 
 Plane Surface(1)                  = {1};
 Plane Surface(2)                  = {2};
 Plane Surface(3)                  = {3};
 Plane Surface(4)                  = {4};
-Plane Surface(5)                  = {5};
+Plane Surface(50)                 = {50};
+Plane Surface(51)                 = {51};
+Plane Surface(52)                 = {52};
 Physical Surface("interior", 301) = {1};
 Physical Surface("inlets",   412) = {2};
 Physical Surface("outlet-1", 411) = {3};
 Physical Surface("outlet-2", 413) = {4};
-Physical Surface("cavity",   501) = {5};
+Physical Surface("cavity0",  501) = {50};
+Physical Surface("cavity1",  511) = {51};
+Physical Surface("cavity2",  521) = {52};
