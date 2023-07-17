@@ -42,12 +42,15 @@ EndIf
 //////////////////////
 // Other parameters //
 //////////////////////
-inlet_width  = 0.05;              // 2 mm
-outlet_width = 0.05;              // 2 mm
+artery_width          = 0.0625; // 2.5 mm
+artery_width_sm       = 0.0125; // 0.5mm
+artery_length         = 0.25;   // 10mm
+artery_length_diverge = 0.075;  // 3mm
+vein_width            = 0.0375; // 1.5 mm
 
 // Default cavity size.
 If (!Exists(central_cavity_width))
-	central_cavity_width = 5*inlet_width; // 10 mm
+	central_cavity_width = 5*artery_width; // 10 mm
 EndIf
 cavity_height = 2*central_cavity_width;
 
@@ -73,21 +76,22 @@ EndIf
 ////////////
 // Points //
 ////////////
-Point(1)  = {0,                                                                      0,                                             0, h};
-Point(2)  = {outlet_location_1 - outlet_width/2,                                     0,                                             0, h_refine/10};
-//Point(3)  = {outlet_location_1 - outlet_width/2,                                     -outlet_width,                                 0, h_refine};
-Point(3)  = {outlet_location_1 - outlet_width/2,                                     -outlet_width,                                 0, h_refine/10};
-Point(4)  = {outlet_location_1 + outlet_width/2,                                     -outlet_width,                                 0, h_refine};
-Point(5)  = {outlet_location_1 + outlet_width/2,                                     0,                                             0, h_refine/10};
-Point(6)  = {inlet_location    - inlet_width/2,                                      0,                                             0, h_refine/10};
-Point(7)  = {inlet_location    - inlet_width/2,                                      -inlet_width,                                  0, h_refine};
-Point(8)  = {inlet_location    + inlet_width/2,                                      -inlet_width,                                  0, h_refine};
-Point(9)  = {inlet_location    + inlet_width/2,                                      0,                                             0, h_refine/10};
-Point(10) = {outlet_location_2 - outlet_width/2,                                     0,                                             0, h_refine/10};
-Point(11) = {outlet_location_2 - outlet_width/2,                                     -outlet_width,                                 0, h_refine};
-//Point(12) = {outlet_location_2 + outlet_width/2,                                     -outlet_width,                                 0, h_refine};
-Point(12) = {outlet_location_2 + outlet_width/2,                                     -outlet_width,                                 0, h_refine/10};
-Point(13) = {outlet_location_2 + outlet_width/2,                                     0,                                             0, h_refine/10};
+Point(1)  = {0,                                     0,                      0, h};
+Point(2)  = {outlet_location_1 - vein_width/2,      0,                      0, h_refine/10};
+Point(3)  = {outlet_location_1 - vein_width/2,      -vein_width,            0, h_refine/10};
+Point(4)  = {outlet_location_1 + vein_width/2,      -vein_width,            0, h_refine};
+Point(5)  = {outlet_location_1 + vein_width/2,      0,                      0, h_refine/10};
+Point(6)  = {inlet_location    - artery_width/2,    0,                      0, h_refine/10};
+Point(7)  = {inlet_location    - artery_width_sm/2, -artery_length_diverge, 0, h_refine};
+Point(25) = {inlet_location    - artery_width_sm/2, -artery_length,         0, h_refine};
+Point(26) = {inlet_location    + artery_width_sm/2, -artery_length,         0, h_refine};
+Point(8)  = {inlet_location    + artery_width_sm/2, -artery_length_diverge, 0, h_refine};
+Point(9)  = {inlet_location    + artery_width/2,    0,                      0, h_refine/10};
+Point(10) = {outlet_location_2 - vein_width/2,      0,                      0, h_refine/10};
+Point(11) = {outlet_location_2 - vein_width/2,      -vein_width,            0, h_refine};
+Point(12) = {outlet_location_2 + vein_width/2,      -vein_width,            0, h_refine/10};
+Point(13) = {outlet_location_2 + vein_width/2,      0,                      0, h_refine/10};
+
 Point(14) = {1,                                                                      0,                                             0, h};
 Point(15) = {1,                                                                      0.5,                                           0, h};
 Point(16) = {0.5,                                                                    1,                                             0, h};
@@ -129,7 +133,9 @@ Line(19)   =  {23, 2};
 
 // Pipe 2.
 Line(6)     = {6,  7};
-Line(7)     = {7,  8};
+Line(28)    = {7,  25};
+Line(7)     = {25, 26};
+Line(29)    = {26, 8};
 Line(8)     = {8,  9};
 
 // Pipe 3.
@@ -142,7 +148,7 @@ Line(27)    = {24, 10};
 /////////////////////
 // Physical curves //
 /////////////////////
-Physical Curve("boundary",       100) = {1, 2, 4, 5, 23, 6, 8, 26, 9, 10, 12, 13, 14, 16};
+Physical Curve("boundary",       100) = {1, 2, 4, 5, 23, 6, 28, 29, 8, 26, 9, 10, 12, 13, 14, 16};
 Physical Curve("boundary-curve", 101) = {15};
 Physical Curve("flow-in",        111) = {7};
 Physical Curve("flow-out-1",     211) = {3};
@@ -155,7 +161,7 @@ Physical Curve("flow-out-2",     212) = {11};
 Curve Loop(1) = {1, -19, -18, 5, 21, 22, 9, -27, -20, 13, 14, 15, 16};
 
 // Pipes.
-Curve Loop(2) = {6, 7, 8, -25, -24};
+Curve Loop(2) = {6, 28, 7, 29, 8, -25, -24};
 Curve Loop(3) = {2, 3, 4, 18, 19};
 Curve Loop(4) = {10, 11, 12, 20, 27};
 

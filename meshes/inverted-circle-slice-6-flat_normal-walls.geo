@@ -24,12 +24,12 @@ wall_width            = 0.075*placentone_width;            // 3  mm
 // placenta_width     = 6*placentone_width + 5*wall_width; // 255mm
 placenta_width        = 5.5;                               // 220mm
 ms_pipe_width         = 0.075*placentone_width;            // 3  mm
-artery_width          = 0.0625*placentone_width;           // 2.5  mm
-artery_width_sm       = 0.0125*placentone_width;           // 0.5  mm
+artery_width          = 0.0625*placentone_width;           // 2.5mm
+artery_width_sm       = 0.0125*placentone_width;           // 0.5mm
 artery_length         = 0.25*placentone_width;             // 10 mm
-artery_length_diverge = 0.075*placentone_width;            // 3 mm
-vein_width            = 0.0375*placentone_width;           // 1.5  mm
-vein_length           = 0.0375*placentone_width;           // 1.5  mm
+artery_length_diverge = 0.075*placentone_width;            // 3  mm
+vein_width            = 0.0375*placentone_width;           // 1.5mm
+vein_length           = 0.0375*placentone_width;           // 1.5mm
 
 // Default cavity size.
 If (!Exists(central_cavity_width))
@@ -141,13 +141,13 @@ EndFor
 // Default turn on/off for septal veins.
 For k In {0:4:1}
 	If (!Exists(septal_vein~{(k+1)*10+1}))
-		septal_vein~{(k+1)*10+1} = 0;
+		septal_vein~{(k+1)*10+1} = 1;
 	EndIf
 	If (!Exists(septal_vein~{(k+1)*10+2}))
-		septal_vein~{(k+1)*10+2} = 0;
+		septal_vein~{(k+1)*10+2} = 1;
 	EndIf
 	If (!Exists(septal_vein~{(k+1)*10+3}))
-		septal_vein~{(k+1)*10+3} = 0;
+		septal_vein~{(k+1)*10+3} = 1;
 	EndIf
 EndFor
 
@@ -436,8 +436,14 @@ For k In {0:5:1}
 	Point(offset + 19) = {cavity_x_1[k], cavity_y_1[k], 0, h_refine};
 	Point(offset + 22) = {cavity_x_2[k], cavity_y_2[k], 0, h_refine};
 	Point(offset + 21) = {cavity_x_3[k], cavity_y_3[k], 0, h_refine};
+	Point(offset + 42) = {cavity_x_1[k] + (central_cavity_transition/2)*Sin(theta_pipe[3*k+1]), cavity_y_1[k] + (central_cavity_transition/2)*Cos(theta_pipe[3*k+1]), 0, h_refine/10};
+	Point(offset + 43) = {cavity_x_1[k] + (central_cavity_transition)  *Sin(theta_pipe[3*k+1]), cavity_y_1[k] + (central_cavity_transition)  *Cos(theta_pipe[3*k+1]), 0, h_refine};
+	Point(offset + 44) = {cavity_x_3[k] - (central_cavity_transition/2)*Sin(theta_pipe[3*k+1]), cavity_y_3[k] - (central_cavity_transition/2)*Cos(theta_pipe[3*k+1]), 0, h_refine/10};
+	Point(offset + 45) = {cavity_x_3[k] - (central_cavity_transition)  *Sin(theta_pipe[3*k+1]), cavity_y_3[k] - (central_cavity_transition)  *Cos(theta_pipe[3*k+1]), 0, h_refine};
 	If (artery[k] == 1)
 		Point(offset + 20) = {cavity_x_2[k] - (central_cavity_height/2 + central_cavity_transition)*Cos(theta_pipe[3*k+1]), cavity_y_2[k] + (central_cavity_height/2 + central_cavity_transition)*Sin(theta_pipe[3*k+1]), 0, h_refine};
+		Point(offset + 25) = {cavity_x_2[k] - (central_cavity_height/2                            )*Cos(theta_pipe[3*k+1]), cavity_y_2[k] + (central_cavity_height/2                            )*Sin(theta_pipe[3*k+1]), 0, h_refine/10};
+		Point(offset + 26) = {cavity_x_2[k] - (central_cavity_height/2 - central_cavity_transition)*Cos(theta_pipe[3*k+1]), cavity_y_2[k] + (central_cavity_height/2 - central_cavity_transition)*Sin(theta_pipe[3*k+1]), 0, h_refine};
 	EndIf
 EndFor
 
@@ -510,12 +516,16 @@ For k In {0:5:1}
 	EndIf
 
 	If (artery[k] == 1)
-		Circle(offset + 23) = {offset + 19, 1000, offset + 5};
-		Circle(offset + 26) = {offset + 8,  1000, offset + 21};
+		Circle(offset + 23) = {offset + 43, 1000, offset + 5};
+		Circle(offset + 26) = {offset + 8,  1000, offset + 45};
 	Else
-		Circle(offset + 23) = {offset + 19, 1000, offset + 22};
-		Circle(offset + 26) = {offset + 22, 1000, offset + 21};
+		Circle(offset + 23) = {offset + 43, 1000, offset + 22};
+		Circle(offset + 26) = {offset + 22, 1000, offset + 45};
 	EndIf
+	Circle(offset + 53) = {offset + 19, 1000, offset + 42};
+	Circle(offset + 54) = {offset + 42, 1000, offset + 43};
+	Circle(offset + 55) = {offset + 45, 1000, offset + 44};
+	Circle(offset + 56) = {offset + 44, 1000, offset + 21};
 
 	If (k != 5)
 		If (vein_2[k] == 1)
@@ -671,6 +681,12 @@ For k In {0:5:1}
 	If (artery[k] == 1)
 		Ellipse(offset + 21) = {offset + 19, offset + 22, offset + 22, offset + 20};
 		Ellipse(offset + 22) = {offset + 20, offset + 22, offset + 22, offset + 21};
+
+		Ellipse(offset + 49) = {offset + 42, offset + 22, offset + 22, offset + 25};
+		Ellipse(offset + 50) = {offset + 25, offset + 22, offset + 22, offset + 44};
+
+		Ellipse(offset + 51) = {offset + 43, offset + 22, offset + 22, offset + 26};
+		Ellipse(offset + 52) = {offset + 26, offset + 22, offset + 22, offset + 45};
 	EndIf
 EndFor
 
@@ -742,9 +758,7 @@ For k In {0:5:1}
 	If (vein_1[k] == 1)
 		Physical Curve(101) += {offset + 5};
 	EndIf
-	If (artery[k] == 1)
-		Physical Curve(101) += {offset + 23, offset + 26};
-	EndIf
+	Physical Curve(101) += {offset + 53, offset + 54, offset + 23, offset + 26, offset + 55, offset + 56};
 	Physical Curve(101) += {offset + 9};
 	If (vein_2[k] == 1)
 		Physical Curve(101) += {offset + 13};
@@ -792,7 +806,7 @@ For k In {0:5:1}
 	If (artery[k] == 1)
 		placentone_list += {offset + 21, offset + 22};
 	Else
-		placentone_list += {offset + 23, offset + 26};
+		placentone_list += {offset + 53, offset + 54, offset + 23, offset + 26, offset + 55, offset + 56};
 	EndIf
 
 	placentone_list += {offset + 9};
@@ -951,9 +965,17 @@ For k In {0:5:1}
 	offset = numbering_start + k*placentone_step;
 
 	If (artery[k] == 1)
-		Curve Loop      (51 + k)  = {offset + 23, -(offset + 24), -(offset + 25), offset + 26, -(offset + 22), -(offset + 21)};
-		Plane Surface   (51 + k)  = {51 + k};
-		Physical Surface(501 + k) = {51 + k};
+		Curve Loop      (501 + k) = {offset + 23, -(offset + 24), -(offset + 25), offset + 26, -(offset + 52), -(offset + 51)};
+		Plane Surface   (501 + k) = {501 + k};
+		Physical Surface(501 + k) = {501 + k};
+
+		Curve Loop      (511 + k) = {offset + 54, offset + 51, offset + 52, offset + 55, -(offset + 50), -(offset + 49)};
+		Plane Surface   (511 + k) = {511 + k};
+		Physical Surface(511 + k) = {511 + k};
+
+		Curve Loop      (521 + k) = {offset + 53, offset + 49, offset + 50, offset + 56, -(offset + 22), -(offset + 21)};
+		Plane Surface   (521 + k) = {521 + k};
+		Physical Surface(521 + k) = {521 + k};
 	EndIf
 EndFor
 
