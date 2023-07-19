@@ -107,7 +107,8 @@ module jacobi_residual_ns_nsb_ss
                 element_region_id)* &
               floc(ieqn, qk)*phi(ieqn, qk, i)
 
-            if (300 <= element_region_id .and. element_region_id <= 399) then
+            if ((300 <= element_region_id .and. element_region_id <= 399) .or. &
+                (520 <= element_region_id .and. element_region_id <= 529)) then
               reaction_terms = -calculate_velocity_reaction_coefficient(global_points_ele(:, qk), problem_dim, &
                   300)* &
                 interpolant_uh(ieqn, qk)*phi(ieqn, qk, i)
@@ -323,7 +324,7 @@ module jacobi_residual_ns_nsb_ss
         end do
 
         !! TODO: WTF?!
-        if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
+        if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 519) then
           region_id = face_element_region_ids(1)
         else
           region_id = face_element_region_ids(2)
@@ -663,7 +664,8 @@ module jacobi_residual_ns_nsb_ss
                       convection_term &
                 )
 
-                if (300 <= element_region_id .and. element_region_id <= 399) then
+                if ((300 <= element_region_id .and. element_region_id <= 399) .or. &
+                    (520 <= element_region_id .and. element_region_id <= 529)) then
                   element_matrix(ieqn,ivar,i,j) = element_matrix(ieqn,ivar,i,j) + integral_weighting(qk)*( &
                     calculate_velocity_reaction_coefficient(global_points_ele(:, qk), problem_dim, &
                       300) * &
@@ -905,7 +907,7 @@ module jacobi_residual_ns_nsb_ss
         end do
 
         !! TODO: WTF?!
-        if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
+        if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 519) then
           region_id = face_element_region_ids(1)
         else
           region_id = face_element_region_ids(2)

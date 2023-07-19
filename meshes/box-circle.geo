@@ -50,7 +50,7 @@ vein_width            = 0.0375; // 1.5 mm
 
 // Default cavity size.
 If (!Exists(central_cavity_width))
-	central_cavity_width = 5*artery_width; // 10 mm
+	central_cavity_width = 0.25; // 10 mm
 EndIf
 cavity_height = 2*central_cavity_width;
 

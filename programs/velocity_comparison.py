@@ -42,12 +42,15 @@ def run(simulation_no, geometry, artery_location, vein_location_1, vein_location
 		output_timer.time(simulation_no, "plotting", terminal_output)
 
 		from plotting import plot_velocity
-		from plotting import plot_transport
 
 		for i in range(1, 5):
 			for j in range(i, 5):
 				plot_velocity.plot(10*i + j, "dg_velocity", geometry, '1', str(10*i + j), '1', '24', '0', '0', geometry, '0', '0', '0', 0, False, True)
 				plot_velocity.plot(10*i + j, "dg_velocity", geometry, '1', str(10*i + j), '0', '24', '0', '0', geometry, '0', '0', '0', 0, False, True)
+
+		for i in range (0, 4):
+			plot_velocity.plot(i, "dg_velocity", geometry, '1', str(i) + '.vtk', '1', '24', '1', '1', geometry, '0', '0', '0', 0, False, True)
+			plot_velocity.plot(i, "dg_velocity", geometry, '1', str(i) + '.vtk', '0', '24', '1', '1', geometry, '0', '0', '0', 0, False, True)
 
 		output_timer.time(simulation_no, "plotting", terminal_output)
 

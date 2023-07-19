@@ -25,7 +25,8 @@ module matrix_rhs_s_b_ss
       if (ieqn == ivar) then
           if (ivar < problem_dim+1) then
             !   calculate_uv = calculate_velocity_reaction_coefficient(global_point, problem_dim, element_region_id) * phi_u*phi_v
-            if (300 <= element_region_id .and. element_region_id <= 399) then
+            if ((300 <= element_region_id .and. element_region_id <= 399) .or. &
+                (520 <= element_region_id .and. element_region_id <= 529)) then
                 calculate_uv = velocity_reaction_coefficient * phi_u*phi_v
             else
                 calculate_uv = 0.0_db

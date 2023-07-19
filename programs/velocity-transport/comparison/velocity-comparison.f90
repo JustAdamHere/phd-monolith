@@ -97,20 +97,20 @@ program velocity_transport
     call linear_fe_solver(solution_velocity(4), mesh_data, fe_solver_routines_velocity(4), 'solver_velocity', &
         aptofem_stored_keys, sp_matrix_rhs_data_velocity(4)%p, 2, scheme_data_velocity(4))
     
-    solution_velocity(1)%current_time    = 0.0_db
-    solution_velocity(2)%current_time   = 0.0_db
+    solution_velocity(1)%current_time = 0.0_db
+    solution_velocity(2)%current_time = 0.0_db
     solution_velocity(3)%current_time = 0.0_db
-    solution_velocity(4)%current_time    = 0.0_db
+    solution_velocity(4)%current_time = 0.0_db
 
-    scheme_data_velocity(1)%current_time    = 0.0_db
-    scheme_data_velocity(2)%current_time   = 0.0_db
+    scheme_data_velocity(1)%current_time = 0.0_db
+    scheme_data_velocity(2)%current_time = 0.0_db
     scheme_data_velocity(3)%current_time = 0.0_db
-    scheme_data_velocity(4)%current_time    = 0.0_db
+    scheme_data_velocity(4)%current_time = 0.0_db
 
-    scheme_data_velocity(1)%time_step    = 0.1_db
-    scheme_data_velocity(2)%time_step   = 0.1_db
+    scheme_data_velocity(1)%time_step = 0.1_db
+    scheme_data_velocity(2)%time_step = 0.1_db
     scheme_data_velocity(3)%time_step = 0.1_db
-    scheme_data_velocity(4)%time_step    = 0.1_db
+    scheme_data_velocity(4)%time_step = 0.1_db
     
     call set_current_time(solution_velocity(1), 0.0_db)
     call set_current_time(solution_velocity(2), 0.0_db)

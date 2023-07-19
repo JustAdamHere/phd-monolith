@@ -241,7 +241,7 @@ module jacobi_residual_ns_b_ss
       ! On interface, or completely in the interior of Navier-Stokes.
       if ((interior_face_boundary_no > 0) .or. &
           ((interior_face_boundary_no == 0) .and. (bdry_face == 0) .and. &
-            (400 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599))) then
+            (400 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 519))) then
         do qk = 1,no_quad_points
           interpolant_uh1(:,qk) = uh_face1(fe_basis_info,no_pdes,qk)
           interpolant_uh2(:,qk) = uh_face2(fe_basis_info,no_pdes,qk)
@@ -264,7 +264,7 @@ module jacobi_residual_ns_b_ss
           %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable2(i),1)
         end do
 
-        if (400 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
+        if (400 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 519) then
           region_id = face_element_region_ids(1)
         else
           region_id = face_element_region_ids(2)
@@ -300,11 +300,12 @@ module jacobi_residual_ns_b_ss
 
       ! If we're interior with Brinkman.
       else if ((interior_face_boundary_no == 0) .and. (bdry_face == 0) .and. &
-          (300 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 399)) then
+          ((300 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 399) .or. &
+          (520 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 529))) then
         ! No interior convection terms for Brinkman regions.
         
       ! If we're on a Navier-Stokes boundary.
-      else if ((bdry_face > 0) .and. (400 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599)) then
+      else if ((bdry_face > 0) .and. (400 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 519)) then
         do qk = 1,no_quad_points
           interpolant_uh1(1:no_pdes,qk) = uh_face1(fe_basis_info,no_pdes,qk)
           do i = 1,no_pdes
@@ -364,7 +365,8 @@ module jacobi_residual_ns_b_ss
           end do
         end if
       ! If we're on a Brinkman boundary.
-      else if ((bdry_face > 0) .and. (300 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 399)) then
+      else if ((bdry_face > 0) .and. ((300 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 399) .or. &
+        (520 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 529))) then
         ! No convection term on Brinkman exterior boundaries.
 
       else 
@@ -677,7 +679,8 @@ module jacobi_residual_ns_b_ss
                       convection_term &
                 )
                 
-                if (300 <= element_region_id .and. element_region_id <= 399) then
+                if ((300 <= element_region_id .and. element_region_id <= 399) .or. &
+                    (520 <= element_region_id .and. element_region_id <= 529)) then
                   element_matrix(ieqn,ivar,i,j) = element_matrix(ieqn,ivar,i,j) + integral_weighting(qk)*( &
                     calculate_velocity_reaction_coefficient(global_points_ele(:, qk), problem_dim, &
                       300) * &
@@ -782,7 +785,7 @@ module jacobi_residual_ns_b_ss
       ! On interface, or completely in the interior of Navier-Stokes.
       if ((interior_face_boundary_no > 0) .or. &
           ((interior_face_boundary_no == 0) .and. (bdry_face == 0) .and. &
-            (400 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599))) then
+            (400 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 519))) then
         do qk = 1,no_quad_points
           interpolant_uh1(:,qk) = uh_face1(fe_basis_info,no_pdes,qk)
           interpolant_uh2(:,qk) = uh_face2(fe_basis_info,no_pdes,qk)
@@ -809,7 +812,7 @@ module jacobi_residual_ns_b_ss
           %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable2(i),1)
         end do
 
-        if (400 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
+        if (400 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 519) then
           region_id = face_element_region_ids(1)
         else
           region_id = face_element_region_ids(2)
@@ -902,10 +905,11 @@ module jacobi_residual_ns_b_ss
         end do
 
       ! If we're interior with Brinkman.
-      else if ((bdry_face == 0) .and. (300 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 399)) then
+      else if ((bdry_face == 0) .and. ((300 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 399) .or. &
+        (520 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 529))) then
         
       ! If we're on a Navier-Stokes boundary.
-      else if ((bdry_face > 0) .and. (400 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599)) then
+      else if ((bdry_face > 0) .and. (400 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 519)) then
         ! Calculate value of analytical solution at quadrature points
         do qk = 1,no_quad_points
           interpolant_uh1(:,qk) = uh_face1(fe_basis_info,no_pdes,qk)
@@ -1016,7 +1020,8 @@ module jacobi_residual_ns_b_ss
         end if
 
       ! If we're on a Brinkman boundary.
-      else if ((bdry_face > 0) .and. (300 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 399)) then
+      else if ((bdry_face > 0) .and. ((300 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 399) .or. &
+        (520 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 529))) then
         
       else 
         print *, "Missed case for regions."

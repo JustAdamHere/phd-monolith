@@ -282,29 +282,29 @@ module problem_options
         else if (element_region_id == 495) then
             centre_top = 0.0_db
             translate_angle = 0.0_db
-        else if (element_region_id == 501) then
+        else if (element_region_id == 501 .or. element_region_id == 511 .or. element_region_id == 521) then
             centre_top = 0.0_db
             translate_angle = 0.0_db
             centre_top(1)   = cumulative_placentone_widths(1) + artery_location*placentone_widths(1)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
-        else if (element_region_id == 502) then
+        else if (element_region_id == 502 .or. element_region_id == 512 .or. element_region_id == 522) then
             centre_top(1)   = cumulative_placentone_widths(2) + artery_location*placentone_widths(2)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
-        else if (element_region_id == 503) then
+        else if (element_region_id == 503 .or. element_region_id == 513 .or. element_region_id == 523) then
             centre_top(1)   = cumulative_placentone_widths(3) + artery_location*placentone_widths(3)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
-        else if (element_region_id == 504) then
+        else if (element_region_id == 504 .or. element_region_id == 514 .or. element_region_id == 524) then
             centre_top(1)   = cumulative_placentone_widths(4) + artery_location*placentone_widths(4)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
-        else if (element_region_id == 505) then
+        else if (element_region_id == 505 .or. element_region_id == 515 .or. element_region_id == 525) then
             centre_top(1)   = cumulative_placentone_widths(5) + artery_location*placentone_widths(5)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
-        else if (element_region_id == 506) then
+        else if (element_region_id == 506 .or. element_region_id == 516 .or. element_region_id == 526) then
             centre_top(1)   = cumulative_placentone_widths(6) + artery_location*placentone_widths(6)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))

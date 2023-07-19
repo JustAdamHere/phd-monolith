@@ -93,7 +93,7 @@ contains
         integer, intent(in)                          :: boundary_no
         real(db), intent(in)                         :: t
 
-        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, 502)
+        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, 512)
 
     end subroutine
 
@@ -139,52 +139,41 @@ contains
 
         steepness = 0.999_db
 
-        if (trim(name) == 'placentone') then
-            if (300 <= element_region_id .and. element_region_id <= 399) then
-                calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
-                    1.0_db
-            else if (element_region_id == 412) then
-                calculate_velocity_reaction_coefficient = &
-                    0.0_db
-            else if (400 <= element_region_id .and. element_region_id <= 499) then
-                calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
-                    calculate_placentone_pipe_transition(global_point, problem_dim, element_region_id, steepness)
-            else if (500 <= element_region_id .and. element_region_id <= 599) then
-                calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
-                    calculate_placentone_cavity_transition(global_point, problem_dim, element_region_id, steepness)
+        if (400 <= element_region_id .and. element_region_id <= 599) then
+            if (trim(name) == 'placentone') then
+                translated_point = global_point
+            else if (trim(name) == 'placenta') then
+                translated_point = translate_placenta_to_placentone_point(problem_dim, global_point, element_region_id)
             else
                 print *, "Error in calculate_velocity_reaction_coefficient. Missed case."
-                print *, "element_region_id = ", element_region_id
-                stop
+                print *, "name = ", name
+                error stop
             end if
-
-        else if (trim(name) == 'placenta') then
-            if (300 <= element_region_id .and. element_region_id <= 399) then
-                calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
-                    1.0_db
-            else if (element_region_id == 412 .or. element_region_id == 422 .or. element_region_id == 432 .or. &
-                     element_region_id == 442 .or. element_region_id == 452 .or. element_region_id == 462) then
-                calculate_velocity_reaction_coefficient = &
-                    0.0_db
-            else if (400 <= element_region_id .and. element_region_id <= 499) then
-                translated_point = translate_placenta_to_placentone_point(problem_dim, global_point, element_region_id)
-
-                calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
-                    calculate_placentone_pipe_transition(translated_point, problem_dim, element_region_id, steepness)
-
-            else if (500 <= element_region_id .and. element_region_id <= 599) then
-                translated_point = translate_placenta_to_placentone_point(problem_dim, global_point, element_region_id)
-
-                calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
-                    calculate_placentone_cavity_transition(translated_point, problem_dim, element_region_id, steepness)
-
-            else
-                print *, "Error in calculate_velocity_reaction_coefficient. Missed case."
-                print *, "element_region_id = ", element_region_id
-                stop
-            end if
-
+        else
+            translated_point = global_point
         end if
+
+        if (300 <= element_region_id .and. element_region_id <= 399) then
+            calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
+                1.0_db
+        else if (element_region_id == 412) then
+            calculate_velocity_reaction_coefficient = &
+                0.0_db
+        else if (400 <= element_region_id .and. element_region_id <= 499) then
+            calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
+                calculate_placentone_pipe_transition(translated_point, problem_dim, element_region_id, steepness)
+        else if (500 <= element_region_id .and. element_region_id <= 509) then
+            calculate_velocity_reaction_coefficient = &
+                0.0_db
+        else if (510 <= element_region_id .and. element_region_id <= 529) then
+            calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
+                calculate_placentone_cavity_transition(translated_point, problem_dim, element_region_id, steepness)
+        else
+            print *, "Error in calculate_velocity_reaction_coefficient. Missed case."
+            print *, "element_region_id = ", element_region_id
+            stop
+        end if
+        
     end function
 
     function calculate_velocity_pressure_coefficient(global_point, problem_dim, element_region_id)
