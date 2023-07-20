@@ -96,9 +96,13 @@ module jacobi_residual_ns_b_ss
                 element_region_id)* &
               (-1.0_db) * dot_product(gradient_uh(ieqn,qk,:),grad_phi(ieqn,qk,:,i))
 
-            convection_terms = calculate_velocity_convection_coefficient(global_points_ele(:, qk), problem_dim, &
-                element_region_id)* &
-            dot_product(fluxes(1:problem_dim,ieqn,qk), grad_phi(ieqn,qk,1:problem_dim,i))
+            if (400 <= element_region_id .and. element_region_id <= 519) then
+              convection_terms = calculate_velocity_convection_coefficient(global_points_ele(:, qk), problem_dim, &
+                  element_region_id)* &
+              dot_product(fluxes(1:problem_dim,ieqn,qk), grad_phi(ieqn,qk,1:problem_dim,i))
+            else
+              convection_terms = 0.0_db
+            end if
 
             pressure_terms = calculate_velocity_pressure_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
@@ -108,7 +112,8 @@ module jacobi_residual_ns_b_ss
                 element_region_id)* &
               floc(ieqn, qk)*phi(ieqn, qk, i)
 
-            if (300 <= element_region_id .and. element_region_id <= 399) then
+            if ((300 <= element_region_id .and. element_region_id <= 399) .or. &
+                (520 <= element_region_id .and. element_region_id <= 529)) then
               reaction_terms = -calculate_velocity_reaction_coefficient(global_points_ele(:, qk), problem_dim, &
                   300)* &
                 interpolant_uh(ieqn, qk)*phi(ieqn, qk, i)
@@ -673,11 +678,16 @@ module jacobi_residual_ns_b_ss
                   calculate_velocity_pressure_coefficient(global_points_ele(:, qk), problem_dim, &
                     element_region_id) * &
                       pgradv + &
-                  qgradu - &
-                  calculate_velocity_convection_coefficient(global_points_ele(:, qk), problem_dim, &
-                    element_region_id) * &
-                      convection_term &
+                  qgradu &
                 )
+
+                if (400 <= element_region_id .and. element_region_id <= 519) then
+                  element_matrix(ieqn,ivar,i,j) = element_matrix(ieqn,ivar,i,j) + integral_weighting(qk)*( &
+                    - calculate_velocity_convection_coefficient(global_points_ele(:, qk), problem_dim, &
+                      element_region_id) * &
+                        convection_term &
+                  )
+                end if
                 
                 if ((300 <= element_region_id .and. element_region_id <= 399) .or. &
                     (520 <= element_region_id .and. element_region_id <= 529)) then

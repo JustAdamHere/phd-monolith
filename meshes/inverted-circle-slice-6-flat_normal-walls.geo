@@ -38,15 +38,14 @@ EndIf
 central_cavity_height = 2*central_cavity_width;
 
 If (!Exists(central_cavity_transition))
-	central_cavity_transition = 0.02*central_cavity_width; // 0.8mm
+	central_cavity_transition = 0.02; // 0.8mm
 EndIf
 
 ////////////////////////
 // Default parameters //
 ////////////////////////
-h = 0.05;
 If (!Exists(h))
-	h        = 0.02;
+	h        = 0.1;
 EndIf
 If (!Exists(h_refine))
 	h_refine = h/10;
@@ -141,13 +140,13 @@ EndFor
 // Default turn on/off for septal veins.
 For k In {0:4:1}
 	If (!Exists(septal_vein~{(k+1)*10+1}))
-		septal_vein~{(k+1)*10+1} = 1;
+		septal_vein~{(k+1)*10+1} = 0;
 	EndIf
 	If (!Exists(septal_vein~{(k+1)*10+2}))
-		septal_vein~{(k+1)*10+2} = 1;
+		septal_vein~{(k+1)*10+2} = 0;
 	EndIf
 	If (!Exists(septal_vein~{(k+1)*10+3}))
-		septal_vein~{(k+1)*10+3} = 1;
+		septal_vein~{(k+1)*10+3} = 0;
 	EndIf
 EndFor
 

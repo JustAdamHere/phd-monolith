@@ -20,7 +20,7 @@
 // Default parameters //
 ////////////////////////
 If (!Exists(h))
-	h        = 0.02;
+	h        = 0.1;
 EndIf
 If (!Exists(h_refine))
 	h_refine = h/10;
@@ -81,12 +81,12 @@ Point(2)  = {outlet_location_1 - vein_width/2,      0,                      0, h
 Point(3)  = {outlet_location_1 - vein_width/2,      -vein_width,            0, h_refine/10};
 Point(4)  = {outlet_location_1 + vein_width/2,      -vein_width,            0, h_refine};
 Point(5)  = {outlet_location_1 + vein_width/2,      0,                      0, h_refine/10};
-Point(6)  = {inlet_location    - artery_width/2,    0,                      0, h_refine/10};
-Point(7)  = {inlet_location    - artery_width_sm/2, -artery_length_diverge, 0, h_refine};
-Point(25) = {inlet_location    - artery_width_sm/2, -artery_length,         0, h_refine};
-Point(26) = {inlet_location    + artery_width_sm/2, -artery_length,         0, h_refine};
-Point(8)  = {inlet_location    + artery_width_sm/2, -artery_length_diverge, 0, h_refine};
-Point(9)  = {inlet_location    + artery_width/2,    0,                      0, h_refine/10};
+Point(6)  = {inlet_location    - artery_width/2,    0,                      0, h_refine};
+Point(7)  = {inlet_location    - artery_width_sm/2, -artery_length_diverge, 0, h_refine/10};
+Point(25) = {inlet_location    - artery_width_sm/2, -artery_length,         0, h_refine/10};
+Point(26) = {inlet_location    + artery_width_sm/2, -artery_length,         0, h_refine/10};
+Point(8)  = {inlet_location    + artery_width_sm/2, -artery_length_diverge, 0, h_refine/10};
+Point(9)  = {inlet_location    + artery_width/2,    0,                      0, h_refine};
 Point(10) = {outlet_location_2 - vein_width/2,      0,                      0, h_refine/10};
 Point(11) = {outlet_location_2 - vein_width/2,      -vein_width,            0, h_refine};
 Point(12) = {outlet_location_2 + vein_width/2,      -vein_width,            0, h_refine/10};

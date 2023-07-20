@@ -193,12 +193,20 @@ module problem_options
             centre_top(1)   = cumulative_placentone_widths(1) + 0.2*placentone_widths(1)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 412) then
+            centre_top(1)   = cumulative_placentone_widths(1) + 0.5*placentone_widths(1)
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 413) then
             centre_top(1)   = cumulative_placentone_widths(1) + 0.8*placentone_widths(1)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 421) then
             centre_top(1)   = cumulative_placentone_widths(2) + 0.2*placentone_widths(2)
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 422) then
+            centre_top(1)   = cumulative_placentone_widths(2) + 0.5*placentone_widths(2)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 423) then
@@ -209,12 +217,20 @@ module problem_options
             centre_top(1)   = cumulative_placentone_widths(3) + 0.2*placentone_widths(3)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 432) then
+            centre_top(1)   = cumulative_placentone_widths(3) + 0.5*placentone_widths(3)
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 433) then
             centre_top(1)   = cumulative_placentone_widths(3) + 0.8*placentone_widths(3)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 441) then
             centre_top(1)   = cumulative_placentone_widths(4) + 0.2*placentone_widths(4)
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 442) then
+            centre_top(1)   = cumulative_placentone_widths(4) + 0.5*placentone_widths(4)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 443) then
@@ -225,12 +241,20 @@ module problem_options
             centre_top(1)   = cumulative_placentone_widths(5) + 0.2*placentone_widths(5)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 452) then
+            centre_top(1)   = cumulative_placentone_widths(5) + 0.5*placentone_widths(5)
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 453) then
             centre_top(1)   = cumulative_placentone_widths(5) + 0.8*placentone_widths(5)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 461) then
             centre_top(1)   = cumulative_placentone_widths(6) + 0.2*placentone_widths(6)
+            centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+            translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
+        else if (element_region_id == 462) then
+            centre_top(1)   = cumulative_placentone_widths(6) + 0.5*placentone_widths(6)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle =     - atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))
         else if (element_region_id == 463) then

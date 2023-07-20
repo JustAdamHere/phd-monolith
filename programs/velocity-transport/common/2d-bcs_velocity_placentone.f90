@@ -87,6 +87,9 @@ module bcs_velocity
     real(db) :: left, right
     real(db) :: amplitude
     real(db) :: global_time ! TODO: check relationship between local and global t
+    real(db) :: artery_width_sm
+
+    artery_width_sm = 0.0125_db ! 0.5mm
 
     u = 0.0_db
 
@@ -94,8 +97,8 @@ module bcs_velocity
     y = global_point(2)
 
     if (boundary_no == 111) then
-        left  = artery_location - 0.025_db
-        right = artery_location + 0.025_db
+        left  = artery_location - artery_width_sm/2.0_db
+        right = artery_location + artery_width_sm/2.0_db
         u(2) = -4.0_db/(right-left)**2*(x-left)*(x-right)
 
         ! u(2) = u(2) * (0.6_db + (cos(t*pi))*0.4_db) ! Oscillates between 0.2 and 1.0.
