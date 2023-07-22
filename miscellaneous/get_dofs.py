@@ -2,7 +2,7 @@
 def get_velocity_dofs(program, geometry, run_no):
   import os
 
-  velocity_dofs_line = -101
+  velocity_dofs_line = -101 + 42
 
   ao_output  = f'./output/{program}_{geometry}_{run_no}.txt'
 
@@ -21,7 +21,7 @@ def get_velocity_dofs(program, geometry, run_no):
 def get_transport_dofs(program, geometry, run_no):
   import os
 
-  transport_dofs_line = -55
+  transport_dofs_line = -55 + 42
 
   ao_output  = f'./output/{program}_{geometry}_{run_no}.txt'
 

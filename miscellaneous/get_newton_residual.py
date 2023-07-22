@@ -1,7 +1,7 @@
 def get_newton_residual(program, geometry, run_no):
   import os
 
-  newton_residual_line = -114
+  newton_residual_line = -114 + 42
 
   ao_output  = f'./output/{program}_{geometry}_{run_no}.txt'
 

@@ -141,6 +141,40 @@ program velocity_transport
         call delete_mesh(mesh_data_orig)
     end do
 
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    !! OUTPUT PERMEABILITY FIELD !!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    call create_fe_solution(solution_permeability, mesh_data, 'fe_projection_permeability', aptofem_stored_keys, &
+        anal_soln_transport, get_boundary_no_transport) ! Doesn't matter what dirichlet bc is passed.
+
+    call project_function(solution_permeability, mesh_data, project_permeability_300)
+    call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 300, mesh_data, solution_permeability)
+
+    call project_function(solution_permeability, mesh_data, project_permeability_400)
+    call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 400, mesh_data, solution_permeability)
+
+    call project_function(solution_permeability, mesh_data, project_permeability_500)
+    call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 500, mesh_data, solution_permeability)
+
+    call delete_solution(solution_permeability)
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!
+    !! OUTPUT UPTAKE FIELD !!
+    !!!!!!!!!!!!!!!!!!!!!!!!!
+    call create_fe_solution(solution_uptake, mesh_data, 'fe_projection_uptake', aptofem_stored_keys, &
+        anal_soln_transport, get_boundary_no_transport) ! Doesn't matter what dirichlet bc is passed.
+
+    call project_function(solution_uptake, mesh_data, project_uptake_300)
+    call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, 300, mesh_data, solution_uptake)
+
+    call project_function(solution_uptake, mesh_data, project_uptake_400)
+    call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, 400, mesh_data, solution_uptake)
+
+    call project_function(solution_uptake, mesh_data, project_uptake_500)
+    call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, 500, mesh_data, solution_uptake)
+
+    call delete_solution(solution_uptake)
+
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! VELOCITY PROBLEM SETUP AND INITIAL CONDITION !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -494,40 +528,6 @@ program velocity_transport
         !!!!!!!!!!!!!!!!!!!!!
         write(23111998, tsvFormat) time_step_no, calculate_integral_transport_reaction(mesh_data, solution_transport)
     end do
-
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    !! OUTPUT PERMEABILITY FIELD !!
-    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    call create_fe_solution(solution_permeability, mesh_data, 'fe_projection_permeability', aptofem_stored_keys, &
-        anal_soln_transport, get_boundary_no_transport) ! Doesn't matter what dirichlet bc is passed.
-
-    call project_function(solution_permeability, mesh_data, project_permeability_300)
-    call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 300, mesh_data, solution_permeability)
-
-    call project_function(solution_permeability, mesh_data, project_permeability_400)
-    call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 400, mesh_data, solution_permeability)
-
-    call project_function(solution_permeability, mesh_data, project_permeability_500)
-    call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 500, mesh_data, solution_permeability)
-
-    call delete_solution(solution_permeability)
-
-    !!!!!!!!!!!!!!!!!!!!!!!!!
-    !! OUTPUT UPTAKE FIELD !!
-    !!!!!!!!!!!!!!!!!!!!!!!!!
-    call create_fe_solution(solution_uptake, mesh_data, 'fe_projection_uptake', aptofem_stored_keys, &
-        anal_soln_transport, get_boundary_no_transport) ! Doesn't matter what dirichlet bc is passed.
-
-    call project_function(solution_uptake, mesh_data, project_uptake_300)
-    call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, 300, mesh_data, solution_uptake)
-
-    call project_function(solution_uptake, mesh_data, project_uptake_400)
-    call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, 400, mesh_data, solution_uptake)
-
-    call project_function(solution_uptake, mesh_data, project_uptake_500)
-    call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, 500, mesh_data, solution_uptake)
-
-    call delete_solution(solution_uptake)
 
     !!!!!!!!!!!!!!
     !! CLEAN UP !!

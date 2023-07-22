@@ -1,7 +1,7 @@
 flux_cache = []
 integral_cache = []
 
-def run(simulation_no, velocity_model, geometry, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False):
+def run(simulation_no, velocity_model, geometry, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, normal_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], error_on_fail=True, extra_text=''):
 
 	assert(velocity_model in ['nsb', 'ns-nsb', 'ns-b', 's-b'])
 
@@ -17,7 +17,7 @@ def run(simulation_no, velocity_model, geometry, artery_location, vein_location_
 	from miscellaneous import output
 
 	output.output( "##########################", terminal_output)
-	output.output(f"Running simulation # {simulation_no}...", terminal_output, flush=True)
+	output.output(f"Running simulation # {simulation_no}... {extra_text}", terminal_output, flush=True)
 	output.output( "##########################", terminal_output)
 
 	from meshes import generate_mesh
@@ -30,14 +30,18 @@ def run(simulation_no, velocity_model, geometry, artery_location, vein_location_
 		# GENERATE MESH #
 		#################
 		output_timer.time(simulation_no, "mesh generation", terminal_output, clear_existing=True)
-		generate_mesh.generate_mesh(simulation_no, geometry, h, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output)
+		generate_mesh.generate_mesh(simulation_no, geometry, h, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output, normal_vessels)
 		output_timer.time(simulation_no, "mesh generation", terminal_output)
 
 		##################
 		# RUN SIMULATION #
 		##################
 		output_timer.time(simulation_no, "AptoFEM simulation", terminal_output, clear_existing=True)
-		aptofem_run_no, velocity_dofs, transport_dofs, newton_residual, newton_iterations = aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, terminal_output, verbose_output)
+		result = aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, terminal_output, verbose_output, error_on_fail)
+		if (result == False):
+			return False
+		else:
+			aptofem_run_no, velocity_dofs, transport_dofs, newton_residual, newton_iterations = result
 		output_timer.time(simulation_no, "AptoFEM simulation", terminal_output, f".\n  aptofem_run_no = {aptofem_run_no}, velocity_dofs = {velocity_dofs:,}, transport_dofs = {transport_dofs:,}, newton_iterations = {newton_iterations}, newton_residual = {newton_residual:.4e}")
 
 		from plotting import calculate_velocity_limits
@@ -91,7 +95,9 @@ def run(simulation_no, velocity_model, geometry, artery_location, vein_location_
 	reaction_integral = get_transport_reaction_integral.get_transport_reaction_integral(program, geometry, aptofem_run_no)
 	integral_cache.append(reaction_integral)
 
-def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, terminal_output, verbose_output):
+	return True
+
+def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, terminal_output, verbose_output, error_on_fail):
 
 	# Programatically create coefficients. ##
 	#  Re 
@@ -168,7 +174,10 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location,
 	except subprocess.CalledProcessError as e:
 		run_no = get_current_run_no.get_current_run_no(program)
 		save_output.save_output(e, program, geometry, run_no)
-		raise_error.raise_error(e)
+		if (error_on_fail):
+			raise_error.raise_error(e)
+		else:
+			return False
 
 	# TODO: only true for steady-state 0 time-steps with DG.
 	if (velocity_space == 'DG' and (velocity_model == 'nsb' or velocity_model == 'ns-b')):
@@ -187,7 +196,7 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location,
 # def convergence():
 # 	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration
 
-def setup(clean, terminal_output, compile=True):
+def setup(clean, terminal_output, compile=True, programs_to_compile='all'):
 	from miscellaneous import output
 
 	output.output("##########################", terminal_output)
@@ -229,9 +238,8 @@ def setup(clean, terminal_output, compile=True):
 		output_timer.time(0, "compilation", terminal_output)
 		try:
 			#make_clean_output = subprocess.run(['make', 'cleanall'], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-			make_output       = subprocess.run(['make', 'all'], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-			# make_output       = subprocess.run(['make', 'nsb-transport_placenta'], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-			save_output.save_output(make_output, f'compile_{program}', 'all', 0)
+			make_output       = subprocess.run(['make', programs_to_compile], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+			save_output.save_output(make_output, f'compile_{program}', programs_to_compile, 0)
 		except subprocess.CalledProcessError as e:
 			output.output(f"## ERROR ##", True)
 			output.output(f"Error message: {e.stderr.decode('utf-8')}", True)

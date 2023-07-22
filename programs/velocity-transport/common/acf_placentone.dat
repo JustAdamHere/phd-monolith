@@ -4,7 +4,7 @@
 aptofem_help .false.
 aptofem_pause_code .false.
 aptofem_back_up_control_file .false.
-aptofem_no_openmp_threads 20
+aptofem_no_openmp_threads 40
 # ==========================================================
 >>> mesh_gen
 display_mesh .false.
@@ -108,7 +108,7 @@ damping_strategy incremental
 minimum_damping 0.01
 initial_damping 1.0
 damping_increment 0.2
-newton_itns_max 20
+newton_itns_max 30
 newton_tolerance 1.0d-10
 newton_terminate_on_fail .true.
 

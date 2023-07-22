@@ -1,7 +1,7 @@
 def get_newton_iterations(program, geometry, run_no):
   import os
 
-  newton_iteration_line = -114
+  newton_iteration_line = -114 + 42
 
   ao_output  = f'./output/{program}_{geometry}_{run_no}.txt'
 

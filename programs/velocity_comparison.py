@@ -1,4 +1,4 @@
-def run(simulation_no, geometry, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, velocity_space = 'DG', terminal_output = True, verbose_output = False, plot = True):
+def run(simulation_no, geometry, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, velocity_space = 'DG', terminal_output = True, verbose_output = False, plot = True, normal_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]]):
 
 	program = "velocity-transport"
 
@@ -22,7 +22,7 @@ def run(simulation_no, geometry, artery_location, vein_location_1, vein_location
 	# GENERATE MESH #
 	#################
 	output_timer.time(simulation_no, "mesh generation", terminal_output)
-	generate_mesh.generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output)
+	generate_mesh.generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output, normal_vessels)
 	output_timer.time(simulation_no, "mesh generation", terminal_output)
 
 	##################
