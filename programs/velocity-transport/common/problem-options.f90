@@ -344,4 +344,27 @@ module problem_options
             + (placenta_point(2) - y_centre)*sin(translate_angle) + y_centre
     end function
 
+    function translate_placentone_3d_to_placentone_point(problem_dim, placenta_point, element_region_id)
+        use param
+
+        implicit none
+
+        real(db), dimension(2)                       :: translate_placentone_3d_to_placentone_point
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: placenta_point
+        integer, intent(in)                          :: element_region_id
+
+        real(db) :: x, y, z
+        real(db) :: r
+
+        x = placenta_point(1)
+        y = placenta_point(2)
+        z = placenta_point(3)
+
+        r = sqrt(x**2 + z**2)
+
+        translate_placentone_3d_to_placentone_point(1) = r
+        translate_placentone_3d_to_placentone_point(2) = y
+    end function
+
 end module

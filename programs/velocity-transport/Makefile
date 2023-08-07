@@ -10,12 +10,13 @@ fluxes          = ./common/crossflow_flux.f90 ./common/outflow_flux.f90 ./common
 problem_options = ./common/problem-options.f90 ./common/problem-options_velocity.f90 ./common/problem-options_transport.f90
 miscellaneous   = ./common/refine_region.f90 ./common/integrate_transport-reaction.f90
 
-placentone_bcs = ./common/2d-bcs_transport.f90 ./common/2d-bcs_velocity_placentone.f90
-placenta_bcs   = ./common/2d-bcs_transport.f90 ./common/2d-bcs_velocity_placenta.f90
+placentone_bcs    = ./common/bcs_transport.f90 ./common/2d-bcs_velocity_placentone.f90
+placenta_bcs      = ./common/bcs_transport.f90 ./common/2d-bcs_velocity_placenta.f90
+placentone_3d_bcs = ./common/bcs_transport.f90 ./common/3d-bcs_velocity_placentone.f90
 
 .PHONY: all cleanall
 
-all:: nsb-transport_placentone nsb-transport_placenta s-b-transport_placentone s-b-transport_placenta ns-b-transport_placentone ns-b-transport_placenta ns-nsb-transport_placentone ns-nsb-transport_placenta
+all:: nsb-transport_placentone nsb-transport_placenta s-b-transport_placentone s-b-transport_placenta ns-b-transport_placentone ns-b-transport_placenta ns-nsb-transport_placentone ns-nsb-transport_placenta nsb-transport_placentone-3d ns-b-transport_placentone-3d s-b-transport_placentone-3d velocity-comparison_placentone velocity-comparison_placenta
 comparison :: velocity-comparison_placentone velocity-comparison_placenta
 
 nsb-transport_placentone ::
@@ -26,6 +27,10 @@ nsb-transport_placenta ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
 	 ./common/velocity_assembly-name_nsb.f90 ./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
 
+nsb-transport_placentone-3d ::
+	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
+	 ./common/velocity_assembly-name_nsb.f90 ./common/program-name_placentone-3d.f90 $(storage) $(fluxes) $(problem_options) $(placentone_3d_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
+
 ns-b-transport_placentone ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
 	 ./common/velocity_assembly-name_ns-b.f90 ./common/program-name_placentone.f90 $(storage) $(fluxes) $(problem_options) $(placentone_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
@@ -33,6 +38,10 @@ ns-b-transport_placentone ::
 ns-b-transport_placenta ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
 	 ./common/velocity_assembly-name_ns-b.f90 ./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
+
+ns-b-transport_placentone-3d ::
+	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
+	 ./common/velocity_assembly-name_ns-b.f90 ./common/program-name_placentone-3d.f90 $(storage) $(fluxes) $(problem_options) $(placentone_3d_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
 
 ns-nsb-transport_placentone ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
@@ -42,6 +51,10 @@ ns-nsb-transport_placenta ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
 	 ./common/velocity_assembly-name_ns-nsb.f90 ./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
 
+ns-nsb-transport_placentone-3d ::
+	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
+	 ./common/velocity_assembly-name_ns-nsb.f90 ./common/program-name_placentone-3d.f90 $(storage) $(fluxes) $(problem_options) $(placentone_3d_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
+
 s-b-transport_placentone ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
 	 ./common/velocity_assembly-name_s-b.f90 ./common/program-name_placentone.f90 $(storage) $(fluxes) $(problem_options) $(placentone_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
@@ -49,6 +62,10 @@ s-b-transport_placentone ::
 s-b-transport_placenta ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
 	 ./common/velocity_assembly-name_s-b.f90 ./common/program-name_placenta.f90 $(storage) $(fluxes) $(problem_options) $(placenta_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
+
+s-b-transport_placentone-3d ::
+	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
+	 ./common/velocity_assembly-name_s-b.f90 ./common/program-name_placentone-3d.f90 $(storage) $(fluxes) $(problem_options) $(placentone_3d_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
 
 velocity-comparison_placentone ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \

@@ -41,7 +41,7 @@ for voxel_xy = 1:N_voxels_x*N_voxels_y
   movie_frames = struct('cdata', cell(1, length(t)), 'colormap', cell(1, length(t)));
 
   %colors = [1 0 0; 0 1 0; 0 0 1; 0 1 1];
-  colors = autumn(points_per_voxel);
+  colors = winter(points_per_voxel);
 
   % fig = figure(voxel_xy);
   % set(fig, 'Visible', 'off');
@@ -71,14 +71,15 @@ for voxel_xy = 1:N_voxels_x*N_voxels_y
 
       % Plots the phase.
       subplot(2, 2, 1)
-      circle(centre_of_voxel(1), centre_of_voxel(2), r, 'k-');
+      % circle(centre_of_voxel(1), centre_of_voxel(2), r, 'k-');
+      circle(0.5, 0.5, 0.5, 'k-');
       hold on
       for i = 1:points_per_voxel
         plot(x(i), y(i), 'o', 'Color', colors(i, :))
-        quiver(centre_of_voxel(1), centre_of_voxel(2), arrows(1, i)./arrows_mag(i), arrows(2, i)./arrows_mag(i), 0, 'filled', 'Color', colors(i, :))
+        quiver(0.5, 0.5, arrows(1, i)./arrows_mag(i), arrows(2, i)./arrows_mag(i), 0, 'filled', 'Color', colors(i, :))
       end
       plot(x_avg, y_avg, 'ko')
-      quiver(centre_of_voxel(1), centre_of_voxel(2), x_avg - centre_of_voxel(1), y_avg - centre_of_voxel(2), 0, 'filled', 'k')
+      quiver(0.5, 0.5, x_avg - 0.5, y_avg - 0.5, 0, 'filled', 'k')
       pbaspect([1 1 1])
 
       % Annotates the molecule number.
@@ -87,16 +88,18 @@ for voxel_xy = 1:N_voxels_x*N_voxels_y
       % end
 
       % Title for current time.
-      title(['t = ', num2str(t(n)), 'ms'])
+      title(['Spin, t = ', num2str(t(n)), 'ms'])
 
       % Gradient profile.
       subplot(2, 2, [2, 4])
+      title('g(t)')
       plot(t, G{voxel_xy}(b_index, :), 'k-')
       hold on
       plot(t(n), G{voxel_xy}(b_index, n), 'kx')
 
       % Velocity.
       subplot(2, 2, 3)
+      title('Molecule locations')
       for i = 1:points_per_voxel
         plot(squeeze(x_t{voxel_xy}(b_index, 1, i, :)), squeeze(x_t{voxel_xy}(b_index, 2, i, :)), '-', 'Color', colors(i, :))
         hold on

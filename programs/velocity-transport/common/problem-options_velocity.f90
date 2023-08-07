@@ -3,11 +3,12 @@ module problem_options_velocity
 
     save
 
-    real(db)          :: velocity_diffusion_coefficient, velocity_convection_coefficient, &
+    real(db)         :: velocity_diffusion_coefficient, velocity_convection_coefficient, &
         velocity_pressure_coefficient, velocity_forcing_coefficient, &
         velocity_reaction_coefficient, velocity_time_coefficient
     logical          :: large_boundary_v_penalisation
     character(len=2) :: fe_space_velocity
+    integer          :: no_reynold_ramp_steps
 
 contains
     subroutine get_user_data_velocity(section_name, aptofem_stored_keys)
@@ -31,6 +32,8 @@ contains
         call get_aptofem_key_definition('velocity_forcing_coefficient', &
             velocity_forcing_coefficient, section_name, aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('large_boundary_v_penalisation', large_boundary_v_penalisation, section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('no_reynold_ramp_steps', no_reynold_ramp_steps, section_name, &
             aptofem_stored_keys, ierr)
     end subroutine
 
@@ -144,6 +147,8 @@ contains
                 translated_point = global_point
             else if (trim(name) == 'placenta') then
                 translated_point = translate_placenta_to_placentone_point(problem_dim, global_point, element_region_id)
+            else if (trim(name) == 'placentone') then
+                translated_point = translate_placentone_3d_to_placentone_point(problem_dim, global_point, element_region_id)
             else
                 print *, "Error in calculate_velocity_reaction_coefficient. Missed case."
                 print *, "name = ", name

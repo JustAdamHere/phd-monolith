@@ -1,0 +1,174 @@
+####################
+# SIMULATION SETUP #
+####################
+# Nominal values of parameters.
+artery_location_nominal   = 0.5
+vein_location_1_nominal   = 0.2
+vein_location_2_nominal   = 0.8
+
+# Geometry measurements.
+central_cavity_nominal            = 0.25   # 10mm
+central_cavity_transition_nominal = 0.05   # 2mm
+pipe_transition_nominal           = 0.03   # 2mm
+artery_length_nominal             = 0.05   # 2mm
+artery_width_nominal              = 0.0625 # 2.5mm
+
+# Mesh.
+#mesh_resolution_default = 0.05
+mesh_resolution_default = 0.15
+
+# Unused.
+log_cavity_transition = False
+
+# Problem parameters.
+L   = 0.04     # m
+U   = 0.1 # m/s
+k   = 1e-8     # m^2
+mu  = 4e-3     # Pa s
+rho = 1e3      # kg/m^3
+D   = 1.667e-9 # m^2/s
+R   = 1.667e-2 # m^2/s
+
+##################
+# SIMULATION RUN #
+##################
+# Clean and compile.
+from programs import velocity_transport
+# velocity_transport.setup(clean=True, terminal_output=True, compile=False, programs_to_compile='nsb-transport_placenta')
+run_no = 0
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# Sampling parameters.
+no_samples    = 10
+no_subsamples = 20
+variance      = 0.001
+
+#############################
+# VARY CENTRAL CAVITY WIDTH #
+#############################
+# Run simulations.
+ε = 0.001
+# central_cavity_width_means = np.linspace(artery_width_nominal + central_cavity_transition_nominal + variance + ε, 0.3, no_samples)
+central_cavity_width_means = np.linspace(0.13, 0.28, no_samples)
+print(f"Varying cavity width mean between {central_cavity_width_means[0]} and {central_cavity_width_means[-1]}.")
+
+integral = []
+central_cavity_widths = []
+# for i in range(0, no_samples):
+#     central_cavity_width_mean = central_cavity_width_means[i]
+
+#     for j in range(0, no_subsamples):
+#         success = False
+#         while not success:
+#           central_cavity_width = np.random.normal(central_cavity_width_mean, variance)
+
+#           success = velocity_transport.run(run_no, "nsb", "placenta", artery_location_nominal, vein_location_1_nominal, vein_location_2_nominal, central_cavity_width, central_cavity_transition_nominal, pipe_transition_nominal, artery_length_nominal, mesh_resolution_default, log_cavity_transition, L, U, mu, rho, k, D, R, terminal_output=True, verbose_output=False, velocity_oscillation_tolerance=1e-4, transport_oscillation_tolerance=1e-1, plot=False, rerun_on_oscillation=False, normal_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], error_on_fail=False, extra_text=f"Central cavity width: {central_cavity_width}")
+#         central_cavity_widths.append(central_cavity_width)
+#         integral.append(velocity_transport.integral_cache[run_no])
+#         run_no += 1
+
+integral = [0.00105439, 0.00105265, 0.00105113, 0.00105325, 0.00105295, 0.0010516,
+ 0.0010528,  0.00105321, 0.00105164, 0.00105104, 0.00105327, 0.00105424,
+ 0.00105305, 0.00105312, 0.00105183, 0.00105253, 0.00105229, 0.00105445,
+ 0.00105488, 0.00105328, 0.0010507,  0.00105089, 0.001051,   0.00104835,
+ 0.00105113, 0.00104879, 0.00105057, 0.00105127, 0.00105098, 0.00105092,
+ 0.00105173, 0.00105098, 0.0010468,  0.0010509,  0.00104843, 0.00105042,
+ 0.00104682, 0.00104796, 0.00105038, 0.00105095, 0.00104138, 0.00104185,
+ 0.0010407,  0.0010427,  0.00104166, 0.00104172, 0.00104118, 0.00104198,
+ 0.0010407,  0.0010421,  0.00104082, 0.00104589, 0.00104227, 0.00104155,
+ 0.00104116, 0.00104319, 0.00104228, 0.00104114, 0.00104272, 0.00104316,
+ 0.00102994, 0.00103027, 0.00103034, 0.00103084, 0.00102932, 0.00103973,
+ 0.00103101, 0.00102972, 0.00103059, 0.00103045, 0.00102901, 0.00103011,
+ 0.00103901, 0.00103998, 0.00102936, 0.00103026, 0.00103965, 0.00103919,
+ 0.00103029, 0.00103004, 0.00102486, 0.00102743, 0.0010246,  0.00102495,
+ 0.00102464, 0.00102645, 0.00102437, 0.00102824, 0.00102654, 0.00102478,
+ 0.00102483, 0.00102175, 0.00102613, 0.0010246,  0.00102454, 0.00102559,
+ 0.00102424, 0.00102503, 0.00102876, 0.00102613, 0.00101713, 0.00101418,
+ 0.00101905, 0.00101381, 0.00101431, 0.00101484, 0.00101873, 0.00101925,
+ 0.0010191,  0.00102156, 0.00101904, 0.00101395, 0.00101956, 0.00101415,
+ 0.0010184,  0.00101418, 0.00101836, 0.00101871, 0.00101623, 0.00101424,
+ 0.0010045,  0.00100383, 0.0010012,  0.0010044,  0.00100583, 0.00100392,
+ 0.00100483, 0.00100077, 0.00100415, 0.00100374, 0.0010038,  0.00100414,
+ 0.0010043,  0.00099797, 0.00099858, 0.00100443, 0.00100392, 0.00099842,
+ 0.00100214, 0.00100204, 0.0009828,  0.00098372, 0.0009853,  0.00098496,
+ 0.00098193, 0.00098702, 0.00098312, 0.00098224, 0.00098164, 0.00098658,
+ 0.00098643, 0.00098298, 0.00098463, 0.00098266, 0.00098475, 0.00098689,
+ 0.00098695, 0.00098661, 0.00098292, 0.00098395, 0.00096502, 0.00096391,
+ 0.00096538, 0.00096556, 0.00096466, 0.00096592, 0.00096555, 0.00096764,
+ 0.00096582, 0.00096606, 0.00096596, 0.00096503, 0.00096546, 0.0009652,
+ 0.00096548, 0.00096577, 0.00096537, 0.00096465, 0.00096575, 0.00096534,
+ 0.00094265, 0.00094038, 0.00094331, 0.00093822, 0.00094175, 0.00094302,
+ 0.00094042, 0.00094459, 0.00093641, 0.00093602, 0.00093881, 0.00094237,
+ 0.00093702, 0.00094044, 0.00094464, 0.00094231, 0.00094267, 0.00094029,
+ 0.00094208, 0.00093766]
+
+central_cavity_widths = [0.12950551107482777, 0.12922914733207228, 0.1302024982186295, 0.13028545849677087, 0.13226084320599174, 0.1291720192490118, 0.12884355887204155, 0.12972040531395018, 0.13171631640220857, 0.1308963514612034, 0.1295875920925523, 0.1283433431340494, 0.12866214724595065, 0.12960549734659413, 0.12900942895765324, 0.13051118905821468, 0.13007785983188339, 0.13127928267524372, 0.12931448498677914, 0.1295768863879662, 0.14701228860377547, 0.14687247073126414, 0.14679383758963752, 0.14855524692529262, 0.1463222417944964, 0.14448137491234733, 0.14592742390875243, 0.14659232041419998, 0.1467176266069254, 0.14763424780433693, 0.14747488060672265, 0.14678896484526974, 0.1455819495465781, 0.14737541994792644, 0.1445546911105976, 0.14716819597669606, 0.1455713223479652, 0.14549992984195695, 0.1472052832169001, 0.14672866433925377, 0.16261812240184167, 0.16396652937452746, 0.16364214207519454, 0.1633000501358121, 0.16230508875543773, 0.16228862484664827, 0.16421855094262877, 0.16219625722513942, 0.1629636589700414, 0.16171823480377495, 0.16292832584695133, 0.16098276079035626, 0.16256198384116366, 0.16232787545381167, 0.1635424868466553, 0.16434169442095298, 0.16255997911286815, 0.1635564966253722, 0.1632553746424324, 0.16519261249483883, 0.18056708346519185, 0.18001501346074142, 0.17996949438018728, 0.18121710177284356, 0.18018296793883684, 0.17861924908460558, 0.1811572239300176, 0.18052039735110623, 0.18050741607086782, 0.18103745468770244, 0.1802579690510218, 0.18039447144744628, 0.17736186775980947, 0.1787736501260186, 0.18015370653759769, 0.17999133688015342, 0.1784369875000878, 0.1789497795704141, 0.17995135288697334, 0.17990532008077015, 0.19574343651492013, 0.1956057500123479, 0.19662834290042244, 0.1968837829650888, 0.19682811074556292, 0.19648451272608186, 0.19582902910954897, 0.19521291851888525, 0.19518441269679873, 0.19749990239078755, 0.19576698411499432, 0.19894375574311618, 0.19516088243231483, 0.19618800267019032, 0.19664242916407904, 0.19825429434862224, 0.1971212629100809, 0.19705296649808807, 0.19495062919070974, 0.19641214499718318, 0.21362757980021993, 0.21412216541008872, 0.2128754890428325, 0.21417756952955638, 0.21410146510143957, 0.21407756771796815, 0.21355716881898174, 0.21215011903507763, 0.212865233964646, 0.21191114178498033, 0.21226209605326396, 0.211579276878061, 0.21240076884772108, 0.21411043974244975, 0.21322841172564425, 0.214157810946581, 0.2131300829083378, 0.2135611922815234, 0.21368833442492818, 0.21452862171218046, 0.2298766549480178, 0.23009088474707245, 0.23070671334010287, 0.22913450745468755, 0.22887511520355314, 0.22930007185002563, 0.22869265075210432, 0.23073183063460673, 0.2298129121978587, 0.22922641092620583, 0.22799047852932072, 0.22978845455436037, 0.22972681666914452, 0.23299797614153492, 0.23144634478449114, 0.2291277918116165, 0.22930038874321804, 0.2318782409148746, 0.2304024646355965, 0.23029862760491188, 0.24642456388138992, 0.24759610796762924, 0.24714633438986963, 0.24724374086146936, 0.24775732253788438, 0.24535908946110802, 0.24664234996699905, 0.2489119372465309, 0.24820896290212066, 0.24577996601015137, 0.24573637261542697, 0.24864437727913954, 0.24617857037953, 0.24667421496251984, 0.24623745938482247, 0.2456359448833403, 0.24528666408319158, 0.2470440787924421, 0.2467430446929018, 0.2462658563797249, 0.2637541968682393, 0.26598262151875535, 0.26394795911788094, 0.26310721209239396, 0.26350856375544746, 0.2619761387468443, 0.26311489504514374, 0.2619391453470354, 0.26305301284190385, 0.26436790197997806, 0.26387298165857404, 0.2633094906476894, 0.26419869220531916, 0.26487089279021236, 0.26277528664399336, 0.26397337510717406, 0.26372691367828155, 0.26344801965343384, 0.26360114720088046, 0.26335868828067716, 0.27989277895599274, 0.2804381146092799, 0.27913236629927596, 0.2815021739833366, 0.2794898454976542, 0.27862647473141244, 0.2803380767948792, 0.2788310865997624, 0.28212744505601467, 0.2816523156749697, 0.2808504028802981, 0.2799369768784278, 0.28115644411580837, 0.2794302878719015, 0.27837236244035357, 0.2798084456446564, 0.27986829909086136, 0.28049918847243865, 0.27956455645896994, 0.28235356225042113]
+
+# from miscellaneous import get_transport_reaction_integral
+
+# for i in range(0, no_samples):
+#   for j in range(0, no_subsamples):
+#     run_no = i*no_subsamples+j
+#     aptofem_run_no = run_no + 1
+#     reaction_integral = get_transport_reaction_integral.get_transport_reaction_integral('velocity-transport', 'placenta', aptofem_run_no)
+#     integral.append(reaction_integral)
+
+integral = np.array(integral)
+central_cavity_width_means = 1000*L*np.array(central_cavity_width_means)
+central_cavity_widths = 1000*L*np.array(central_cavity_widths)
+
+integral_average = integral.reshape([no_samples, no_subsamples]).mean(axis=1)
+
+cmap = plt.get_cmap('tab10')
+
+import scipy.stats as stats
+
+# Plot.
+plt.plot(central_cavity_width_means, integral_average, '--', color='k')
+for i in range(0, no_samples):
+  plt.boxplot(integral[i*no_subsamples:(i+1)*no_subsamples], positions=[central_cavity_width_means[i]], widths=0.01*L*1000, labels=[f'{central_cavity_width_means[i]:.2f}'])
+
+  # Plot normal distribution on each mean.
+  # normal_x = np.linspace(central_cavity_width_means[i] - 3*variance*L*1000, central_cavity_width_means[i] + 3*variance*L*1000, 100)
+  # plt.plot(normal_x, 0.1*(integral_average.max()-integral_average.min())*stats.norm.pdf(normal_x, central_cavity_width_means[i], variance*L*1000)/stats.norm.pdf(central_cavity_width_means[i], central_cavity_width_means[i], variance*L*1000) + integral_average.min() - 0.2*(integral_average.max() - integral_average.min()), color='k', alpha=0.5)
+  # plt.scatter(central_cavity_widths[i*no_subsamples:(i+1)*no_subsamples], 0.1*(integral_average.max()-integral_average.min())*stats.norm.pdf(central_cavity_widths[i*no_subsamples:(i+1)*no_subsamples], central_cavity_width_means[i], variance*L*1000)/stats.norm.pdf(central_cavity_width_means[i], central_cavity_width_means[i], variance*L*1000) + integral_average.min() - 0.2*(integral_average.max() - integral_average.min()), color='k', s=0.1)
+plt.vlines(central_cavity_nominal*L*1000, 0.0003, 0.0013, color='k', linestyle='-')
+plt.xlabel("Central cavity width mean (mm)")
+plt.ylabel("Integral")
+plt.xlim([4.9, 11.5])
+plt.ylim([0.0003, 0.0013])
+plt.title("Varying central cavity width")
+plt.savefig("./images/vary_central_cavity_width_fixed-y.png", dpi=300)
+
+########################################
+# VARY CENTRAL CAVITY TRANSITION WIDTH #
+########################################
+
+# Vary permeability.
+
+# Vary artery width.
+
+# Vary vein width.
+
+# Vary number of arteries.
+
+# Vary number of veins (less).
+
+# Vary number of veins (more).
+
+
+
+
+
+
+# Output measured quantities.
+from miscellaneous import output
+output.output("##########################", True)
+# output.output(f"Fluxes: {velocity_transport.flux_cache}", True)
+output.output(f"Integrals: {integral}", True)
+output.output(f"Central cavity widths: {central_cavity_widths}", True)
+
+# Save output.
+output.save()

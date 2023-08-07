@@ -1,12 +1,17 @@
-def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output, normal_vessels):
+def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output, normal_vessels, wall_height_ratio, artery_width):
 	import subprocess
 
 	if (geometry == "placentone"):
 		geo_file = "box-circle.geo"
+		dim = 2
 		# geo_file = "box-circle_1-vein.geo"
+	elif (geometry == "placentone-3d"):
+		geo_file = "box-circle-3d.geo"
+		dim = 3
 	else:
 		#geo_file = "inverted-circle-slice-6_normal-walls.geo"
 		geo_file = "inverted-circle-slice-6-flat_normal-walls.geo"
+		dim = 2
 
 	vein_11 = normal_vessels[0][0]
 	vein_12 = normal_vessels[0][2]
@@ -27,6 +32,12 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 	artery_41 = normal_vessels[3][1]
 	artery_51 = normal_vessels[4][1]
 	artery_61 = normal_vessels[5][1]
+
+	wall_height_1 = wall_height_ratio*0.1725
+	wall_height_2 = wall_height_ratio*0.35175
+	wall_height_3 = wall_height_ratio*0.1725
+	wall_height_4 = wall_height_ratio*0.35175
+	wall_height_5 = wall_height_ratio*0.1725
 
 	# Generate corresponding .msh file.
 	# subprocess.run([\
@@ -85,7 +96,13 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 		'-setnumber', 'artery_61', str(artery_61), \
 		'-setnumber', 'central_cavity_width', str(central_cavity_width),\
 		'-setnumber', 'central_cavity_transition', str(central_cavity_transition),\
-		'-2',\
+		'-setnumber', 'wall_height_1', str(wall_height_1),\
+		'-setnumber', 'wall_height_2', str(wall_height_2),\
+		'-setnumber', 'wall_height_3', str(wall_height_3),\
+		'-setnumber', 'wall_height_4', str(wall_height_4),\
+		'-setnumber', 'wall_height_5', str(wall_height_5),\
+		'-setnumber', 'artery_width',  str(artery_width),\
+	 f'-{dim}',\
 		'-o', f'meshes/mesh_{simulation_no}.msh'\
 	],
 	stdout=subprocess.DEVNULL)

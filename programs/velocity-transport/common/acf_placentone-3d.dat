@@ -8,7 +8,7 @@ aptofem_no_openmp_threads 40
 # ==========================================================
 >>> mesh_gen
 display_mesh .false.
-problem_dim 2
+problem_dim 3
 
 mesh_file_name mesh_0.msh
 mesh_file_dir ../../meshes/
@@ -16,7 +16,7 @@ mesh_file_dir ../../meshes/
 quadrature_rule gauss_leg_tensor_prod
 # ==========================================================
 >>> fe_solution_velocity
-fe_space DG(q,2,2,1;region=301,411,412,413,501,511,521)
+fe_space DG(q,2,2,2,1;region=301,411,412,413,501,511,521)
 # ==========================================================
 >>> fe_solution_transport
 fe_space DG(q,1;region=301,411,412,413,501,511,521)
@@ -83,7 +83,6 @@ velocity_ic_from_ss .true.
 transport_ic_from_ss .true.
 compute_transport .true.
 large_boundary_v_penalisation .false.
-reynold_ramp_steps 10
 
 artery_location 0.5000
 central_cavity_width 0.25
@@ -125,8 +124,8 @@ turn_off_output .true.
 write_rhs_to_file .false.
 write_matrix_to_file .false.
 
-write_rhs_filename dg_velocity_placentone
-write_matrix_filename dg_velocity_placentone
+write_rhs_filename dg_velocity_placentone-3d
+write_matrix_filename dg_velocity_placentone-3d
 
 write_rhs_dir ../../output/
 write_matrix_dir ../../output/
@@ -144,8 +143,8 @@ turn_off_output .true.
 write_rhs_to_file .false.
 write_matrix_to_file .false.
 
-write_rhs_filename dg_transport_placentone
-write_matrix_filename dg_transport_placentone
+write_rhs_filename dg_transport_placentone-3d
+write_matrix_filename dg_transport_placentone-3d
 
 write_rhs_dir ../../output/
 write_matrix_dir ../../output/
@@ -154,7 +153,7 @@ quadrature_inc 2
 # ==========================================================
 >>> output_mesh_solution_velocity_2D
 output_directory ../../output/
-append_filename dg_velocity_placentone
+append_filename dg_velocity_placentone-3d
 
 fe_output fe_solution
 fe_output_file_type vtk
@@ -165,7 +164,7 @@ variable_3 p
 # ==========================================================
 >>> output_mesh_solution_transport_2D
 output_directory ../../output/
-append_filename dg_transport_placentone
+append_filename dg_transport_placentone-3d
 
 fe_output fe_solution
 fe_output_file_type vtk
@@ -174,7 +173,7 @@ variable_1 c
 # ==========================================================
 >>> output_mesh_solution_permeability
 output_directory ../../output/
-append_filename dg_permeability_placentone
+append_filename dg_permeability_placentone-3d
 
 fe_output fe_solution
 fe_output_file_type vtk
@@ -183,7 +182,7 @@ variable_1 k
 # ==========================================================
 >>> output_mesh_solution_uptake
 output_directory ../../output/
-append_filename dg_uptake_placentone
+append_filename dg_uptake_placentone-3d
 
 fe_output fe_solution
 fe_output_file_type vtk
@@ -194,11 +193,11 @@ variable_1 r
 terminal_output on
 
 output_directory ../../output/
-append_filename dg_velocity_placentone
+append_filename dg_velocity_placentone-3d
 output_file_titles both
 # ==========================================================
 >>> uniform_refinement
-append_filename dg_velocity_placentone_uniform-refinement
+append_filename dg_velocity_placentone-3d_uniform-refinement
 output_directory ../../output/
 
 isoh_one_hanging_node_per_face .true.

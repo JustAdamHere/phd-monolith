@@ -2,10 +2,11 @@ program evaluate_solution
   use aptofem_kernel
   use fe_solution_restart_io
   use point_searching
-  use bcs_nsku
+  use bcs_velocity
   use refine_region
   use program_name_module
   use problem_options
+  use problem_options_velocity
 
   implicit none
 
@@ -72,15 +73,16 @@ program evaluate_solution
 
   read(run_no_string, '(i10)') run_no
 
-  problem         = 'dg_nsku_transport'
-  program_dir     = '../' // trim(problem) // '/'
+  problem         = 'dg_velocity-transport'
+  program_dir     = '../velocity-transport/common/'
 
   !!!!!!!!!!!!!!!!!!!
   !! APTOFEM SETUP !!
   !!!!!!!!!!!!!!!!!!!
   call AptoFEM_initialize(aptofem_stored_keys, 'acf_' // trim(control_file) // '.dat', trim(program_dir))
   call get_user_data     ('user_data', aptofem_stored_keys)
-  call create_mesh       (mesh_data, get_boundary_no_nsku, 'mesh_gen', aptofem_stored_keys)
+  call create_mesh       (mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
+  call set_space_type_velocity(aptofem_stored_keys)
 
   problem_dim = get_problem_dim(mesh_data)
 
@@ -155,13 +157,13 @@ program evaluate_solution
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! VELOCITY PROBLEM SETUP !!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  call create_fe_solution(solution_data, mesh_data, 'fe_solution_nsku', aptofem_stored_keys, &
-    dirichlet_bc_nsku)
+  call create_fe_solution(solution_data, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, &
+    dirichlet_bc_velocity)
 
   !!!!!!!!!!!!!!!!!!!!!!
   !! READ IN SOLUTION !!
   !!!!!!!!!!!!!!!!!!!!!!
-  call read_solution_for_restart(mesh_data, solution_data, 0, trim(problem) // '_nsku_' // trim(control_file), run_no, &
+  call read_solution_for_restart(mesh_data, solution_data, 0, trim(problem) // '_velocity_' // trim(control_file), run_no, &
     '../../output/')
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

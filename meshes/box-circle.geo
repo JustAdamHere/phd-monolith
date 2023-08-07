@@ -42,7 +42,7 @@ EndIf
 //////////////////////
 // Other parameters //
 //////////////////////
-artery_width          = 0.0625; // 2.5 mm
+artery_width          = 0.06;   // 2.4 mm
 artery_width_sm       = 0.0125; // 0.5mm
 artery_length         = 0.25;   // 10mm
 artery_length_diverge = 0.075;  // 3mm
