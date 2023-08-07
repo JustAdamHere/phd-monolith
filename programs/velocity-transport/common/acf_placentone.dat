@@ -78,12 +78,13 @@ no_uniform_refinements_inlet 0
 no_uniform_refinements_cavity 0
 no_uniform_refinements_everywhere 0
 
-velocity_ss .true.
+velocity_ss .false.
 velocity_ic_from_ss .true.
 transport_ic_from_ss .true.
 compute_transport .true.
 large_boundary_v_penalisation .false.
-reynold_ramp_steps 10
+no_reynold_ramp_steps 30
+reynold_ramp_start_ratio 0.5
 
 artery_location 0.5000
 central_cavity_width 0.25
@@ -98,8 +99,8 @@ dirk_solver_type newton
 
 dirk_no_inner_steps 1
 dirk_order 1
-dirk_final_time 0.0
-dirk_number_of_timesteps 0
+dirk_final_time 1.0
+dirk_number_of_timesteps 1000
 
 dirk_output .false.
 dirk_output_section_name output_mesh_solution_velocity_2D

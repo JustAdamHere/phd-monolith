@@ -149,47 +149,52 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location,
 	set_parameter.set_parameter("velocity-transport", geometry, 85, f"large_boundary_v_penalisation .{str(large_boundary_v_penalisation).lower()}.")
 
 	# Structural parameters.
-	set_parameter.set_parameter("velocity-transport", geometry, 87, f"artery_location {artery_location:.4f}")
-	set_parameter.set_parameter("velocity-transport", geometry, 88, f"central_cavity_width {central_cavity_width}")
-	set_parameter.set_parameter("velocity-transport", geometry, 89, f"central_cavity_transition {central_cavity_transition}")
-	set_parameter.set_parameter("velocity-transport", geometry, 90, f"pipe_transition {pipe_transition}")
-	set_parameter.set_parameter("velocity-transport", geometry, 91, f"artery_length {artery_length}")
-	set_parameter.set_parameter("velocity-transport", geometry, 92, f"log_cavity_transition .{str(log_cavity_transition).lower()}.")
+	set_parameter.set_parameter("velocity-transport", geometry, 88, f"artery_location {artery_location:.4f}")
+	set_parameter.set_parameter("velocity-transport", geometry, 89, f"central_cavity_width {central_cavity_width}")
+	set_parameter.set_parameter("velocity-transport", geometry, 90, f"central_cavity_transition {central_cavity_transition}")
+	set_parameter.set_parameter("velocity-transport", geometry, 91, f"pipe_transition {pipe_transition}")
+	set_parameter.set_parameter("velocity-transport", geometry, 92, f"artery_length {artery_length}")
+	set_parameter.set_parameter("velocity-transport", geometry, 93, f"log_cavity_transition .{str(log_cavity_transition).lower()}.")
 
 	# Manually set timesteps to 0.
-	set_parameter.set_parameter("velocity-transport", geometry, 100, f"dirk_final_time 0.0")
-	set_parameter.set_parameter("velocity-transport", geometry, 101, f"dirk_number_of_timesteps 0")
+	set_parameter.set_parameter("velocity-transport", geometry, 101, f"dirk_final_time 0.0")
+	set_parameter.set_parameter("velocity-transport", geometry, 102, f"dirk_number_of_timesteps 0")
 
 	from miscellaneous import get_current_run_no, save_output, output, raise_error, get_dofs, get_newton_residual, get_newton_iterations
 	import subprocess
 	import sys
 
 	# Run AptoFEM simulation.
-	run_no = -1
-	try:
-		run_output = subprocess.run([f'./{velocity_model}-transport_{geometry}.out', ], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-		run_no     = get_current_run_no.get_current_run_no("velocity-transport")
-		save_output.save_output(run_output, program, geometry, run_no)
-		#output.output(run_output.stdout.decode("utf-8"), verbose_output)
-	except subprocess.CalledProcessError as e:
-		run_no = get_current_run_no.get_current_run_no(program)
-		save_output.save_output(e, program, geometry, run_no)
+	run_no = get_current_run_no.get_current_run_no(program) + 1
+	run_process = subprocess.Popen([f'./{velocity_model}-transport_{geometry}.out', ], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+	# Display last line of output to screen, and write lines to file.
+	run_output = open(f"./output/{program}_{geometry}_{run_no}.txt", "w")
+	print("")
+	while run_process.poll() is None:
+		line = run_process.stdout.readline().decode('utf-8').rstrip('\r\n')
+		print(f">>> {line}", end='\r')
+		run_output.write(line + '\n')
+	run_output.close()
+	print("", end='\x1b[1A\rStarting AptoFEM simulation... ')
+
+	# Possibly return an error.
+	if (run_process.returncode != 0):
 		if (error_on_fail):
-			raise_error.raise_error(e)
+			raise_error.raise_error(run_process.stderr.read().decode('utf-8'))
 		else:
 			return False
 
 	# TODO: only true for steady-state 0 time-steps with DG.
-	if (velocity_space == 'DG' and (velocity_model == 'nsb' or velocity_model == 'ns-b')):
-		velocity_dofs   = get_dofs.get_velocity_dofs (program, geometry, run_no)
-		transport_dofs  = get_dofs.get_transport_dofs(program, geometry, run_no)
-		newton_residual = get_newton_residual.get_newton_residual(program, geometry, run_no)
-		newton_iteration= get_newton_iterations.get_newton_iterations(program, geometry, run_no)
-	else:
-		velocity_dofs   = -1
-		transport_dofs  = -1
-		newton_residual = -1
-		newton_iteration= -1
+	velocity_dofs   = -1
+	transport_dofs  = -1
+	newton_residual = -1
+	newton_iteration= -1
+	# if (velocity_space == 'DG' and (velocity_model == 'nsb' or velocity_model == 'ns-b')):
+	# 	velocity_dofs   = get_dofs.get_velocity_dofs (program, geometry, run_no)
+	# 	transport_dofs  = get_dofs.get_transport_dofs(program, geometry, run_no)
+	# 	newton_residual = get_newton_residual.get_newton_residual(program, geometry, run_no)
+	# 	newton_iteration= get_newton_iterations.get_newton_iterations(program, geometry, run_no)
 
 	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration
 

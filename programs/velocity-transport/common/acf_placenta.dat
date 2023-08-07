@@ -83,6 +83,8 @@ velocity_ic_from_ss .true.
 transport_ic_from_ss .true.
 compute_transport .true.
 large_boundary_v_penalisation .false.
+no_reynold_ramp_steps 30
+reynold_ramp_start_ratio 0.4
 
 artery_location 0.5
 central_cavity_width 0.25
@@ -97,8 +99,8 @@ dirk_solver_type newton
 
 dirk_no_inner_steps 1
 dirk_order 1
-dirk_final_time 0.0
-dirk_number_of_timesteps 0
+dirk_final_time 1.0
+dirk_number_of_timesteps 100
 
 dirk_output .false.
 dirk_output_section_name output_mesh_solution_velocity_2D

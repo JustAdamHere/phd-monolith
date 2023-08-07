@@ -83,6 +83,8 @@ velocity_ic_from_ss .true.
 transport_ic_from_ss .true.
 compute_transport .true.
 large_boundary_v_penalisation .false.
+no_reynold_ramp_steps 20
+reynold_ramp_start_ratio 0.05
 
 artery_location 0.5000
 central_cavity_width 0.25

@@ -5,7 +5,7 @@ module problem_options_velocity
 
     real(db)         :: velocity_diffusion_coefficient, velocity_convection_coefficient, &
         velocity_pressure_coefficient, velocity_forcing_coefficient, &
-        velocity_reaction_coefficient, velocity_time_coefficient
+        velocity_reaction_coefficient, velocity_time_coefficient, reynold_ramp_start_ratio
     logical          :: large_boundary_v_penalisation
     character(len=2) :: fe_space_velocity
     integer          :: no_reynold_ramp_steps
@@ -34,6 +34,8 @@ contains
         call get_aptofem_key_definition('large_boundary_v_penalisation', large_boundary_v_penalisation, section_name, &
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('no_reynold_ramp_steps', no_reynold_ramp_steps, section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('reynold_ramp_start_ratio', reynold_ramp_start_ratio, section_name, &
             aptofem_stored_keys, ierr)
     end subroutine
 

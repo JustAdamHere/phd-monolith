@@ -102,7 +102,8 @@ module bcs_velocity
         u(2) = -4.0_db/(right-left)**2*(x-left)*(x-right)
 
         ! u(2) = u(2) * (0.6_db + (cos(t*pi))*0.4_db) ! Oscillates between 0.2 and 1.0.
-        call Boileau_velocity_amplitude(amplitude, t)
+        ! call Boileau_velocity_amplitude(amplitude, t)
+        amplitude = 1.0_db
         u(2) = u(2) * amplitude
 
         if (u(2) <= -1e-5) then

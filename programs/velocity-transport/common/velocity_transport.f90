@@ -58,6 +58,9 @@ program velocity_transport
     character(len=100) :: aptofem_run_number_string
     character(len=100) :: tsvFormat
 
+    integer  :: reynold_step
+    real(db) :: velocity_time_coefficient_orig, velocity_convection_coefficient_orig, ratio
+
     !!!!!!!!!!!!!!!!!!!!!!
     !! SET CONTROL FILE !!
     !!!!!!!!!!!!!!!!!!!!!!
@@ -246,18 +249,32 @@ program velocity_transport
         !     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! end if
 
-        if (trim(assembly_name) == 'nsb' .or. trim(assembly_name) == 'ns-nsb' .or. trim(assembly_name) == 'ns-b') then
-            call newton_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
-                aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, ifail)
-        else if (trim(assembly_name) == 's-b') then
-            call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
-                aptofem_stored_keys, sp_matrix_rhs_data_velocity, 3, scheme_data_velocity)
-            call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
-                aptofem_stored_keys, sp_matrix_rhs_data_velocity, 4, scheme_data_velocity)
-        else
-            print *, "ERROR: Unknown assembly name for velocity solver."
-            error stop
-        end if
+        velocity_convection_coefficient_orig = velocity_convection_coefficient
+        velocity_time_coefficient_orig       = velocity_time_coefficient
+        do reynold_step = 1, no_reynold_ramp_steps
+            ratio = reynold_ramp_start_ratio + (1.0_db - reynold_ramp_start_ratio)*reynold_step / no_reynold_ramp_steps
+
+            velocity_convection_coefficient = velocity_convection_coefficient_orig * ratio
+            velocity_time_coefficient       = velocity_time_coefficient_orig       * ratio
+
+            print *, "==================================================="
+            print *, "Reynolds step: ", reynold_step, " of ", no_reynold_ramp_steps
+            print *, "Current ratio: ", ratio
+            print *, "Convection coefficient: ", velocity_convection_coefficient, " of ", velocity_convection_coefficient_orig
+
+            if (trim(assembly_name) == 'nsb' .or. trim(assembly_name) == 'ns-nsb' .or. trim(assembly_name) == 'ns-b') then
+                call newton_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
+                    aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, ifail)
+            else if (trim(assembly_name) == 's-b') then
+                call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
+                    aptofem_stored_keys, sp_matrix_rhs_data_velocity, 3, scheme_data_velocity)
+                call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
+                    aptofem_stored_keys, sp_matrix_rhs_data_velocity, 4, scheme_data_velocity)
+            else
+                print *, "ERROR: Unknown assembly name for velocity solver."
+                error stop
+            end if
+        end do
 
 
     else
@@ -496,7 +513,7 @@ program velocity_transport
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! VTK AND RAW SOLUTION OUTPUT !
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if (mod(time_step_no, 10) == 0) then
+        if (mod(time_step_no, 1) == 0) then
             if (.not. velocity_ss) then
                 call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, time_step_no, mesh_data, &
                     solution_velocity)
