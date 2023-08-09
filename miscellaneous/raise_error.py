@@ -3,7 +3,7 @@ def raise_error(e):
 	print("###########################################")
 	print("## ❌ ERROR CAUGHT; STOPPING             ##")
 	print("###########################################")
-	print(f"{e.output}".replace('\\n', '\n'))
+	print(f"{e}".replace('\\n', '\n'))
 	print("###########################################")
 	print("## ❌ ERROR CAUGHT; END OF MESSAGE       ##")
 	print("###########################################")

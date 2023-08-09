@@ -58,8 +58,9 @@ program velocity_transport
     character(len=100) :: aptofem_run_number_string
     character(len=100) :: tsvFormat
 
-    integer  :: reynold_step
-    real(db) :: velocity_time_coefficient_orig, velocity_convection_coefficient_orig, ratio
+    integer  :: reynold_step, i
+    real(db) :: velocity_time_coefficient_orig, velocity_convection_coefficient_orig, ratio, min_step, max_step
+    real(db), dimension(:), allocatable :: steps
 
     !!!!!!!!!!!!!!!!!!!!!!
     !! SET CONTROL FILE !!
@@ -248,11 +249,25 @@ program velocity_transport
         !         jacobian_face_velocity_ss, 1)
         !     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! end if
+    
+        ! Creates "base steps" of size 0.1 through to 0.01 between different Reynolds numbers.
+        max_step = -1
+        min_step = -2
+        allocate(steps(no_reynold_ramp_steps))
+        do i = 1, no_reynold_ramp_steps - 1
+            steps(no_reynold_ramp_steps - i + 1) = 10**(min_step + real(i-1)*real(max_step - min_step)/(no_reynold_ramp_steps-2))
+        end do
+        steps(1) = 0.0_db
+        
+        ! "Normalise" the steps.
+        steps = steps / sum(steps)
+        steps = steps * (1 - reynold_ramp_start_ratio)
 
         velocity_convection_coefficient_orig = velocity_convection_coefficient
         velocity_time_coefficient_orig       = velocity_time_coefficient
+        ratio                                = reynold_ramp_start_ratio
         do reynold_step = 1, no_reynold_ramp_steps
-            ratio = reynold_ramp_start_ratio + (1.0_db - reynold_ramp_start_ratio)*reynold_step / no_reynold_ramp_steps
+            ratio = ratio + steps(reynold_step)
 
             velocity_convection_coefficient = velocity_convection_coefficient_orig * ratio
             velocity_time_coefficient       = velocity_time_coefficient_orig       * ratio
@@ -275,7 +290,7 @@ program velocity_transport
                 error stop
             end if
         end do
-
+        deallocate(steps)
 
     else
         !call project_function(solution_velocity, mesh_data, solution_velocity%analytical_solution_ptr)

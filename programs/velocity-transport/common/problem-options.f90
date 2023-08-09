@@ -361,9 +361,9 @@ module problem_options
         y = placenta_point(2)
         z = placenta_point(3)
 
-        r = sqrt(x**2 + z**2)
+        r = sqrt((x-0.5_db)**2 + z**2)
 
-        translate_placentone_3d_to_placentone_point(1) = r
+        translate_placentone_3d_to_placentone_point(1) = r + 0.5_db
         translate_placentone_3d_to_placentone_point(2) = y
     end function
 
