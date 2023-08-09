@@ -78,7 +78,7 @@ no_uniform_refinements_inlet 0
 no_uniform_refinements 0
 no_uniform_refinements_everywhere 0
 
-velocity_ss .true.
+velocity_ss .false.
 velocity_ic_from_ss .true.
 transport_ic_from_ss .true.
 compute_transport .true.

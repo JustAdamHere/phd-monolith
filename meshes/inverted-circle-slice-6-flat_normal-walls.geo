@@ -42,7 +42,7 @@ EndIf
 central_cavity_height = 2*central_cavity_width;
 
 If (!Exists(central_cavity_transition))
-	central_cavity_transition = 0.02; // 0.8mm
+	central_cavity_transition = 0.05; // 2mm
 EndIf
 
 ////////////////////////
@@ -402,10 +402,10 @@ For k In {0:5:1}
 		Point(numbering_start + k*placentone_step + 4)   = {location_1_x_2[k],     location_1_y_2[k],     0, h_refine};
 	EndIf
 	If (artery[k] == 1)
-		Point(numbering_start + k*placentone_step + 5)   = {location_2_x_1[k],     location_2_y_1[k],     0, h_refine};
+		Point(numbering_start + k*placentone_step + 5)   = {location_2_x_1[k],     location_2_y_1[k],     0, h_refine/2};
 		Point(numbering_start + k*placentone_step + 6)   = {location_2_x_pipe1[k], location_2_y_pipe1[k], 0, h_refine/10};
 		Point(numbering_start + k*placentone_step + 7)   = {location_2_x_pipe2[k], location_2_y_pipe2[k], 0, h_refine/10};
-		Point(numbering_start + k*placentone_step + 8)   = {location_2_x_2[k],     location_2_y_2[k],     0, h_refine};
+		Point(numbering_start + k*placentone_step + 8)   = {location_2_x_2[k],     location_2_y_2[k],     0, h_refine/2};
 
 		Point(numbering_start + k*placentone_step + 23)  = {location_2_x_pipe1_mid[k], location_2_y_pipe1_mid[k], 0, h_refine/10};
 		Point(numbering_start + k*placentone_step + 24)  = {location_2_x_pipe2_mid[k], location_2_y_pipe2_mid[k], 0, h_refine/10};
@@ -436,17 +436,29 @@ EndFor
 For k In {0:5:1}
 	offset = numbering_start + k*placentone_step;
 
+	theta1 = - Atan((cavity_y_1[k] - centre_y)/(cavity_x_1[k] - centre_x));
+	theta2 = - Atan((cavity_y_2[k] - centre_y)/(cavity_x_2[k] - centre_x));
+	theta3 = - Atan((cavity_y_3[k] - centre_y)/(cavity_x_3[k] - centre_x));
+
+	If (k <= 2)
+		theta1 = theta1 + Pi;
+		theta2 = theta2 + Pi;
+		theta3 = theta3 + Pi;
+	EndIf
+	
+	// theta1 = theta_pipe[3*k+1];
+
 	Point(offset + 19) = {cavity_x_1[k], cavity_y_1[k], 0, h_refine};
-	Point(offset + 22) = {cavity_x_2[k], cavity_y_2[k], 0, h_refine};
+	Point(offset + 22) = {cavity_x_2[k], cavity_y_2[k], 0, h_refine/2};
 	Point(offset + 21) = {cavity_x_3[k], cavity_y_3[k], 0, h_refine};
-	Point(offset + 42) = {cavity_x_1[k] + (central_cavity_transition/2)*Sin(theta_pipe[3*k+1]), cavity_y_1[k] + (central_cavity_transition/2)*Cos(theta_pipe[3*k+1]), 0, h_refine/10};
-	Point(offset + 43) = {cavity_x_1[k] + (central_cavity_transition)  *Sin(theta_pipe[3*k+1]), cavity_y_1[k] + (central_cavity_transition)  *Cos(theta_pipe[3*k+1]), 0, h_refine};
-	Point(offset + 44) = {cavity_x_3[k] - (central_cavity_transition/2)*Sin(theta_pipe[3*k+1]), cavity_y_3[k] - (central_cavity_transition/2)*Cos(theta_pipe[3*k+1]), 0, h_refine/10};
-	Point(offset + 45) = {cavity_x_3[k] - (central_cavity_transition)  *Sin(theta_pipe[3*k+1]), cavity_y_3[k] - (central_cavity_transition)  *Cos(theta_pipe[3*k+1]), 0, h_refine};
+	Point(offset + 42) = {cavity_x_1[k] + (central_cavity_transition/2)*Sin(theta1), cavity_y_1[k] + (central_cavity_transition/2)*Cos(theta1), 0, h_refine/10};
+	Point(offset + 43) = {cavity_x_1[k] + (central_cavity_transition)  *Sin(theta1), cavity_y_1[k] + (central_cavity_transition)  *Cos(theta1), 0, h_refine/2};
+	Point(offset + 44) = {cavity_x_3[k] - (central_cavity_transition/2)*Sin(theta3), cavity_y_3[k] - (central_cavity_transition/2)*Cos(theta3), 0, h_refine/10};
+	Point(offset + 45) = {cavity_x_3[k] - (central_cavity_transition)  *Sin(theta3), cavity_y_3[k] - (central_cavity_transition)  *Cos(theta3), 0, h_refine/2};
 	If (artery[k] == 1)
-		Point(offset + 20) = {cavity_x_2[k] - (central_cavity_height/2 + central_cavity_transition)*Cos(theta_pipe[3*k+1]), cavity_y_2[k] + (central_cavity_height/2 + central_cavity_transition)*Sin(theta_pipe[3*k+1]), 0, h_refine};
-		Point(offset + 25) = {cavity_x_2[k] - (central_cavity_height/2                            )*Cos(theta_pipe[3*k+1]), cavity_y_2[k] + (central_cavity_height/2                            )*Sin(theta_pipe[3*k+1]), 0, h_refine/10};
-		Point(offset + 26) = {cavity_x_2[k] - (central_cavity_height/2 - central_cavity_transition)*Cos(theta_pipe[3*k+1]), cavity_y_2[k] + (central_cavity_height/2 - central_cavity_transition)*Sin(theta_pipe[3*k+1]), 0, h_refine};
+		Point(offset + 20) = {cavity_x_2[k] - (central_cavity_height/2 + central_cavity_transition)*Cos(theta2), cavity_y_2[k] + (central_cavity_height/2 + central_cavity_transition)*Sin(theta2), 0, h_refine};
+		Point(offset + 25) = {cavity_x_2[k] - (central_cavity_height/2                            )*Cos(theta2), cavity_y_2[k] + (central_cavity_height/2                            )*Sin(theta2), 0, h_refine/10};
+		Point(offset + 26) = {cavity_x_2[k] - (central_cavity_height/2 - central_cavity_transition)*Cos(theta2), cavity_y_2[k] + (central_cavity_height/2 - central_cavity_transition)*Sin(theta2), 0, h_refine/2};
 	EndIf
 EndFor
 

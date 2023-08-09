@@ -83,8 +83,8 @@ velocity_ic_from_ss .true.
 transport_ic_from_ss .true.
 compute_transport .true.
 large_boundary_v_penalisation .false.
-no_reynold_ramp_steps 20
-reynold_ramp_start_ratio 0.05
+no_reynold_ramp_steps 30
+reynold_ramp_start_ratio 0.4
 
 artery_location 0.5000
 central_cavity_width 0.25
@@ -162,7 +162,8 @@ fe_output_file_type vtk
 
 variable_1 u
 variable_2 v
-variable_3 p
+variable_3 w
+variable_4 p
 # ==========================================================
 >>> output_mesh_solution_transport_2D
 output_directory ../../output/

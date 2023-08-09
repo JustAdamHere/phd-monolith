@@ -149,7 +149,7 @@ contains
                 translated_point = global_point
             else if (trim(name) == 'placenta') then
                 translated_point = translate_placenta_to_placentone_point(problem_dim, global_point, element_region_id)
-            else if (trim(name) == 'placentone') then
+            else if (trim(name) == 'placentone-3d') then
                 translated_point = translate_placentone_3d_to_placentone_point(problem_dim, global_point, element_region_id)
             else
                 print *, "Error in calculate_velocity_reaction_coefficient. Missed case."
@@ -157,7 +157,7 @@ contains
                 error stop
             end if
         else
-            translated_point = global_point
+            translated_point = 0.0_db
         end if
 
         if (300 <= element_region_id .and. element_region_id <= 399) then

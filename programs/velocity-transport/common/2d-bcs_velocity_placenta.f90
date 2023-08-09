@@ -191,7 +191,8 @@ module bcs_velocity
         u(1) = -u(1) * cos(theta_bc)
         u(2) =  u(2) * sin(theta_bc)
 
-        call Boileau_velocity_amplitude(amplitude, t)
+        ! call Boileau_velocity_amplitude(amplitude, t)
+        amplitude = 1.0_db
         u(1) = u(1) * amplitude
         u(2) = u(2) * amplitude
     end if

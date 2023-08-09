@@ -215,7 +215,7 @@ Circle(62) = {42, 22, 14};
 Circle(63) = {14, 22, 43};
 Circle(64) = {43, 22, 1};
 
-Curve Loop(7) = {61, 62, 63, 64}; Curve Loop(8) = {88, 90, 92, 94}; Plane Surface(27) = {7, 3, 5, 8}; Plane Surface(28) = {8, 1};
+Curve Loop(7) = {61, 62, 63, 64}; Curve Loop(8) = {88, 90, 92, 94}; Plane Surface(28) = {8, 1};
 
 // Upstairs circle.
 Extrude {0, 0.5, 0} {
@@ -252,6 +252,8 @@ Extrude {{0, 1, 0}, {0.5, 0, 0}, Pi/2} {
 Curve Loop(45) = {124, 118, 122, 120}; Surface(45) = {45, 8};
 Curve Loop(46) = {136, 130, 134, 132}; Surface(46) = {46, 45};
 
+Curve Loop(9) = {118, 120, 122, 124}; Curve Loop(10) = {130, 132, 134, 136}; Plane Surface(27) = {7, 3, 5, 10}; 
+
 /////////////
 // Volumes //
 /////////////
@@ -264,7 +266,7 @@ Surface Loop(3) = {7, 8, 9, 10, 11, 12}; Volume(3) = {3};
 Surface Loop(4) = {13, 14, 15, 16, 17, 18}; Volume(4) = {4};
 
 // Placentone volume.
-Surface Loop(5) = {7, 13, 19, 20, 21, 22, 27, 29, 30, 31, 32, 33, 34, 35, 36}; Volume(5) = {5};
+Surface Loop(5) = {7, 13, 41, 42, 43, 44, 27, 29, 30, 31, 32, 33, 34, 35, 36}; Volume(5) = {5};
 
 // Cavity volumes (part two).
 Surface Loop(6) = {19, 21, 20, 22, 45, 37, 40, 38, 39}; Volume(6) = {6};
@@ -273,7 +275,7 @@ Surface Loop(7) = {37, 40, 38, 39, 46, 41, 44, 42, 43}; Volume(7) = {7};
 ///////////////////////
 // Physical surfaces //
 ///////////////////////
-Physical Surface("boundary",       100) = {2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17, 27, 28, 29, 30, 31, 32};
+Physical Surface("boundary",       100) = {2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17, 27, 28, 45, 46, 29, 30, 31, 32};
 Physical Surface("boundary-curve", 101) = {33, 34, 35, 36};
 Physical Surface("inlet",          111) = {6};
 Physical Surface("outlet-1",       211) = {12};
