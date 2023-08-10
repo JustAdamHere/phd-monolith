@@ -13,14 +13,14 @@ pipe_transition_nominal   = 0.03         # 2mm
 artery_length_nominal     = 0.05         # 2mm
 
 # Mesh.
-mesh_resolution_default = 0.15
+mesh_resolution_default = 0.3
 
 # Unused.
 log_cavity_transition = False
 
 # Problem parameters.
 L   = 0.04     # m
-U   = 0.1 # m/s
+U   = 1 # m/s
 k   = 1e-8     # m^2
 mu  = 4e-3     # Pa s
 rho = 1e3      # kg/m^3

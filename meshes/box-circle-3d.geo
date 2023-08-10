@@ -15,7 +15,7 @@ Geometry.OldNewReg=0;
 //=/   IVS:      301
 //=/   Inlet:    412
 //=/   Outlets:  411, 413
-//=/   Cavities: 501
+//=/   Cavities: 501, 511, 521
 //=/
 //=/=/=/=/=/=/=/=/=/=//
 
@@ -96,6 +96,10 @@ Point(24) = {outlet_location_2, 0,   0, h_refine};
 Point(28) = {inlet_location, 0,             (artery_width)/2, h_refine};
 Point(29) = {inlet_location, 0,            -(artery_width)/2, h_refine};
 
+// Inlet bottom.
+Point(30) = {inlet_location + artery_width_sm/2, -artery_length_diverge, 0, h_refine};
+Point(31) = {inlet_location + artery_width_sm/2, -artery_length, 0, h_refine};
+
 // Outlet 1 3D.
 Point(32) = {outlet_location_1, 0,              (vein_width)/2, h_refine};
 Point(33) = {outlet_location_1, 0,             -(vein_width)/2, h_refine};
@@ -135,33 +139,25 @@ Point(45) = {0.5, 0.5, -0.5, h};
 // Pipes //
 ///////////
 // Inlet.
-Circle(1) = {6,  22, 28};
-Circle(2) = {28, 22, 9};
-Circle(3) = {9,  22, 29};
-Circle(4) = {29, 22, 6};
+Line(5) = {9, 30};
+Line(6) = {30, 31};
 
-Curve Loop(1) = {1, 2, 3, 4}; Plane Surface(1) = {1};
-
-Extrude {0, -artery_width, 0} {
-  Curve{1}; Curve{2}; Curve{3}; Curve{4};
+Extrude {{0, 1, 0}, {inlet_location, -artery_length_diverge, 0}, -Pi/2} {
+	Line{5};
+}
+Extrude {{0, 1, 0}, {inlet_location, -artery_length_diverge, 0}, -Pi/2} {
+	Line{7};
+}
+Extrude {{0, 1, 0}, {inlet_location, -artery_length_diverge, 0}, -Pi/2} {
+	Line{10};
+}
+Extrude {{0, 1, 0}, {inlet_location, -artery_length_diverge, 0}, -Pi/2} {
+	Line{13};
 }
 
-Curve Loop(2) = {5, 8, 11, 14}; Plane Surface(6) = {2};
+Curve Loop(1) = {8, 11, 14, 17};
 
 // Outlet 1.
-// Circle(27) = {2,  23, 32};
-// Circle(28) = {32, 23, 5};
-// Circle(29) = {5,  23, 33};
-// Circle(30) = {33, 23, 2};
-
-// Curve Loop(3) = {27, 28, 29, 30}; Plane Surface(7) = {3};
-
-// Extrude {0, -vein_width, 0} {
-//   Curve{27}; Curve{28}; Curve{29}; Curve{30};
-// }
-
-// // Curve Loop(4) = {25, 28, 31, 34}; Plane Surface(12) = {4};
-
 Circle(21) = {2,  23, 32};
 Circle(22) = {32, 23, 5};
 Circle(23) = {5,  23, 33};
@@ -174,7 +170,6 @@ Extrude {0, -vein_width, 0} {
 }
 
 Curve Loop(4) = {25, 28, 31, 34}; Plane Surface(12) = {4};
-
 
 // Outlet 2.
 Circle(41) = {13, 24, 36};
@@ -251,21 +246,30 @@ Curve Loop(9) = {118, 120, 122, 124}; Curve Loop(10) = {130, 132, 134, 136}; Pla
 //////////////////////
 // Inlet (part two) //
 //////////////////////
-// Dilate {{inlet_location, -artery_length_diverge, 0}, artery_width_sm/artery_width} {
-// 	Curve{14}; Curve{5}; Curve{8}; Curve{11};
-// }
-// Extrude {0, artery_length_diverge-artery_length, 0} {
-//   Curve{14}; Curve{5}; Curve{8}; Curve{11};
-// }
+Extrude {{0, 1, 0}, {inlet_location, 0, 0}, -Pi/2} {
+	Line{6};
+}
+Extrude {{0, 1, 0}, {inlet_location, 0, 0}, -Pi/2} {
+	Line{137};
+}
+Extrude {{0, 1, 0}, {inlet_location, 0, 0}, -Pi/2} {
+	Line{140};
+}
+Extrude {{0, 1, 0}, {inlet_location, 0, 0}, -Pi/2} {
+	Line{143};
+}
+
+Curve Loop(11) = {139, 142, 145, 148}; Plane Surface(6) = {11};
+Curve Loop(12) = {8, 11, 14, 17}; Plane Surface(5) = {12};
 
 /////////////
 // Volumes //
 /////////////
 // Cavity volume (part one).
-Surface Loop(1) = {1, 19, 20, 21, 22, 28}; Volume(1) = {1};
+Surface Loop(1) = {5, 19, 20, 21, 22, 28}; Volume(1) = {1};
 
 // Pipe volumes.
-Surface Loop(2) = {1, 2, 3, 4, 5, 6}; Volume(2) = {2};
+Surface Loop(2) = {1, 2, 3, 4, 5, 6, 47, 48, 49, 50}; Volume(2) = {2};
 Surface Loop(3) = {7, 8, 9, 10, 11, 12}; Volume(3) = {3};
 Surface Loop(4) = {13, 14, 15, 16, 17, 18}; Volume(4) = {4};
 
@@ -279,7 +283,7 @@ Surface Loop(7) = {37, 40, 38, 39, 46, 41, 44, 42, 43}; Volume(7) = {7};
 ///////////////////////
 // Physical surfaces //
 ///////////////////////
-Physical Surface("boundary",       100) = {2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17, 27, 28, 45, 46, 29, 30, 31, 32};
+Physical Surface("boundary",       100) = {1, 2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17, 27, 28, 45, 46, 29, 30, 31, 32, 47, 48, 49, 50};
 Physical Surface("boundary-curve", 101) = {33, 34, 35, 36};
 Physical Surface("inlet",          111) = {6};
 Physical Surface("outlet-1",       211) = {12};

@@ -92,7 +92,7 @@ module bcs_velocity
     real(db) :: global_time ! TODO: check relationship between local and global t
     real(db) :: artery_width_sm
 
-    artery_width_sm = 0.06_db!0.0125_db ! 0.5mm
+    artery_width_sm = 0.0125_db ! 0.5mm
 
     u = 0.0_db
 
