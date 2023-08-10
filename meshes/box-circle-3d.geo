@@ -145,12 +145,6 @@ Curve Loop(1) = {1, 2, 3, 4}; Plane Surface(1) = {1};
 Extrude {0, -artery_width, 0} {
   Curve{1}; Curve{2}; Curve{3}; Curve{4};
 }
-// Dilate {{inlet_location, -artery_length_diverge, 0}, artery_width_sm/artery_width} {
-// 	Curve{14}; Curve{5}; Curve{8}; Curve{11};
-// }
-// Extrude {0, artery_length_diverge-artery_length, 0} {
-//   Curve{14}; Curve{5}; Curve{8}; Curve{11};
-// }
 
 Curve Loop(2) = {5, 8, 11, 14}; Plane Surface(6) = {2};
 
@@ -253,6 +247,16 @@ Curve Loop(45) = {124, 118, 122, 120}; Surface(45) = {45, 8};
 Curve Loop(46) = {136, 130, 134, 132}; Surface(46) = {46, 45};
 
 Curve Loop(9) = {118, 120, 122, 124}; Curve Loop(10) = {130, 132, 134, 136}; Plane Surface(27) = {7, 3, 5, 10}; 
+
+//////////////////////
+// Inlet (part two) //
+//////////////////////
+// Dilate {{inlet_location, -artery_length_diverge, 0}, artery_width_sm/artery_width} {
+// 	Curve{14}; Curve{5}; Curve{8}; Curve{11};
+// }
+// Extrude {0, artery_length_diverge-artery_length, 0} {
+//   Curve{14}; Curve{5}; Curve{8}; Curve{11};
+// }
 
 /////////////
 // Volumes //

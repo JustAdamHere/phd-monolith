@@ -289,6 +289,9 @@ program velocity_transport
                 print *, "ERROR: Unknown assembly name for velocity solver."
                 error stop
             end if
+
+            call write_fe_data('output_mesh_solution_re_velocity_2D', aptofem_stored_keys, reynold_step, mesh_data, &
+                solution_velocity)
         end do
         deallocate(steps)
 
