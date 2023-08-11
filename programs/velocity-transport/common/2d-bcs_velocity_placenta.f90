@@ -88,7 +88,7 @@ module bcs_velocity
     real(db)                         :: left_bc, right_bc, left_top, right_top
     real(db), dimension(problem_dim) :: centre_top
     real(db)                         :: theta_bc, theta_top
-    real(db), dimension(6)           :: placentone_widths, cumulative_placentone_widths
+    real(db), dimension(no_placentones) :: placentone_widths, cumulative_placentone_widths
     integer                          :: i
 
     real(db) :: amplitude
@@ -112,15 +112,25 @@ module bcs_velocity
     y_centre = 2.5_db*(2.0_db*x_centre**2)**0.5_db
     radius   = y_centre
 
-    placentone_widths(1) = 0.716209_db
-    placentone_widths(2) = 0.846291_db
-    placentone_widths(3) = 1.000000_db
-    placentone_widths(4) = 1.000000_db
-    placentone_widths(5) = 0.846291_db
-    placentone_widths(6) = 0.716209_db
+    if (no_placentones == 6) then
+      placentone_widths(1) = 0.716209_db
+      placentone_widths(2) = 0.846291_db
+      placentone_widths(3) = 1.000000_db
+      placentone_widths(4) = 1.000000_db
+      placentone_widths(5) = 0.846291_db
+      placentone_widths(6) = 0.716209_db
+    else if (no_placentones == 7) then
+      placentone_widths(1) = 0.543255_db
+      placentone_widths(2) = 0.665787_db
+      placentone_widths(3) = 0.815958_db
+      placentone_widths(4) = 1.000000_db
+      placentone_widths(5) = 0.815958_db
+      placentone_widths(6) = 0.665787_db
+      placentone_widths(7) = 0.543255_db
+    end if
 
     cumulative_placentone_widths(1) = 0.0_db
-    do i = 2, 6
+    do i = 2, no_placentones
       cumulative_placentone_widths(i) = cumulative_placentone_widths(i-1) + placentone_widths(i-1) + wall_width
     end do
 
@@ -184,9 +194,19 @@ module bcs_velocity
         left_bc  = x_centre + radius*cos(theta_top + (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
         right_bc = x_centre + radius*cos(theta_top - (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
         theta_bc = theta_top
+    else if (boundary_no == 117) then
+        centre_top = cumulative_placentone_widths(7) + artery_location*placentone_widths(7)
+        centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
+        left_top      = centre_top(1) - artery_width_sm/2
+        right_top     = centre_top(1) + artery_width_sm/2
+        theta_top     = -atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
+
+        left_bc  = x_centre + radius*cos(theta_top + (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
+        right_bc = x_centre + radius*cos(theta_top - (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
+        theta_bc = theta_top
     end if
 
-    if (111 <= boundary_no .and. boundary_no <= 116) then
+    if (111 <= boundary_no .and. boundary_no <= 117) then
         u    = -4.0_db/(right_bc-left_bc)**2*(x-left_bc)*(x-right_bc)
         u(1) = -u(1) * cos(theta_bc)
         u(2) =  u(2) * sin(theta_bc)

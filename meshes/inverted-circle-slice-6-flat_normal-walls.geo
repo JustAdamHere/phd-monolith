@@ -1,10 +1,12 @@
+// TODO: Need to fix surface numbers for septal walls.
+
 //=/=/=/=/=/=/=/=/=/=//
 //=/ OUTPUT FORMAT /=//
 //=/  EDGES
 //=/   Non-curved boundary: 100
 //=/   Curved boundary:     101
-//=/   Inlets:              111-116
-//=/   Outlets:             211-222
+//=/   Inlets:              111-117
+//=/   Outlets:             211-224
 //=/   Corner outlets:      230, 231
 //=/   (Septa outlet:       241, 242, 243, 251, ..., 283)
 //=/  SURFACES
@@ -832,10 +834,12 @@ If (ms_2 == 1)
 EndIf
 
 // Side walls of entire placenta.
-Physical Curve(100) += {numbering_start, numbering_start + 5*placentone_step + 14};
+Physical Curve(100) += {numbering_start, numbering_start + (no_placentones-1)*placentone_step + 14};
 
 // Basal plate.
-Physical Curve(100) += {301, 302, 303, 304, 305, 306};
+For k In {1:no_placentones:1}
+	Physical Curve(100) += {300 + k};
+EndFor
 
 // Curved boundary.
 Physical Curve(101) = {};

@@ -85,6 +85,7 @@ compute_transport .true.
 large_boundary_v_penalisation .false.
 no_reynold_ramp_steps 30
 reynold_ramp_start_ratio 0.5
+no_placentones 0
 
 artery_location 0.5000
 central_cavity_width 0.25

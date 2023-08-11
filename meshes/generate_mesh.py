@@ -1,4 +1,4 @@
-def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output, normal_vessels, marginal_sinus, wall_height_ratio, artery_width):
+def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output, normal_vessels, marginal_sinus, wall_height_ratio, artery_width, no_placentones):
 	import subprocess
 
 	if (geometry == "placentone"):
@@ -107,6 +107,7 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 		'-setnumber', 'artery_width',  str(artery_width),\
 		'-setnumber', 'ms_1', str(ms_1),\
 		'-setnumber', 'ms_2', str(ms_2),\
+		'-setnumber', 'no_placentones', str(no_placentones),\
 	 f'-{dim}',\
 		'-o', f'meshes/mesh_{simulation_no}.msh'\
 	],

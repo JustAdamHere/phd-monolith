@@ -1,7 +1,7 @@
 flux_cache = []
 integral_cache = []
 
-def run(simulation_no, velocity_model, geometry, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, normal_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1, artery_width=0.06, no_time_steps=0, final_time=0.0):
+def run(simulation_no, velocity_model, geometry, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, normal_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1, artery_width=0.06, no_time_steps=0, final_time=0.0, no_placentones=6):
 
 	assert(velocity_model in ['nsb', 'ns-nsb', 'ns-b', 's-b'])
 
@@ -33,14 +33,14 @@ def run(simulation_no, velocity_model, geometry, artery_location, vein_location_
 		# GENERATE MESH #
 		#################
 		output_timer.time(simulation_no, "mesh generation", terminal_output, clear_existing=True)
-		generate_mesh.generate_mesh(simulation_no, geometry, h, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output, normal_vessels, marginal_sinus, wall_height_ratio, artery_width)
+		generate_mesh.generate_mesh(simulation_no, geometry, h, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output, normal_vessels, marginal_sinus, wall_height_ratio, artery_width, no_placentones)
 		output_timer.time(simulation_no, "mesh generation", terminal_output)
 
 		##################
 		# RUN SIMULATION #
 		##################
 		output_timer.time(simulation_no, "AptoFEM simulation", terminal_output, clear_existing=True)
-		result = aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time)
+		result = aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones)
 		if (result == False):
 			return False
 		else:
@@ -100,7 +100,7 @@ def run(simulation_no, velocity_model, geometry, artery_location, vein_location_
 
 	return True
 
-def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time):
+def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones):
 
 	# Programatically create coefficients. ##
 	#  Re 
@@ -151,17 +151,20 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location,
 	set_parameter.set_parameter("velocity-transport", geometry, 84, f"compute_transport .{str(compute_transport).lower()}.")
 	set_parameter.set_parameter("velocity-transport", geometry, 85, f"large_boundary_v_penalisation .{str(large_boundary_v_penalisation).lower()}.")
 
+	# Number of placentones (only relevant for placenta mesh).
+	set_parameter.set_parameter("velocity-transport", geometry, 89, f"no_placentones {no_placentones}")
+
 	# Structural parameters.
-	set_parameter.set_parameter("velocity-transport", geometry, 89, f"artery_location {artery_location:.4f}")
-	set_parameter.set_parameter("velocity-transport", geometry, 90, f"central_cavity_width {central_cavity_width}")
-	set_parameter.set_parameter("velocity-transport", geometry, 91, f"central_cavity_transition {central_cavity_transition}")
-	set_parameter.set_parameter("velocity-transport", geometry, 92, f"pipe_transition {pipe_transition}")
-	set_parameter.set_parameter("velocity-transport", geometry, 93, f"artery_length {artery_length}")
-	set_parameter.set_parameter("velocity-transport", geometry, 94, f"log_cavity_transition .{str(log_cavity_transition).lower()}.")
+	set_parameter.set_parameter("velocity-transport", geometry, 91, f"artery_location {artery_location:.4f}")
+	set_parameter.set_parameter("velocity-transport", geometry, 92, f"central_cavity_width {central_cavity_width}")
+	set_parameter.set_parameter("velocity-transport", geometry, 93, f"central_cavity_transition {central_cavity_transition}")
+	set_parameter.set_parameter("velocity-transport", geometry, 94, f"pipe_transition {pipe_transition}")
+	set_parameter.set_parameter("velocity-transport", geometry, 95, f"artery_length {artery_length}")
+	set_parameter.set_parameter("velocity-transport", geometry, 96, f"log_cavity_transition .{str(log_cavity_transition).lower()}.")
 
 	# Setup time dependence.
-	set_parameter.set_parameter("velocity-transport", geometry, 102, f"dirk_final_time {final_time}")
-	set_parameter.set_parameter("velocity-transport", geometry, 103, f"dirk_number_of_timesteps {no_time_steps}")
+	set_parameter.set_parameter("velocity-transport", geometry, 104, f"dirk_final_time {final_time}")
+	set_parameter.set_parameter("velocity-transport", geometry, 105, f"dirk_number_of_timesteps {no_time_steps}")
 
 	from miscellaneous import get_current_run_no, save_output, output, raise_error, get_dofs, get_newton_residual, get_newton_iterations
 	import subprocess
