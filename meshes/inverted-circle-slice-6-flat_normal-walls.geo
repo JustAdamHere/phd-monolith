@@ -16,8 +16,6 @@
 //=/
 //=/=/=/=/=/=/=/=/=/=//
 
-no_placentones = 7;
-
 //////////////////////
 // Other parameters //
 //////////////////////
@@ -31,6 +29,15 @@ artery_length         = 0.25*placentone_width;             // 10 mm
 artery_length_diverge = 0.075*placentone_width;            // 3  mm
 vein_width            = 0.0375*placentone_width;           // 1.5mm
 vein_length           = 0.0375*placentone_width;           // 1.5mm
+
+If (!Exists(no_placentones))
+	no_placentones = 6;
+EndIf
+
+If (no_placentones != 6 && no_placentones != 7)
+	Error("ERROR: no_placentones must be 6 or 7.");
+	Abort;
+EndIf
 
 // Default artery width.
 If (!Exists(artery_width))
