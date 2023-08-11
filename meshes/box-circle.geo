@@ -56,7 +56,7 @@ cavity_height = 2*central_cavity_width;
 
 // Default transition region -- added onto the central cavity width.
 If (!Exists(central_cavity_transition))
-	central_cavity_transition = 0.02; // 0.8 mm
+	central_cavity_transition = 0.04; // 1.6 mm
 EndIf
 
 outlet_location_1 = location_11;
@@ -76,39 +76,39 @@ EndIf
 ////////////
 // Points //
 ////////////
-Point(1)  = {0,                                     0,                      0, h};
+Point(1)  = {0,                                     0,                      0, h/2};
 Point(2)  = {outlet_location_1 - vein_width/2,      0,                      0, h_refine/10};
 Point(3)  = {outlet_location_1 - vein_width/2,      -vein_width,            0, h_refine/10};
 Point(4)  = {outlet_location_1 + vein_width/2,      -vein_width,            0, h_refine};
 Point(5)  = {outlet_location_1 + vein_width/2,      0,                      0, h_refine/10};
-Point(6)  = {inlet_location    - artery_width/2,    0,                      0, h_refine};
+Point(6)  = {inlet_location    - artery_width/2,    0,                      0, h_refine/2};
 Point(7)  = {inlet_location    - artery_width_sm/2, -artery_length_diverge, 0, h_refine/10};
 Point(25) = {inlet_location    - artery_width_sm/2, -artery_length,         0, h_refine/10};
 Point(26) = {inlet_location    + artery_width_sm/2, -artery_length,         0, h_refine/10};
 Point(8)  = {inlet_location    + artery_width_sm/2, -artery_length_diverge, 0, h_refine/10};
-Point(9)  = {inlet_location    + artery_width/2,    0,                      0, h_refine};
+Point(9)  = {inlet_location    + artery_width/2,    0,                      0, h_refine/2};
 Point(10) = {outlet_location_2 - vein_width/2,      0,                      0, h_refine/10};
 Point(11) = {outlet_location_2 - vein_width/2,      -vein_width,            0, h_refine};
 Point(12) = {outlet_location_2 + vein_width/2,      -vein_width,            0, h_refine/10};
 Point(13) = {outlet_location_2 + vein_width/2,      0,                      0, h_refine/10};
 
-Point(14) = {1,                                                                      0,                                             0, h};
-Point(15) = {1,                                                                      0.5,                                           0, h};
-Point(16) = {0.5,                                                                    1,                                             0, h};
-Point(17) = {0,                                                                      0.5,                                           0, h};
+Point(14) = {1,                                                                      0,                                             0, h/2};
+Point(15) = {1,                                                                      0.5,                                           0, h/2};
+Point(16) = {0.5,                                                                    1,                                             0, h/2};
+Point(17) = {0,                                                                      0.5,                                           0, h/2};
 Point(18) = {0.5,                                                                    0.5,                                           0, h_refine};
-Point(19) = {inlet_location - (central_cavity_width + central_cavity_transition)/2,  0,                                             0, h_refine};
-Point(22) = {inlet_location,                                                         0,                                             0, h_refine};
-Point(21) = {inlet_location + (central_cavity_width + central_cavity_transition)/2,  0,                                             0, h_refine};
-Point(20) = {inlet_location,                                                         (cavity_height)/2 + central_cavity_transition, 0, h_refine};
+Point(19) = {inlet_location - (central_cavity_width + central_cavity_transition)/2,  0,                                             0, h_refine/2};
+Point(22) = {inlet_location,                                                         0,                                             0, h_refine/2};
+Point(21) = {inlet_location + (central_cavity_width + central_cavity_transition)/2,  0,                                             0, h_refine/2};
+Point(20) = {inlet_location,                                                         (cavity_height)/2 + central_cavity_transition, 0, h_refine/2};
 Point(23) = {outlet_location_1,                                                      0,                                             0, h_refine};
 Point(24) = {outlet_location_2,                                                      0,                                             0, h_refine};
 
 Point(27) = {inlet_location, (cavity_height)/2,                                     0, h_refine/10};
-Point(28) = {inlet_location, (cavity_height)/2 - central_cavity_transition,         0, h_refine};
+Point(28) = {inlet_location, (cavity_height)/2 - central_cavity_transition,         0, h_refine/2};
 Point(29) = {inlet_location - (central_cavity_width)/2,                             0, 0, h_refine/10};
-Point(30) = {inlet_location - (central_cavity_width - central_cavity_transition)/2, 0, 0, h_refine};
-Point(31) = {inlet_location + (central_cavity_width - central_cavity_transition)/2, 0, 0, h_refine};
+Point(30) = {inlet_location - (central_cavity_width - central_cavity_transition)/2, 0, 0, h_refine/2};
+Point(31) = {inlet_location + (central_cavity_width - central_cavity_transition)/2, 0, 0, h_refine/2};
 Point(32) = {inlet_location + (central_cavity_width)/2,                             0, 0, h_refine/10};
 
 ///////////
