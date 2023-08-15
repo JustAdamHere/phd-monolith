@@ -13,31 +13,66 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 		geo_file = "inverted-circle-slice-6-flat_normal-walls.geo"
 		dim = 2
 
-	vein_11 = normal_vessels[0][0]
-	vein_12 = normal_vessels[0][2]
-	vein_21 = normal_vessels[1][0]
-	vein_22 = normal_vessels[1][2]
-	vein_31 = normal_vessels[2][0]
-	vein_32 = normal_vessels[2][2]
-	vein_41 = normal_vessels[3][0]
-	vein_42 = normal_vessels[3][2]
-	vein_51 = normal_vessels[4][0]
-	vein_52 = normal_vessels[4][2]
-	vein_61 = normal_vessels[5][0]
-	vein_62 = normal_vessels[5][2]
+	if (no_placentones == 6):
+		wall_height_1 = wall_height_ratio*0.1725
+		wall_height_2 = wall_height_ratio*0.35175
+		wall_height_3 = wall_height_ratio*0.1725
+		wall_height_4 = wall_height_ratio*0.35175
+		wall_height_5 = wall_height_ratio*0.1725
+		wall_height_6 = 0
 
-	artery_11 = normal_vessels[0][1]
-	artery_21 = normal_vessels[1][1]
-	artery_31 = normal_vessels[2][1]
-	artery_41 = normal_vessels[3][1]
-	artery_51 = normal_vessels[4][1]
-	artery_61 = normal_vessels[5][1]
+		vein_11 = normal_vessels[0][0]
+		vein_12 = normal_vessels[0][2]
+		vein_21 = normal_vessels[1][0]
+		vein_22 = normal_vessels[1][2]
+		vein_31 = normal_vessels[2][0]
+		vein_32 = normal_vessels[2][2]
+		vein_41 = normal_vessels[3][0]
+		vein_42 = normal_vessels[3][2]
+		vein_51 = normal_vessels[4][0]
+		vein_52 = normal_vessels[4][2]
+		vein_61 = normal_vessels[5][0]
+		vein_62 = normal_vessels[5][2]
+		vein_71 = 0
+		vein_72 = 0
 
-	wall_height_1 = wall_height_ratio*0.1725
-	wall_height_2 = wall_height_ratio*0.35175
-	wall_height_3 = wall_height_ratio*0.1725
-	wall_height_4 = wall_height_ratio*0.35175
-	wall_height_5 = wall_height_ratio*0.1725
+		artery_11 = normal_vessels[0][1]
+		artery_21 = normal_vessels[1][1]
+		artery_31 = normal_vessels[2][1]
+		artery_41 = normal_vessels[3][1]
+		artery_51 = normal_vessels[4][1]
+		artery_61 = normal_vessels[5][1]
+		artery_71 = 0
+	else:
+		wall_height_1 = wall_height_ratio*0.1725
+		wall_height_2 = wall_height_ratio*0.1725
+		wall_height_3 = wall_height_ratio*0.1725
+		wall_height_4 = wall_height_ratio*0.1725
+		wall_height_5 = wall_height_ratio*0.1725
+		wall_height_6 = wall_height_ratio*0.1725
+
+		vein_11 = normal_vessels[0][0]
+		vein_12 = normal_vessels[0][2]
+		vein_21 = normal_vessels[1][0]
+		vein_22 = normal_vessels[1][2]
+		vein_31 = normal_vessels[2][0]
+		vein_32 = normal_vessels[2][2]
+		vein_41 = normal_vessels[3][0]
+		vein_42 = normal_vessels[3][2]
+		vein_51 = normal_vessels[4][0]
+		vein_52 = normal_vessels[4][2]
+		vein_61 = normal_vessels[5][0]
+		vein_62 = normal_vessels[5][2]
+		vein_71 = normal_vessels[6][0]
+		vein_72 = normal_vessels[6][2]
+
+		artery_11 = normal_vessels[0][1]
+		artery_21 = normal_vessels[1][1]
+		artery_31 = normal_vessels[2][1]
+		artery_41 = normal_vessels[3][1]
+		artery_51 = normal_vessels[4][1]
+		artery_61 = normal_vessels[5][1]
+		artery_71 = normal_vessels[6][1]
 
 	ms_1 = marginal_sinus[0]
 	ms_2 = marginal_sinus[1]
@@ -91,12 +126,15 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 		'-setnumber', 'vein_52', str(vein_52), \
 		'-setnumber', 'vein_61', str(vein_61), \
 		'-setnumber', 'vein_62', str(vein_62), \
+		'-setnumber', 'vein_71', str(vein_71), \
+		'-setnumber', 'vein_72', str(vein_72), \
 		'-setnumber', 'artery_11', str(artery_11), \
 		'-setnumber', 'artery_21', str(artery_21), \
 		'-setnumber', 'artery_31', str(artery_31), \
 		'-setnumber', 'artery_41', str(artery_41), \
 		'-setnumber', 'artery_51', str(artery_51), \
 		'-setnumber', 'artery_61', str(artery_61), \
+		'-setnumber', 'artery_71', str(artery_71), \
 		'-setnumber', 'central_cavity_width', str(central_cavity_width),\
 		'-setnumber', 'central_cavity_transition', str(central_cavity_transition),\
 		'-setnumber', 'wall_height_1', str(wall_height_1),\
@@ -104,6 +142,7 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 		'-setnumber', 'wall_height_3', str(wall_height_3),\
 		'-setnumber', 'wall_height_4', str(wall_height_4),\
 		'-setnumber', 'wall_height_5', str(wall_height_5),\
+		'-setnumber', 'wall_height_6', str(wall_height_6),\
 		'-setnumber', 'artery_width',  str(artery_width),\
 		'-setnumber', 'ms_1', str(ms_1),\
 		'-setnumber', 'ms_2', str(ms_2),\

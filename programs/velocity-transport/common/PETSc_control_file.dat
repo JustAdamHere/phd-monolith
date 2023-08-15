@@ -1,0 +1,8 @@
+-ksp_monitor
+-pctype asm
+-sub_pc_type ilu
+-sub_pc_factor_levels 1
+-sub_ksp_type preonly
+-ksp_atol 1e-14
+-ksp_rtol 1e-20
+-ksp_max_it 50000

@@ -11,7 +11,7 @@ module bcs_transport
             boundary_no_new = 200
         else if (102 <= boundary_no .and. boundary_no <= 110) then
             boundary_no_new = 100
-        else if (111 <= boundary_no .and. boundary_no <= 116) then
+        else if (111 <= boundary_no .and. boundary_no <= 117) then
             boundary_no_new = 100
         else if (200 <= boundary_no .and. boundary_no <= 299) then
             boundary_no_new = 200

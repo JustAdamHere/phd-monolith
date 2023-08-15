@@ -1,7 +1,7 @@
 flux_cache = []
 integral_cache = []
 
-def run(simulation_no, velocity_model, geometry, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, normal_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1, artery_width=0.06, no_time_steps=0, final_time=0.0, no_placentones=6):
+def run(simulation_no, velocity_model, geometry, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, normal_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1, artery_width=0.06, no_time_steps=0, final_time=0.0, no_placentones=6, no_threads=20):
 
 	assert(velocity_model in ['nsb', 'ns-nsb', 'ns-b', 's-b'])
 
@@ -40,7 +40,7 @@ def run(simulation_no, velocity_model, geometry, artery_location, vein_location_
 		# RUN SIMULATION #
 		##################
 		output_timer.time(simulation_no, "AptoFEM simulation", terminal_output, clear_existing=True)
-		result = aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones)
+		result = aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads)
 		if (result == False):
 			return False
 		else:
@@ -100,7 +100,7 @@ def run(simulation_no, velocity_model, geometry, artery_location, vein_location_
 
 	return True
 
-def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones):
+def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads):
 
 	# Programatically create coefficients. ##
 	#  Re 
@@ -117,6 +117,11 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location,
 	program_directory = f"programs/velocity-transport/"
 
 	from miscellaneous import set_parameter
+
+	# Number of threads.
+	import os
+	os.environ["OMP_NUM_THREADS"] = f"{no_threads}"
+	set_parameter.set_parameter("velocity-transport", geometry, 7, f"aptofem_no_openmp_threads {no_threads}")
 
 	# Set mesh.
 	set_parameter.set_parameter("velocity-transport", geometry, 13, f"mesh_file_name mesh_{simulation_no}.msh")

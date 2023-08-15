@@ -50,8 +50,8 @@ module problem_options
         call get_aptofem_key_definition('no_placentones',                    no_placentones,                    section_name, &
             aptofem_stored_keys, ierr)
 
-        if (no_placentones /= 6 .and. no_placentones /= 7) then
-            print *, "Error in get_user_data. no_placentones must be 6 or 7. Stopping."
+        if (no_placentones /= 1 .and. no_placentones /= 6 .and. no_placentones /= 7) then
+            print *, "Error in get_user_data. no_placentones must be 1 or 6 or 7. Stopping."
             stop 1
         end if
     end subroutine
