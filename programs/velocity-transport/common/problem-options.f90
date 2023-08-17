@@ -346,8 +346,6 @@ module problem_options
             centre_top = 0.0_db
             translate_angle = 0.0_db
         else if (element_region_id == 501 .or. element_region_id == 511 .or. element_region_id == 521) then
-            centre_top = 0.0_db
-            translate_angle = 0.0_db
             centre_top(1)   = cumulative_placentone_widths(1) + artery_location*placentone_widths(1)
             centre_top(2)   = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
             translate_angle = -atan2((centre_top(2)-y_centre), (centre_top(1)-x_centre))

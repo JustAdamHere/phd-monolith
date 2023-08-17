@@ -82,7 +82,7 @@ contains
         integer, intent(in)                          :: boundary_no
         real(db), intent(in)                         :: t
 
-        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, 463)
+        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, 422)
 
     end subroutine
 
@@ -98,7 +98,7 @@ contains
         integer, intent(in)                          :: boundary_no
         real(db), intent(in)                         :: t
 
-        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, 512)
+        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, 511)
 
     end subroutine
 
@@ -163,7 +163,9 @@ contains
         if (300 <= element_region_id .and. element_region_id <= 399) then
             calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
                 1.0_db
-        else if (element_region_id == 412) then
+        else if (element_region_id == 412 .or. element_region_id == 422 .or. element_region_id == 432 .or. &
+                 element_region_id == 442 .or. element_region_id == 452 .or. element_region_id == 462 .or. &
+                 element_region_id == 472) then
             calculate_velocity_reaction_coefficient = &
                 0.0_db
         else if (400 <= element_region_id .and. element_region_id <= 499) then
