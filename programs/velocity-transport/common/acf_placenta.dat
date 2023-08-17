@@ -83,8 +83,9 @@ velocity_ic_from_ss .true.
 transport_ic_from_ss .true.
 compute_transport .true.
 large_boundary_v_penalisation .false.
-no_reynold_ramp_steps 50
-reynold_ramp_start_ratio 0.4
+no_reynold_ramp_steps 10
+reynold_ramp_start_ratio 0.1
+reynold_ramp_step_base 2.0
 
 no_placentones 6
 

@@ -1,6 +1,7 @@
 #include $(AptoFEM_DIR)/source/package_defaults/makefile.flags
-include $(AptoFEM_DIR)/source/package_defaults/makefile_openmp.flags
+#include $(AptoFEM_DIR)/source/package_defaults/makefile_openmp.flags
 #include $(AptoFEM_DIR)/source/package_defaults/makefile_mpi.flags
+include $(AptoFEM_DIR)/source/package_defaults/makefile.flags
 
 velocity_assembly  =  ../../matrix_rhs/jacobi_residual_nsb.f90 ../../matrix_rhs/jacobi_residual_nsb-ss.f90 ../../matrix_rhs/jacobi_residual_ns_nsb-ss.f90 ../../matrix_rhs/jacobi_residual_ns-b-ss.f90 ../../matrix_rhs/matrix_rhs_s-b-ss.f90 
 transport_assembly = ../../matrix_rhs/matrix_rhs_transport.f90 ../../matrix_rhs/matrix_rhs_transport-ss.f90
@@ -21,7 +22,7 @@ comparison :: velocity-comparison_placentone velocity-comparison_placenta
 
 nsb-transport_placentone ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
-	 ./common/velocity_assembly-name_nsb.f90 ./common/program-name_placentone.f90 $(storage) $(fluxes) $(problem_options) $(placentone_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
+	 ./common/velocity_assembly-name_nsb.f90 ./common/program-name_placentone.f90 $(storage) $(fluxes) $(problem_options) $(placentone_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread -L/home/pmyambl/AptoFEM-Helios-20230815/aptofem/dependencies/petsc/arch-linux-c-opt/externalpackages/git.parmetis/libparmetis/ -lparmetis)
 
 nsb-transport_placenta ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
@@ -29,7 +30,7 @@ nsb-transport_placenta ::
 
 nsb-transport_placentone-3d ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
-	 ./common/velocity_assembly-name_nsb.f90 ./common/program-name_placentone-3d.f90 $(storage) $(fluxes) $(problem_options) $(placentone_3d_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread)
+	 ./common/velocity_assembly-name_nsb.f90 ./common/program-name_placentone-3d.f90 $(storage) $(fluxes) $(problem_options) $(placentone_3d_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) ./common/velocity_transport.f90 $(AptoFEM) -lpthread -L/home/pmyambl/AptoFEM-Helios-20230815/aptofem/dependencies/petsc/arch-linux-c-opt/externalpackages/git.parmetis/libparmetis/ -lparmetis)
 
 ns-b-transport_placentone ::
 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \

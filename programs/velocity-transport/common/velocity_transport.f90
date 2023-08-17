@@ -261,7 +261,7 @@ program velocity_transport
             allocate(steps(no_reynold_ramp_steps))
             do i = 1, no_reynold_ramp_steps - 1
                 steps(no_reynold_ramp_steps - i + 1) = &
-                    10**(min_step + real(i-1)*real(max_step - min_step)/(no_reynold_ramp_steps-2))
+                    reynold_ramp_step_base**(min_step + real(i-1)*real(max_step - min_step)/(no_reynold_ramp_steps-2))
             end do
             steps(1) = 0.0_db
 
@@ -271,6 +271,7 @@ program velocity_transport
 
             ratio                                = reynold_ramp_start_ratio
         end if
+
         velocity_convection_coefficient_orig = velocity_convection_coefficient
         velocity_time_coefficient_orig       = velocity_time_coefficient
         do reynold_step = 1, no_reynold_ramp_steps
