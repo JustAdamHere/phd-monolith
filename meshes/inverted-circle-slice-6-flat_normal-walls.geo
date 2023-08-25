@@ -69,33 +69,81 @@ EndIf
 Printf("h = %f", h);
 Printf("h_refine = %f", h_refine);
 
-// Placentone widths.
+// Placentone widths and central cavity sizes.
 If (no_placentones == 7)
 	// Set such that 220-18=1*40+2*40*x+2*40*x^2+2*40*x^3.
-	placentone_ratio = 0.815957986;
+	ratio = 0.815957986;
+
+	// Placentone widths.
 	placentone_widths = {};
 	For k In {no_placentones-1:Floor(no_placentones/2):-1}
-		width = placentone_width*placentone_ratio^Fabs(k-Floor(no_placentones/2));
+		width = placentone_width*ratio^Fabs(k-Floor(no_placentones/2));
 		placentone_widths += {width};
 	EndFor
 	For k In {Floor(no_placentones/2)-1:0:-1}
-		width = placentone_width*placentone_ratio^Fabs(k-Floor(no_placentones/2));
+		width = placentone_width*ratio^Fabs(k-Floor(no_placentones/2));
 		placentone_widths += {width};
 	EndFor
+
+	// Central cavity sizes.
+	central_cavity_widths  = {};
+	central_cavity_heights = {};
+	For k In {no_placentones-1:Floor(no_placentones/2):-1}
+		width = central_cavity_width*ratio^Fabs(k-Floor(no_placentones/2));
+		central_cavity_widths += {width};
+
+		height = central_cavity_height*ratio^Fabs(k-Floor(no_placentones/2));
+		central_cavity_heights += {height};
+	EndFor
+	For k In {Floor(no_placentones/2)-1:0:-1}
+		width = central_cavity_width*ratio^Fabs(k-Floor(no_placentones/2));
+		central_cavity_widths += {width};
+
+		height = central_cavity_height*ratio^Fabs(k-Floor(no_placentones/2));
+		central_cavity_heights += {height};
+	EndFor
+
 ElseIf (no_placentones == 6)
 	// Set such that 220-15=2*40+2*40*x+2*40*x^2.
-	placentone_ratio = Sqrt(29)/4 - 0.5;
+	ratio = Sqrt(29)/4 - 0.5;
+
+	// Placentone widths.
 	placentone_widths = {0, 0, 0, 0, 0, 0};
 	For k In {0:Ceil(no_placentones/2)-1:1}
 		If (!Exists(placentone_width~{k+1}))
-			placentone_width~{k+1} = placentone_width*placentone_ratio^(2-k);
+			placentone_width~{k+1} = placentone_width*ratio^(2-k);
 		EndIf
 		If (!Exists(placentone_width~{no_placentones-k}))
-			placentone_width~{no_placentones-k} = placentone_width*placentone_ratio^(2-k);
+			placentone_width~{no_placentones-k} = placentone_width*ratio^(2-k);
 		EndIf
 
 		placentone_widths[k]                  = placentone_width~{k+1};
 		placentone_widths[no_placentones-1-k] = placentone_width~{no_placentones-k};
+	EndFor
+
+	// Central cavity sizes.
+	central_cavity_widths  = {0, 0, 0, 0, 0, 0};
+	central_cavity_heights = {0, 0, 0, 0, 0, 0};
+	For k In {0:Ceil(no_placentones/2)-1:1}
+		If (!Exists(central_cavity_width~{k+1}))
+			central_cavity_width~{k+1} = central_cavity_width*ratio^(2-k);
+		EndIf
+		If (!Exists(central_cavity_width~{no_placentones-k}))
+			central_cavity_width~{no_placentones-k} = central_cavity_width*ratio^(2-k);
+		EndIf
+
+		central_cavity_widths[k]                  = central_cavity_width~{k+1};
+		central_cavity_widths[no_placentones-1-k] = central_cavity_width~{no_placentones-k};
+
+		If (!Exists(central_cavity_height~{k+1}))
+			central_cavity_height~{k+1} = central_cavity_height*ratio^(2-k);
+		EndIf
+		If (!Exists(central_cavity_height~{no_placentones-k}))
+			central_cavity_height~{no_placentones-k} = central_cavity_height*ratio^(2-k);
+		EndIf
+
+		central_cavity_heights[k]                  = central_cavity_height~{k+1};
+		central_cavity_heights[no_placentones-1-k] = central_cavity_height~{no_placentones-k};
 	EndFor
 EndIf
 
@@ -205,16 +253,18 @@ EndFor
 ///////////////////////
 // Circle parameters //
 ///////////////////////
-centre_x = placenta_width/2;
-centre_y = 2.5*(2*centre_x^2)^0.5;//(2*centre_x^2)^0.5;
-radius   = centre_y;
-
 // TAKEN FROM :: Tongsong, T., Wanapirak, C. and Sirichotiyakul, S. (1999), Placental thickness at mid-pregnancy as a predictor of Hb Bart's disease. Prenat. Diagn., 19: 1027-1030. https://doi.org/10.1002/(SICI)1097-0223(199911)19:11<1027::AID-PD691>3.0.CO;2-C
-placenta_height = 0.615; // 24.6mm 
+// placenta_height = 0.615; // 24.6mm 
 // TAKEN FROM: Correlation between placental thickness in the second and third trimester and fetal weight. https://doi.org/10.1590/S0100-72032013000700006
 placenta_height = 0.9065; // 36.26mm
 // OLD VALUE:
 //placental_height = centre_y - centre_x;
+
+centre_x = placenta_width/2;
+//centre_y = 2.5*(2*centre_x^2)^0.5;//(2*centre_x^2)^0.5;
+// centre_y = 5;
+centre_y = (placenta_height - ms_pipe_width)/2 + centre_x^2/(2*(placenta_height - ms_pipe_width));
+radius   = centre_y;
 
 //////////////////////////
 // x and y of the walls //
@@ -403,11 +453,11 @@ For k In {0:no_placentones-1:1}
 	cavity_x_2 += {(location_2_x_1[k] + location_2_x_2[k])/2};
 	cavity_y_2 += {centre_y - (radius^2 - (centre_x - cavity_x_2[k])^2)^0.5};
 
-	cavity_x_1 += {centre_x + radius*Cos(theta_pipe[k*3+1] + ((central_cavity_width + central_cavity_transition)/2)/radius)};
-	cavity_y_1 += {centre_y - radius*Sin(theta_pipe[k*3+1] + ((central_cavity_width + central_cavity_transition)/2)/radius)};
+	cavity_x_1 += {centre_x + radius*Cos(theta_pipe[k*3+1] + ((central_cavity_widths[k] + central_cavity_transition)/2)/radius)};
+	cavity_y_1 += {centre_y - radius*Sin(theta_pipe[k*3+1] + ((central_cavity_widths[k] + central_cavity_transition)/2)/radius)};
 
-	cavity_x_3 += {centre_x + radius*Cos(theta_pipe[k*3+1] - ((central_cavity_width + central_cavity_transition)/2)/radius)};
-	cavity_y_3 += {centre_y - radius*Sin(theta_pipe[k*3+1] - ((central_cavity_width + central_cavity_transition)/2)/radius)};
+	cavity_x_3 += {centre_x + radius*Cos(theta_pipe[k*3+1] - ((central_cavity_widths[k] + central_cavity_transition)/2)/radius)};
+	cavity_y_3 += {centre_y - radius*Sin(theta_pipe[k*3+1] - ((central_cavity_widths[k] + central_cavity_transition)/2)/radius)};
 EndFor
 
 ////////////////////////////////////////
@@ -425,7 +475,6 @@ Point(1001) = {0,                              centre_y - (radius^2 - centre_x^2
 Point(1002) = {placenta_width,                 centre_y - (radius^2 - (placenta_width - centre_x)^2)^0.5, 0, h_refine};
 
 If (ms_2 == 1)
-	Point(1003) = {placenta_width,                 placenta_height - ms_pipe_width,                           0, h_refine};
 	Point(1004) = {placenta_width + ms_pipe_width, placenta_height - ms_pipe_width,                           0, h_refine};
 	Point(1005) = {placenta_width + ms_pipe_width, placenta_height,                                           0, h_refine};
 EndIf
@@ -434,7 +483,6 @@ Point(1007)   = {0,                              placenta_height,               
 If (ms_1 == 1)
 	Point(1008) = {-ms_pipe_width,                 placenta_height,                                           0, h_refine};
 	Point(1009) = {-ms_pipe_width,                 placenta_height - ms_pipe_width,                           0, h_refine};
-	Point(1010) = {0,                              placenta_height - ms_pipe_width,                           0, h_refine};
 EndIf
 
 // Placentones.
@@ -516,13 +564,13 @@ For k In {0:no_placentones-1:1}
 	Point(offset + 45) = {cavity_x_3[k] - (central_cavity_transition)  *Sin(theta3), cavity_y_3[k] - (central_cavity_transition)  *Cos(theta3), 0, h_refine/2};
 	If (artery[k] == 1)
 		If (no_placentones % 2 != 0 && k == Floor(no_placentones/2))
-			Point(offset + 20) = {cavity_x_2[k] + (central_cavity_height/2 + central_cavity_transition)*Cos(theta2), cavity_y_2[k] - (central_cavity_height/2 + central_cavity_transition)*Sin(theta2), 0, h_refine};
-			Point(offset + 25) = {cavity_x_2[k] + (central_cavity_height/2                            )*Cos(theta2), cavity_y_2[k] - (central_cavity_height/2                            )*Sin(theta2), 0, h_refine/10};
-			Point(offset + 26) = {cavity_x_2[k] + (central_cavity_height/2 - central_cavity_transition)*Cos(theta2), cavity_y_2[k] - (central_cavity_height/2 - central_cavity_transition)*Sin(theta2), 0, h_refine/2};
+			Point(offset + 20) = {cavity_x_2[k] + (central_cavity_heights[k]/2 + central_cavity_transition)*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2 + central_cavity_transition)*Sin(theta2), 0, h_refine};
+			Point(offset + 25) = {cavity_x_2[k] + (central_cavity_heights[k]/2                            )*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2                            )*Sin(theta2), 0, h_refine/10};
+			Point(offset + 26) = {cavity_x_2[k] + (central_cavity_heights[k]/2 - central_cavity_transition)*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2 - central_cavity_transition)*Sin(theta2), 0, h_refine/2};
 		Else
-			Point(offset + 20) = {cavity_x_2[k] - (central_cavity_height/2 + central_cavity_transition)*Cos(theta2), cavity_y_2[k] + (central_cavity_height/2 + central_cavity_transition)*Sin(theta2), 0, h_refine/2};
-			Point(offset + 25) = {cavity_x_2[k] - (central_cavity_height/2                            )*Cos(theta2), cavity_y_2[k] + (central_cavity_height/2                            )*Sin(theta2), 0, h_refine/10};
-			Point(offset + 26) = {cavity_x_2[k] - (central_cavity_height/2 - central_cavity_transition)*Cos(theta2), cavity_y_2[k] + (central_cavity_height/2 - central_cavity_transition)*Sin(theta2), 0, h_refine/2};
+			Point(offset + 20) = {cavity_x_2[k] - (central_cavity_heights[k]/2 + central_cavity_transition)*Cos(theta2), cavity_y_2[k] + (central_cavity_heights[k]/2 + central_cavity_transition)*Sin(theta2), 0, h_refine/2};
+			Point(offset + 25) = {cavity_x_2[k] - (central_cavity_heights[k]/2                            )*Cos(theta2), cavity_y_2[k] + (central_cavity_heights[k]/2                            )*Sin(theta2), 0, h_refine/10};
+			Point(offset + 26) = {cavity_x_2[k] - (central_cavity_heights[k]/2 - central_cavity_transition)*Cos(theta2), cavity_y_2[k] + (central_cavity_heights[k]/2 - central_cavity_transition)*Sin(theta2), 0, h_refine/2};
 		EndIf
 	EndIf
 EndFor
@@ -582,11 +630,6 @@ For k In {0:no_placentones-1:1}
 	offset = numbering_start      + k*placentone_step;
 
 	If (k == 0)
-		If (ms_1 == 1)
-			Line(offset + 0)   = {1010, 1001};
-		Else
-			Line(offset + 0)   = {1007, 1001};
-		EndIf
 		If (vein_1[k] == 1)
 			Circle(offset + 1) = {1001, 1000, offset + 1};
 			Circle(offset + 5) = {offset + 4,  1000, offset + 19};
@@ -629,11 +672,6 @@ For k In {0:no_placentones-1:1}
 			Circle(offset + 13)  = {offset + 12, 1000, 1002};
 		Else
 			Circle(offset + 9)  = {offset + 21, 1000, 1002};
-		EndIf
-		If (ms_2 == 1)
-			Line(offset + 14) = {1002, 1003};
-		Else
-			Line(offset + 14) = {1002, 1006};
 		EndIf
 	EndIf
 EndFor
@@ -749,18 +787,18 @@ EndFor
 // Marginal sinuses //
 //////////////////////
 If (ms_2 == 1)
-	Line(1003) = {1003, 1004};
+	Line(1003) = {1002, 1004};
 	Line(1004) = {1004, 1005};
 	Line(1005) = {1005, 1006};
-	Line(1006) = {1006, 1003};
 EndIf
+Line(1006) = {1006, 1002};
 
 If (ms_1 == 1)
 	Line(1007) = {1007, 1008};
 	Line(1008) = {1008, 1009};
-	Line(1009) = {1009, 1010};
-	Line(1010) = {1010, 1007};
+	Line(1009) = {1009, 1001};
 EndIf
+Line(1010) = {1001, 1007};
 
 //////////////////////
 // Central cavities //
@@ -834,7 +872,12 @@ If (ms_2 == 1)
 EndIf
 
 // Side walls of entire placenta.
-Physical Curve(100) += {numbering_start, numbering_start + (no_placentones-1)*placentone_step + 14};
+If (ms_1 == 0)
+	Physical Curve(100) += {1010};
+EndIf
+If (ms_2 == 0)
+	Physical Curve(100) += {1006};
+EndIf
 
 // Basal plate.
 For k In {1:no_placentones:1}
@@ -907,10 +950,7 @@ For k In {0:no_placentones-1:1}
 	EndIf
 	
 	If (k == no_placentones-1)
-		placentone_list += {offset + 14};
-		If (ms_2 == 1)
-			placentone_list += {-1006};
-		EndIf
+		placentone_list += {-1006};
 	EndIf
 	If (k != no_placentones-1)
 		If (septal_vein_1[k] == 1)
@@ -927,10 +967,7 @@ For k In {0:no_placentones-1:1}
 	EndIf
 	placentone_list += {300 + no_placentones - k};
 	If (k == 0)
-		If (ms_1 == 1)
-			placentone_list += {-1010};
-		EndIf
-		placentone_list += {offset + 0};
+		placentone_list += {-1010};
 	EndIf
 	If (k != 0)
 		placentone_list += {-(200 + k)};
