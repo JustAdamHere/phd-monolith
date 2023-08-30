@@ -72,6 +72,7 @@ module bcs_velocity
   subroutine anal_soln_velocity(u, global_point, problem_dim, no_vars, boundary_no, t, element_region_id)
     use param
     use problem_options
+    use problem_options_velocity
 
     implicit none
 
@@ -101,10 +102,7 @@ module bcs_velocity
         right = artery_location + artery_width_sm/2.0_db
         u(2) = -4.0_db/(right-left)**2*(x-left)*(x-right)
 
-        ! u(2) = u(2) * (0.6_db + (cos(t*pi))*0.4_db) ! Oscillates between 0.2 and 1.0.
-        ! call Boileau_velocity_amplitude(amplitude, t)
-        amplitude = 1.0_db
-        u(2) = u(2) * amplitude
+        u(2) = u(2) * current_velocity_amplitude
 
         if (u(2) <= -1e-5) then
           print *, "Error: inflow velocity negative"
@@ -113,51 +111,6 @@ module bcs_velocity
         end if
     end if
   end subroutine
-
-  subroutine Boileau_velocity_amplitude(amplitude, global_time)
-    use param
-
-    implicit none
-
-    real(db), intent(out) :: amplitude
-    real(db), intent(in)  :: global_time
-
-    real(db) :: period, offset_time
-
-    period      = 1.0_db
-    !offset_time = global_time + 0.055_db
-    offset_time = global_time + 0.184_db
-
-    amplitude = (1e-6)/1.3303206357558143e-05 * ( &
-        6.5 &
-        +3.294_db    *sin(2* pi*offset_time/period - 0.023974_db) &
-        +1.9262_db   *sin(4* pi*offset_time/period - 1.1801_db) &
-        -1.4219_db   *sin(6* pi*offset_time/period + 0.92701_db) &
-        -0.66627_db  *sin(8* pi*offset_time/period - 0.24118_db) &
-        -0.33933_db  *sin(10*pi*offset_time/period - 0.27471_db) &
-        -0.37914_db  *sin(12*pi*offset_time/period - 1.0557_db) &
-        +0.22396_db  *sin(14*pi*offset_time/period + 1.22_db) &
-        +0.1507_db   *sin(16*pi*offset_time/period + 1.0984_db) &
-        +0.18735_db  *sin(18*pi*offset_time/period + 0.067483_db) &
-        +0.038625_db *sin(20*pi*offset_time/period + 0.22262_db) &
-        +0.012643_db *sin(22*pi*offset_time/period - 0.10093_db) &
-        -0.0042453_db*sin(24*pi*offset_time/period - 1.1044_db) &
-        -0.012781_db *sin(26*pi*offset_time/period - 1.3739_db) &
-        +0.014805_db *sin(28*pi*offset_time/period + 1.2797_db) &
-        +0.012249_db *sin(30*pi*offset_time/period + 0.80827_db) &
-        +0.0076502_db*sin(32*pi*offset_time/period + 0.40757_db) &
-        +0.0030692_db*sin(34*pi*offset_time/period + 0.195_db) &
-        -0.0012271_db*sin(36*pi*offset_time/period - 1.1371_db) &
-        -0.0042581_db*sin(38*pi*offset_time/period - 0.92102_db) &
-        -0.0069785_db*sin(40*pi*offset_time/period - 1.2364_db) &
-        +0.0085652_db*sin(42*pi*offset_time/period + 1.4539_db) &
-        +0.0081881_db*sin(44*pi*offset_time/period + 0.89599_db) &
-        +0.0056549_db*sin(46*pi*offset_time/period + 0.17623_db) &
-        +0.0026358_db*sin(48*pi*offset_time/period - 1.3003_db) &
-        -0.0050868_db*sin(50*pi*offset_time/period - 0.011056_db) &
-        -0.0085829_db*sin(52*pi*offset_time/period - 0.86463_db) &
-    ) ! [m3/s]
-end subroutine
 
   subroutine anal_soln_velocity_1(u_1, global_point, problem_dim, no_vars, t, element_region_id)
     use param

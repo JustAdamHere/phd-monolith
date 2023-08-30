@@ -1,0 +1,91 @@
+# ==============================================================
+# Compiler Options for PARALLEL (MPI) Code
+
+# ==============================================================
+# SPARSKIT2 (use compiler flag -DSPARSKIT)
+
+SPARSKIT_DIR = $(AptoFEM_DIR)/dependencies/SPARSKIT2/
+SPARSKIT = -L$(SPARSKIT_DIR) -lskit
+
+# ==============================================================
+# METIS 5 (64 bit) (use compiler flag -DMETIS_5_64)
+
+METIS_5_DIR = $(PETSC_DIR)/$(PETSC_ARCH)/externalpackages/git.metis/libmetis
+METIS_5 = -L$(METIS_5_DIR)/ -lmetis
+
+PARMETIS_5_DIR = $(PETSC_DIR)/$(PETSC_ARCH)/externalpackages/git.parmetis/libparmetis
+PARMETIS_5 = -L$(PARMETIS_5_DIR)/ -lparmetis
+
+# ==============================================================
+# ARPACK (use compiler flag -DARPACK)
+
+ARPACK_DIR = $(AptoFEM_DIR)/dependencies/ARPACK/
+ARPACK = -L$(ARPACK_DIR)/ -larpack
+
+# ==============================================================
+# BLACS and Scalapack - Only needed if parallel version of
+# MUMPS is to be employed. (NO LONGER USED AS MUMPS IS INSTALLED FROM PETSc)
+
+#BLACS_Scalapack_DIR = $(HOME)/software/application/petsc-3.10.0/arch-darwin-c-debug/externalpackages/scalapack-2.0.2/
+
+#BLACS_Scalapack = -L$(BLACS_Scalapack_DIR)/ \
+#       -lscalapack
+
+# ==============================================================
+# MUMPS - Parallel version (Using installation from PETSc)
+# (use compiler flag -DMUMPS)
+
+MUMPS_PAR_DIR  = $(AptoFEM_DIR)/dependencies/petsc/arch-linux-c-opt/externalpackages/git.mumps/
+
+MUMPS_PAR = -L$(MUMPS_PAR_DIR)lib/ -ldmumps -lmumps_common \
+        -L$(MUMPS_PAR_DIR)PORD/lib/ -lpord  \
+        $(BLACS_Scalapack)
+
+MUMPS = $(MUMPS_PAR)
+# ==============================================================
+# BLAS (Needed for MUMPS)
+
+Openblas_DIR=$(AptoFEM_DIR)/dependencies/OpenBLAS-0.3.23/
+BLAS = -L$(Openblas_DIR) -lopenblas
+
+# ==============================================================
+# PETSc (use compiler flag -DPETSC)
+
+PETSC = -L${PETSC_DIR}/$(PETSC_ARCH)/lib \
+        -L${PETSC_DIR}/$(PETSC_ARCH)/lib  -lpetsc
+
+# ==============================================================
+# SLEPc (use compiler flag -DSLEPC)
+
+SLEPC = -L${SLEPC_DIR}/$(PETSC_ARCH)/lib \
+        -L${SLEPC_DIR}/$(PETSC_ARCH)/lib  -lslepc
+
+#include ${SLEPC_DIR}/lib/slepc/conf/slepc_common
+
+# ==============================================================
+# AptoFEM
+
+AptoFEM   = -L$(AptoFEM_DIR)/lib -laptofem_c_mpi \
+        -L$(AptoFEM_DIR)/lib -laptofem_f_mpi -laptofem_c_mpi \
+        $(SPARSKIT) $(METIS_5) $(PARMETIS_5) $(ARPACK) $(MUMPS) $(BLAS) $(PETSC) \
+        $(SLEPC) -lstdc++
+# ==============================================================
+# Compiler Options
+
+#############################################################
+# MPI Version
+
+FC = mpifort
+FFLAGS = -O3 -cpp -DMPI -DARPACK -DMETIS_5_32 -DMUMPS -DSPARSKIT -DPETSC -DSLEPC
+MODFLAGS = -I $(AptoFEM_DIR)/include/ \
+        -I $(AptoFEM_DIR)/include/mpi/ \
+        -I $(ARPACK_DIR)/SRC/ \
+        -I $(MUMPS_PAR_DIR)/include/ \
+        -I $(PETSC_DIR)/include/ \
+        -I $(PETSC_DIR)/$(PETSC_ARCH)/include/ \
+        -I $(SLEPC_DIR)/include/ \
+        -I $(SLEPC_DIR)/$(PETSC_ARCH)/include/
+
+CC=gcc
+CFLAGS = -O1 -w -I $(AptoFEM_DIR)/include/
+#############################################################

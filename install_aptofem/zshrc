@@ -1,0 +1,143 @@
+alias vi=vim
+
+# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
+# Initialization code that may require console input (password prompts, [y/n]
+# confirmations, etc.) must go above this block; everything else may go below.
+if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
+  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
+fi
+
+autoload -U compinit
+compinit
+
+#allow tab completion in the middle of a word
+setopt COMPLETE_IN_WORD
+
+## keep background processes at full speed
+#setopt NOBGNICE
+## restart running processes on exit
+#setopt HUP
+
+## history
+setopt APPEND_HISTORY
+## for sharing history between zsh processes
+setopt INC_APPEND_HISTORY
+setopt SHARE_HISTORY
+
+## never ever beep ever
+#setopt NO_BEEP
+
+## automatically decide when to page a list of completions
+#LISTMAX=0
+
+## disable mail checking
+#MAILCHECK=0
+
+# autoload -U colors
+#colors
+source ~/.powerlevel10k/powerlevel10k.zsh-theme
+source ~/.session-sauce.plugin.zsh
+source ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+
+plugins=(git screen session-sauce tmux zsh-autosuggestions virtualenv status)
+
+# Add MPI to filepath.
+#export PATH=$PATH:/maths/scratch/aptofem.centos8/openmpi-4.1.0/bin/
+
+# MUMPS number of threads.
+export OMP_NUM_THREADS=40
+
+#############################
+# AptoFEM-related variables #
+#############################
+# AptoFEM
+#export AptoFEM_DIR="/home/pmyambl/AptoFEM-Helios-20230814-2/aptofem"
+
+# BLAS
+#export OPENBLAS_DIR=${AptoFEM_DIR}"/dependencies/OpenBLAS-0.3.13"
+#LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${OPENBLAS_DIR}/lib; export LD_LIBRARY_PATH
+
+# SPARSKIT
+#export SPARSKIT_DIR=${AptoFEM_DIR}"/dependencies/SPARSKIT2"
+
+# ARPACK
+#export ARPACK_DIR=${AptoFEM_DIR}"/dependencies/ARPACK"
+
+# PETSc
+#export PETSC_DIR=${AptoFEM_DIR}/"dependencies/petsc"
+#export PETSC_ARCH="arch-linux-c-opt"
+#export PETSC_ARCH_DIR=${PETSC_DIR}/${PETSC_ARCH}/"include"
+#LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${PETSC_DIR}/${PETSC_ARCH}/lib; export LD_LIBRARY_PATH
+
+# SLEPc
+#export SLEPC_DIR=${AptoFEM_DIR}"/dependencies/slepc"
+#LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${SLEPC_DIR}/"include"; export LD_LIBRARY_PATH
+
+# ####################################### #
+# Zak's AptoFEM-related variables for MPI #
+# ####################################### #
+export AptoFEM_DIR='/home/pmyambl/AptoFEM-Helios-20230815/aptofem'
+
+PATH="${AptoFEM_DIR}/dependencies/openmpi-4.1.5/bin:${PATH}"; export PATH
+LD_LIBRARY_PATH="${AptoFEM_DIR}/dependencies/openmpi-4.1.5/lib:${LD_LIBRARY_PATH}"; export LD_LIBRARY_PATH
+MANPATH="${AptoFEM_DIR}/dependencies/openmpi-4.1.5/man:${MANPATH}"; export MANPATH
+
+# BLAS
+export OPENBLAS_DIR=${AptoFEM_DIR}"/dependencies/OpenBLAS-0.3.23"
+LD_LIBRARY_PATH="${OPENBLAS_DIR}/lib:${LD_LIBRARY_PATH}"; export LD_LIBRARY_PATH
+# Slepc
+export SLEPC_DIR=${AptoFEM_DIR}"/dependencies/slepc"
+LD_LIBRARY_PATH="${SLEPC_DIR}/${PETSC_ARCH}/lib/:${LD_LIBRARY_PATH}"; export LD_LIBRARY_PATH
+# SPARKSKIT2
+export SPARSKIT2_DIR=${AptoFEM_DIR}"/dependencies/SPARSKIT2"
+# ARPACK
+export ARPACK_DIR=${AptoFEM_DIR}"/dependencies/ARPACK"
+# Petsc
+export PETSC_DIR=${AptoFEM_DIR}"/dependencies/petsc"
+export PETSC_ARCH=arch-linux-c-opt
+LD_LIBRARY_PATH="${PETSC_DIR}/${PETSC_ARCH}/lib/:${LD_LIBRARY_PATH}"; export LD_LIBRARY_PATH
+# Parmetis
+export PARMETIS_DIR=${PETSC_DIR}/${PETSC_ARCH}/externalpackages/git.parmetis/libparmetis
+LD_LIBRARY_PATH="${PARMETIS_DIR}:${LD_LIBRARY_PATH}"; export LD_LIBRARY_PATH
+
+
+
+
+# # AptoFEM directory.
+# #if [[ -v AptoFEM_MPI ]] then
+# #     export AptoFEM_DIR=/home/pmyambl/AptoFEM-Helios-LotusDev-20220509/
+# #else
+# #     export AptoFEM_DIR=/home/pmyambl/AptoFEM-Helios-20220427/aptofem/
+# #fi
+
+# #export AptoFEM_DIR=/usr/local/AptoFEM.centos8/aptofem/
+
+# export AptoFEM_DIR=/home/pmyambl/AptoFEM-Helios-20230619/aptofem/
+# #export AptoFEM_DIR=/home/pmyambl/AptoFEM-Helios-20221206-2/aptofem/
+# #export AptoFEM_DIR=/usr/local/AptoFEM/aptofem
+
+
+# # OpenBLAS directory.
+# #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$AptoFEM_DIR/OpenBLAS-0.3.13/lib
+# export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/maths/scratch/aptofem.centos8/OpenBLAS-0.3.13/
+
+# # PETSc and SLEPc directories.
+# #export PETSC_DIR=/maths/scratch/aptofem.centos8/petsc
+# export PETSC_DIR=/home/pmyambl/AptoFEM-Helios-20230814/dependencies/petsc/include
+# export PETSC_ARCH=arch-linux-opt
+# #export SLEPC_DIR=/maths/scratch/aptofem.centos8/slepc-3.14.2
+# export LD_LIBRARY_PATH=$SLEPC_DIR/$PETSC_ARCH/lib/:$PETSC_DIR/$PETSC_ARCH/lib/:${LD_LIBRARY_PATH}
+
+# ParaView.
+export PATH=$PATH:/home/pmyambl/software/ParaView-5.10.0-osmesa-MPI-Linux-Python3.9-x86_64/bin/
+
+# Gmsh.
+export PATH=$PATH:/home/pmyambl/software/software/gmsh-4.9.5-Linux64/bin/
+
+# Shortcuts.
+bindkey  "^[[H"   beginning-of-line
+bindkey  "^[[F"   end-of-line
+bindkey  "^[[3~"  delete-char
+
+# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
+[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh

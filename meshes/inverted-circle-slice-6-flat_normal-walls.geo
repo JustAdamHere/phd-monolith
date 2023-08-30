@@ -104,7 +104,7 @@ If (no_placentones == 7)
 	EndFor
 
 ElseIf (no_placentones == 6)
-	// Set such that 220-15=2*40+2*40*x+2*40*x^2.
+	// Set such that 220-5*3=2*40+2*40*x+2*40*x^2.
 	ratio = Sqrt(29)/4 - 0.5;
 
 	// Placentone widths.
