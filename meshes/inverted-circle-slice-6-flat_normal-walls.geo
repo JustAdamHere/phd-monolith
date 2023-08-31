@@ -1,5 +1,7 @@
 // TODO: Need to fix surface numbers for septal walls.
 
+SetFactory("OpenCASCADE");
+
 //=/=/=/=/=/=/=/=/=/=//
 //=/ OUTPUT FORMAT /=//
 //=/  EDGES
@@ -550,18 +552,18 @@ For k In {0:no_placentones-1:1}
 
 	If (no_placentones % 2 != 0 && k == Floor(no_placentones/2))
 		Point(offset + 19) = {cavity_x_1[k], cavity_y_1[k], 0, h_refine};
-		Point(offset + 42) = {cavity_x_1[k] - (central_cavity_transition/2)*Sin(theta1), cavity_y_1[k] - (central_cavity_transition/2)*Cos(theta1), 0, h_refine/10};
-		Point(offset + 43) = {cavity_x_1[k] - (central_cavity_transition)  *Sin(theta1), cavity_y_1[k] - (central_cavity_transition)  *Cos(theta1), 0, h_refine/2};
+		Point(offset + 42) = {cavity_x_1[k] - (central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] - (central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_refine/10};
+		Point(offset + 43) = {cavity_x_1[k] - (central_cavity_transition)  *Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] - (central_cavity_transition)  *Sin(theta1) - centre_x)^2)^0.5, 0, h_refine/2};
 	Else
 		Point(offset + 19) = {cavity_x_1[k], cavity_y_1[k], 0, h_refine/2};
-		Point(offset + 42) = {cavity_x_1[k] + (central_cavity_transition/2)*Sin(theta1), cavity_y_1[k] + (central_cavity_transition/2)*Cos(theta1), 0, h_refine/10};
-		Point(offset + 43) = {cavity_x_1[k] + (central_cavity_transition)  *Sin(theta1), cavity_y_1[k] + (central_cavity_transition)  *Cos(theta1), 0, h_refine/2};
+		Point(offset + 42) = {cavity_x_1[k] + (central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] + (central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_refine/10};
+		Point(offset + 43) = {cavity_x_1[k] + (central_cavity_transition)  *Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] + (central_cavity_transition)  *Sin(theta1) - centre_x)^2)^0.5, 0, h_refine/2};
 	EndIf
 
 	Point(offset + 22) = {cavity_x_2[k], cavity_y_2[k], 0, h_refine/2};
 	Point(offset + 21) = {cavity_x_3[k], cavity_y_3[k], 0, h_refine/2};
-	Point(offset + 44) = {cavity_x_3[k] - (central_cavity_transition/2)*Sin(theta3), cavity_y_3[k] - (central_cavity_transition/2)*Cos(theta3), 0, h_refine/10};
-	Point(offset + 45) = {cavity_x_3[k] - (central_cavity_transition)  *Sin(theta3), cavity_y_3[k] - (central_cavity_transition)  *Cos(theta3), 0, h_refine/2};
+	Point(offset + 44) = {cavity_x_3[k] - (central_cavity_transition/2)*Sin(theta3), centre_y - (radius^2 - (cavity_x_3[k] - (central_cavity_transition/2)*Sin(theta3) - centre_x)^2)^0.5, 0, h_refine/10};
+	Point(offset + 45) = {cavity_x_3[k] - (central_cavity_transition)  *Sin(theta3), centre_y - (radius^2 - (cavity_x_3[k] - (central_cavity_transition)  *Sin(theta3) - centre_x)^2)^0.5, 0, h_refine/2};
 	If (artery[k] == 1)
 		If (no_placentones % 2 != 0 && k == Floor(no_placentones/2))
 			Point(offset + 20) = {cavity_x_2[k] + (central_cavity_heights[k]/2 + central_cavity_transition)*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2 + central_cavity_transition)*Sin(theta2), 0, h_refine};
@@ -807,14 +809,14 @@ For k In {0:no_placentones-1:1}
 	offset = numbering_start + k*placentone_step;
 
 	If (artery[k] == 1)
-		Ellipse(offset + 21) = {offset + 19, offset + 22, offset + 22, offset + 20};
-		Ellipse(offset + 22) = {offset + 20, offset + 22, offset + 22, offset + 21};
+		Ellipse(offset + 21) = {offset + 19, offset + 22, offset + 20, offset + 20};
+		Ellipse(offset + 22) = {offset + 20, offset + 22, offset + 20, offset + 21};
 
-		Ellipse(offset + 49) = {offset + 42, offset + 22, offset + 22, offset + 25};
-		Ellipse(offset + 50) = {offset + 25, offset + 22, offset + 22, offset + 44};
+		Ellipse(offset + 49) = {offset + 42, offset + 22, offset + 25, offset + 25};
+		Ellipse(offset + 50) = {offset + 25, offset + 22, offset + 25, offset + 44};
 
-		Ellipse(offset + 51) = {offset + 43, offset + 22, offset + 22, offset + 26};
-		Ellipse(offset + 52) = {offset + 26, offset + 22, offset + 22, offset + 45};
+		Ellipse(offset + 51) = {offset + 43, offset + 22, offset + 26, offset + 26};
+		Ellipse(offset + 52) = {offset + 26, offset + 22, offset + 26, offset + 45};
 	EndIf
 EndFor
 

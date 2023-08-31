@@ -1,6 +1,8 @@
 // Gmsh project created on Thu Mar 17 16:40:34 2022
 //   Assumes width of 4cm [1 unit] and inlet/outlet size of 2mm [0.05 units]
 
+SetFactory("OpenCASCADE");
+
 //=/=/=/=/=/=/=/=/=/=//
 //=/ OUTPUT FORMAT /=//
 //=/  EDGES
@@ -120,16 +122,17 @@ Line(5)     = {5,  19};
 Line(9)     = {21,  10};
 Line(13)    = {13, 14};
 Line(14)    = {14, 15};
-Circle(15)  = {15, 18, 17};
-Line(16)    = {17, 1};
+Circle(15)  = {15, 18, 16};
+Circle(16)  = {16, 18, 17};
+Line(17)    = {17, 1};
 
 // Cavity.
-Ellipse(21) = {19, 22, 22, 20};
-Ellipse(22) = {20, 22, 22, 21};
-Ellipse(30) = {29, 22, 22, 27};
-Ellipse(31) = {27, 22, 22, 32};
-Ellipse(32) = {30, 22, 22, 28};
-Ellipse(33) = {28, 22, 22, 31};
+Ellipse(21) = {19, 22, 20, 20};
+Ellipse(22) = {20, 22, 20, 21};
+Ellipse(30) = {29, 22, 27, 27};
+Ellipse(31) = {27, 22, 27, 32};
+Ellipse(32) = {30, 22, 28, 28};
+Ellipse(33) = {28, 22, 28, 31};
 Line(34)    = {19, 29};
 Line(35)    = {29, 30};
 Line(23)    = {30, 6};
@@ -163,8 +166,8 @@ Line(27)    = {24, 10};
 /////////////////////
 // Physical curves //
 /////////////////////
-Physical Curve("boundary",       100) = {1, 2, 4, 5, 34, 35, 23, 6, 28, 29, 8, 26, 36, 37, 9, 10, 12, 13, 14, 16};
-Physical Curve("boundary-curve", 101) = {15};
+Physical Curve("boundary",       100) = {1, 2, 4, 5, 34, 35, 23, 6, 28, 29, 8, 26, 36, 37, 9, 10, 12, 13, 14, 17};
+Physical Curve("boundary-curve", 101) = {15, 16};
 Physical Curve("flow-in",        111) = {7};
 Physical Curve("flow-out-1",     211) = {3};
 Physical Curve("flow-out-2",     212) = {11};
@@ -173,7 +176,7 @@ Physical Curve("flow-out-2",     212) = {11};
 // Physical surfaces //
 ///////////////////////
 // Placentone.
-Curve Loop(1) = {1, -19, -18, 5, 21, 22, 9, -27, -20, 13, 14, 15, 16};
+Curve Loop(1) = {1, -19, -18, 5, 21, 22, 9, -27, -20, 13, 14, 15, 16, 17};
 
 // Pipes.
 Curve Loop(2) = {6, 28, 7, 29, 8, -25, -24};
