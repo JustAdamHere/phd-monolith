@@ -675,6 +675,7 @@ For k In {0:no_placentones-1:1}
 
 	If (artery[k] == 1)
 		phi = Atan2(artery_width/2 - artery_width_sm/2, artery_length_diverge);
+		weighting_guess = 0.75;
 
 		Point(numbering_start + k*placentone_step + 58)  = {location_2_x_pipe1_mid[k] + fillet_radius*Cos(phi + theta21b),                      location_2_y_pipe1_mid[k] + fillet_radius*Sin(phi + theta21b),                      0, h_refine/10};
 		Point(numbering_start + k*placentone_step + 59)  = {location_2_x_pipe1_mid[k] - fillet_radius*Cos(theta21b),                            location_2_y_pipe1_mid[k] - fillet_radius*Sin(theta21b),                            0, h_refine/10};
@@ -685,18 +686,12 @@ For k In {0:no_placentones-1:1}
 
 		Point(numbering_start + k*placentone_step + 64) = {centre_x - radius*Cos(theta21t - fillet_radius/radius), centre_y - radius*Sin(theta21t - fillet_radius/radius), 0, h_refine/2};
 		Point(numbering_start + k*placentone_step + 65) = {location_2_x_1[k] - fillet_radius*Cos(phi + theta21t), location_2_y_1[k] - fillet_radius*Sin(phi + theta21t), 0, h_refine/10};
-
-		// Point(53)  = {inlet_location - artery_width/2 - Tan(Pi/4+phi)*fillet_radius*Sin((Pi/2 - phi)/2), -Tan(Pi/4+phi)*fillet_radius*Cos((Pi/2 - phi)/2), 0, h_refine/2};
-		Point(numbering_start + k*placentone_step + 66) = {location_2_x_1[k] - Tan(Pi/4 + phi)*fillet_radius*Sin((Pi/2 + phi)/2 + 0.75*(theta21t) + 0.25*(theta21t - fillet_radius/radius)), location_2_y_1[k] + Tan(Pi/4+phi)*fillet_radius*Cos((Pi/2 + phi)/2 + 0.75*(theta21t) + 0.25*(theta21t - fillet_radius/radius)), 0, h_refine/2};
-
+		Point(numbering_start + k*placentone_step + 66) = {location_2_x_1[k] - Tan(Pi/4 + phi)*fillet_radius*Sin((Pi/2 + phi)/2 + theta21t - (1-weighting_guess)*fillet_radius/radius), location_2_y_1[k] + Tan(Pi/4 + phi)*fillet_radius*Cos((Pi/2 + phi)/2 + theta21t - (1-weighting_guess)*fillet_radius/radius), 0, h_refine/2};
 		Point(numbering_start + k*placentone_step + 67) = {location_2_x_2[k] - fillet_radius*Cos(-phi + theta22t), location_2_y_2[k] - fillet_radius*Sin(-phi + theta22t), 0, h_refine/10};
 		Point(numbering_start + k*placentone_step + 68) = {centre_x - radius*Cos(theta22t + fillet_radius/radius), centre_y - radius*Sin(theta22t + fillet_radius/radius), 0, h_refine/2};
-		// 69
+		Point(numbering_start + k*placentone_step + 69) = {location_2_x_2[k] + Tan(Pi/4 + phi)*fillet_radius*Sin(-Pi/4 - phi/2 + theta22t + (1-weighting_guess)*fillet_radius/radius), location_2_y_2[k] - Tan(Pi/4 + phi)*fillet_radius*Cos(-Pi/4 - phi/2 + theta22t + (1-weighting_guess)*fillet_radius/radius), 0, h_refine/2};
 	EndIf
 EndFor
-
-Line(99998) = {1366, 1364};
-Line(99999) = {1366, 1365};
 
 /////////////////
 // Placentones //
@@ -957,7 +952,7 @@ For k In {0:no_placentones-1:1}
 		Physical Curve(100) += {offset + 57, offset + 2, offset + 4, offset + 58};
 	EndIf
 	If (artery[k] == 1)
-		Physical Curve(100) += {offset + 6, offset + 61, offset + 27, offset + 28, offset + 62, offset + 8};
+		Physical Curve(100) += {offset + 63, offset + 6, offset + 61, offset + 27, offset + 28, offset + 62, offset + 8, offset + 64};
 	EndIf
 	If (vein_2[k] == 1)
 		Physical Curve(100) += {offset + 59, offset + 10, offset + 12, offset + 60};
@@ -1108,7 +1103,7 @@ For k In {0:no_placentones-1:1}
 		Physical Surface(411 + k*10) = {111 + k*10};
 	EndIf
 	If (artery[k] == 1)
-		Curve Loop      (112 + k*10) =  {offset + 6, offset + 61, offset + 27, offset + 7, offset + 28, offset + 62, offset + 8, offset + 25, offset + 24};
+		Curve Loop      (112 + k*10) = {offset + 63, offset + 6, offset + 61, offset + 27, offset + 7, offset + 28, offset + 62, offset + 8, offset + 64, offset + 25, offset + 24};
 		Plane Surface   (112 + k*10) = {112 + k*10};
 		Physical Surface(412 + k*10) = {112 + k*10};
 	EndIf
