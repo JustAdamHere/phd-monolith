@@ -75,6 +75,7 @@ module bcs_velocity
   subroutine anal_soln_velocity(u, global_point, problem_dim, no_vars, boundary_no, t, element_region_id)
     use param
     use problem_options
+    use problem_options_velocity
 
     implicit none
 
@@ -86,7 +87,7 @@ module bcs_velocity
     real(db), intent(in)                         :: t
     integer, intent(in)                          :: element_region_id
 
-    real(db) :: x, y, z
+    real(db) :: x, y, z, r
     real(db) :: left, right
     real(db) :: amplitude
     real(db) :: global_time ! TODO: check relationship between local and global t
@@ -101,12 +102,8 @@ module bcs_velocity
     z = global_point(3)
 
     if (boundary_no == 111) then
-        u(2) = -2.0_db*(x-(artery_location-artery_width_sm/2))*(x-(artery_location+artery_width_sm/2)) + &
-               -2.0_db*(z-(0.0_db         -artery_width_sm/2))*(z-(0.0_db         +artery_width_sm/2))
-
-        u(2) = u(2) / (artery_width_sm**2)
-
-        u(2) = u(2) * current_velocity_amplitude
+        r    = sqrt((x - artery_location)**2 + (z - 0.0_db)**2)
+        u(2) = current_velocity_amplitude * calculate_poiseuille_flow(r, artery_width_sm/2)
 
         if (u(2) <= -1e-5) then
           print *, "Error: inflow velocity negative"

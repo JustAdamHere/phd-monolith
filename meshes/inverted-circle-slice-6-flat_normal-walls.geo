@@ -61,15 +61,40 @@ EndIf
 ////////////////////////
 // Default parameters //
 ////////////////////////
-If (!Exists(h))
-	h        = 0.1;
+If (!Exists(h_background))
+	h_background = 0.1;
 EndIf
-If (!Exists(h_refine))
-	h_refine = h/10;
+If (!Exists(h_vein_top))
+	h_vein_top = h_background/10;
+EndIf
+If (!Exists(h_vein_bottom))
+	h_vein_bottom = h_background/10;
+EndIf
+If (!Exists(h_artery_top))
+	h_artery_top = h_background/10;
+EndIf
+If (!Exists(h_artery_middle))
+	h_artery_middle = h_background/10;
+EndIf
+If (!Exists(h_artery_bottom))
+	h_artery_bottom = h_background/10;
+EndIf
+If (!Exists(h_cavity_inner))
+	h_cavity_inner = h_background/10;
+EndIf
+If (!Exists(h_cavity_outer))
+	h_cavity_outer = h_background/2;
 EndIf
 
-Printf("h = %f", h);
-Printf("h_refine = %f", h_refine);
+Printf("Mesh resolution settings:");
+Printf("  h_background    = %f", h_background);
+Printf("  h_vein_top      = %f", h_vein_top);
+Printf("  h_vein_bottom   = %f", h_vein_bottom);
+Printf("  h_artery_top    = %f", h_artery_top);
+Printf("  h_artery_middle = %f", h_artery_middle);
+Printf("  h_artery_bottom = %f", h_artery_bottom);
+Printf("  h_cavity_inner  = %f", h_cavity_inner);
+Printf("  h_cavity_outer  = %f", h_cavity_outer);
 
 // Placentone widths and central cavity sizes.
 If (no_placentones == 7)
@@ -149,8 +174,9 @@ ElseIf (no_placentones == 6)
 	EndFor
 EndIf
 
+Printf("Placentone widths:");
 For k In {1:no_placentones:1}
-	Printf("placentone_width %g = %f", k, placentone_widths[k-1]);
+	Printf("  placentone_width_%g = %f", k, placentone_widths[k-1]);
 EndFor
 
 // Default locations of the 3 vessels.
@@ -272,6 +298,10 @@ centre_x = placenta_width/2;
 // centre_y = 5;
 centre_y = (placenta_height - ms_pipe_width)/2 + centre_x^2/(2*(placenta_height - ms_pipe_width));
 radius   = centre_y;
+Printf("Circle parameters:");
+Printf("  centre_x = %f", centre_x);
+Printf("  centre_y = %f", centre_y);
+Printf("  radius   = %f", radius);
 
 //////////////////////////
 // x and y of the walls //
@@ -477,19 +507,19 @@ placentone_step = 100;
 // Points //
 ////////////
 // Circle centre and placentone corners
-Point(1000) = {centre_x,                       centre_y,                                                  0, h};
-Point(1001) = {0,                              centre_y - (radius^2 - centre_x^2)^0.5,                    0, h_refine};
-Point(1002) = {placenta_width,                 centre_y - (radius^2 - (placenta_width - centre_x)^2)^0.5, 0, h_refine};
+Point(1000) = {centre_x,                       centre_y,                                                  0, 1};
+Point(1001) = {0,                              centre_y - (radius^2 - centre_x^2)^0.5,                    0, h_vein_top};
+Point(1002) = {placenta_width,                 centre_y - (radius^2 - (placenta_width - centre_x)^2)^0.5, 0, h_vein_top};
 
 If (ms_2 == 1)
-	Point(1004) = {placenta_width + ms_pipe_width, placenta_height - ms_pipe_width,                           0, h_refine};
-	Point(1005) = {placenta_width + ms_pipe_width, placenta_height,                                           0, h_refine};
+	Point(1004) = {placenta_width + ms_pipe_width, placenta_height - ms_pipe_width,                           0, h_vein_bottom};
+	Point(1005) = {placenta_width + ms_pipe_width, placenta_height,                                           0, h_vein_bottom};
 EndIf
-Point(1006)   = {placenta_width,                 placenta_height,                                           0, h_refine};
-Point(1007)   = {0,                              placenta_height,                                           0, h_refine};
+Point(1006)   = {placenta_width,                 placenta_height,                                           0, h_vein_top};
+Point(1007)   = {0,                              placenta_height,                                           0, h_vein_top};
 If (ms_1 == 1)
-	Point(1008) = {-ms_pipe_width,                 placenta_height,                                           0, h_refine};
-	Point(1009) = {-ms_pipe_width,                 placenta_height - ms_pipe_width,                           0, h_refine};
+	Point(1008) = {-ms_pipe_width,                 placenta_height,                                           0, h_vein_bottom};
+	Point(1009) = {-ms_pipe_width,                 placenta_height - ms_pipe_width,                           0, h_vein_bottom};
 EndIf
 
 // Placentones.
@@ -503,40 +533,31 @@ For k In {1:no_placentones:1}
 EndFor
 For k In {0:no_placentones-1:1}
 	If (vein_1[k] == 1)
-		// Point(numbering_start + k*placentone_step + 1)   = {location_1_x_1[k],     location_1_y_1[k],     0, h_refine/10};
-		Point(numbering_start + k*placentone_step + 2)   = {location_1_x_pipe1[k], location_1_y_pipe1[k], 0, h_refine/10};
-		Point(numbering_start + k*placentone_step + 3)   = {location_1_x_pipe2[k], location_1_y_pipe2[k], 0, h_refine};
-		// Point(numbering_start + k*placentone_step + 4)   = {location_1_x_2[k],     location_1_y_2[k],     0, h_refine/10};
+		Point(numbering_start + k*placentone_step + 2)   = {location_1_x_pipe1[k], location_1_y_pipe1[k], 0, h_vein_bottom};
+		Point(numbering_start + k*placentone_step + 3)   = {location_1_x_pipe2[k], location_1_y_pipe2[k], 0, h_vein_bottom};
 	EndIf
 	If (artery[k] == 1)
-		Point(numbering_start + k*placentone_step + 5)   = {location_2_x_1[k],     location_2_y_1[k],     0, h_refine/2};
-		Point(numbering_start + k*placentone_step + 6)   = {location_2_x_pipe1[k], location_2_y_pipe1[k], 0, h_refine/10};
-		Point(numbering_start + k*placentone_step + 7)   = {location_2_x_pipe2[k], location_2_y_pipe2[k], 0, h_refine/10};
-		Point(numbering_start + k*placentone_step + 8)   = {location_2_x_2[k],     location_2_y_2[k],     0, h_refine/2};
-
-		// Point(numbering_start + k*placentone_step + 23)  = {location_2_x_pipe1_mid[k], location_2_y_pipe1_mid[k], 0, h_refine/10};
-		// Point(numbering_start + k*placentone_step + 24)  = {location_2_x_pipe2_mid[k], location_2_y_pipe2_mid[k], 0, h_refine/10};
+		Point(numbering_start + k*placentone_step + 6)   = {location_2_x_pipe1[k], location_2_y_pipe1[k], 0, h_artery_bottom};
+		Point(numbering_start + k*placentone_step + 7)   = {location_2_x_pipe2[k], location_2_y_pipe2[k], 0, h_artery_bottom};
 	EndIf
 	If (vein_2[k] == 1)
-		Point(numbering_start + k*placentone_step + 9)   = {location_3_x_1[k],     location_3_y_1[k],     0, h_refine/10};
-		Point(numbering_start + k*placentone_step + 10)  = {location_3_x_pipe1[k], location_3_y_pipe1[k], 0, h_refine};
-		Point(numbering_start + k*placentone_step + 11)  = {location_3_x_pipe2[k], location_3_y_pipe2[k], 0, h_refine/10};
-		Point(numbering_start + k*placentone_step + 12)  = {location_3_x_2[k],     location_3_y_2[k],     0, h_refine/10};
+		Point(numbering_start + k*placentone_step + 10)  = {location_3_x_pipe1[k], location_3_y_pipe1[k], 0, h_vein_bottom};
+		Point(numbering_start + k*placentone_step + 11)  = {location_3_x_pipe2[k], location_3_y_pipe2[k], 0, h_vein_bottom};
 	EndIf
 EndFor
 
 // Walls.
 For k In {0:no_placentones-2:1}
-	Point(numbering_start + k*placentone_step + 13) = {wall_low_x[2*k+0], wall_low_y[2*k+0], 0, h};
-	Point(numbering_start + k*placentone_step + 14) = {wall_top_x[2*k+0], wall_top_y[2*k+0], 0, h};
-	Point(numbering_start + k*placentone_step + 16) = {wall_top_x[2*k+1], wall_top_y[2*k+1], 0, h};
-	Point(numbering_start + k*placentone_step + 17) = {wall_low_x[2*k+1], wall_low_y[2*k+1], 0, h};
+	Point(numbering_start + k*placentone_step + 13) = {wall_low_x[2*k+0], wall_low_y[2*k+0], 0, h_background};
+	Point(numbering_start + k*placentone_step + 14) = {wall_top_x[2*k+0], wall_top_y[2*k+0], 0, h_background};
+	Point(numbering_start + k*placentone_step + 16) = {wall_top_x[2*k+1], wall_top_y[2*k+1], 0, h_background};
+	Point(numbering_start + k*placentone_step + 17) = {wall_low_x[2*k+1], wall_low_y[2*k+1], 0, h_background};
 EndFor
 
 // Placentone separators.
 For k In {0:no_placentones-2:1}
-	Point(numbering_start + k*placentone_step + 15) = {separator_low_x[k],  separator_low_y[k],  0, h};
-	Point(numbering_start + k*placentone_step + 18) = {separator_high_x[k], separator_high_y[k], 0, h};
+	Point(numbering_start + k*placentone_step + 15) = {separator_low_x[k],  separator_low_y[k],  0, h_background};
+	Point(numbering_start + k*placentone_step + 18) = {separator_high_x[k], separator_high_y[k], 0, h_background};
 EndFor
 
 // Central cavities.
@@ -552,32 +573,31 @@ For k In {0:no_placentones-1:1}
 		theta2 = theta2 + Pi;
 		theta3 = theta3 + Pi;
 	EndIf
-	
-	// theta1 = theta_pipe[3*k+1];
 
+	// Essentially, a nasty hack that works. Is it so bad if it works?
 	If (no_placentones % 2 != 0 && k == Floor(no_placentones/2))
-		Point(offset + 19) = {cavity_x_1[k], cavity_y_1[k], 0, h_refine};
-		Point(offset + 42) = {cavity_x_1[k] - (central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] - (central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_refine/10};
-		Point(offset + 43) = {cavity_x_1[k] - (central_cavity_transition)  *Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] - (central_cavity_transition)  *Sin(theta1) - centre_x)^2)^0.5, 0, h_refine/2};
+		Point(offset + 19) = {cavity_x_1[k], cavity_y_1[k], 0, h_cavity_outer};
+		Point(offset + 42) = {cavity_x_1[k] - (central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] - (central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_inner};
+		Point(offset + 43) = {cavity_x_1[k] - (central_cavity_transition)  *Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] - (central_cavity_transition)  *Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_outer};
 	Else
-		Point(offset + 19) = {cavity_x_1[k], cavity_y_1[k], 0, h_refine/2};
-		Point(offset + 42) = {cavity_x_1[k] + (central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] + (central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_refine/10};
-		Point(offset + 43) = {cavity_x_1[k] + (central_cavity_transition)  *Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] + (central_cavity_transition)  *Sin(theta1) - centre_x)^2)^0.5, 0, h_refine/2};
+		Point(offset + 19) = {cavity_x_1[k], cavity_y_1[k], 0, h_cavity_outer};
+		Point(offset + 42) = {cavity_x_1[k] + (central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] + (central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_inner};
+		Point(offset + 43) = {cavity_x_1[k] + (central_cavity_transition)  *Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] + (central_cavity_transition)  *Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_outer};
 	EndIf
 
-	Point(offset + 22) = {cavity_x_2[k], cavity_y_2[k], 0, h_refine/2};
-	Point(offset + 21) = {cavity_x_3[k], cavity_y_3[k], 0, h_refine/2};
-	Point(offset + 44) = {cavity_x_3[k] - (central_cavity_transition/2)*Sin(theta3), centre_y - (radius^2 - (cavity_x_3[k] - (central_cavity_transition/2)*Sin(theta3) - centre_x)^2)^0.5, 0, h_refine/10};
-	Point(offset + 45) = {cavity_x_3[k] - (central_cavity_transition)  *Sin(theta3), centre_y - (radius^2 - (cavity_x_3[k] - (central_cavity_transition)  *Sin(theta3) - centre_x)^2)^0.5, 0, h_refine/2};
+	Point(offset + 22) = {cavity_x_2[k], cavity_y_2[k], 0, h_artery_top};
+	Point(offset + 21) = {cavity_x_3[k], cavity_y_3[k], 0, h_cavity_outer};
+	Point(offset + 44) = {cavity_x_3[k] - (central_cavity_transition/2)*Sin(theta3), centre_y - (radius^2 - (cavity_x_3[k] - (central_cavity_transition/2)*Sin(theta3) - centre_x)^2)^0.5, 0, h_cavity_inner};
+	Point(offset + 45) = {cavity_x_3[k] - (central_cavity_transition)  *Sin(theta3), centre_y - (radius^2 - (cavity_x_3[k] - (central_cavity_transition)  *Sin(theta3) - centre_x)^2)^0.5, 0, h_cavity_outer};
 	If (artery[k] == 1)
 		If (no_placentones % 2 != 0 && k == Floor(no_placentones/2))
-			Point(offset + 20) = {cavity_x_2[k] + (central_cavity_heights[k]/2 + central_cavity_transition)*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2 + central_cavity_transition)*Sin(theta2), 0, h_refine};
-			Point(offset + 25) = {cavity_x_2[k] + (central_cavity_heights[k]/2                            )*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2                            )*Sin(theta2), 0, h_refine/10};
-			Point(offset + 26) = {cavity_x_2[k] + (central_cavity_heights[k]/2 - central_cavity_transition)*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2 - central_cavity_transition)*Sin(theta2), 0, h_refine/2};
+			Point(offset + 20) = {cavity_x_2[k] + (central_cavity_heights[k]/2 + central_cavity_transition)*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2 + central_cavity_transition)*Sin(theta2), 0, h_cavity_outer};
+			Point(offset + 25) = {cavity_x_2[k] + (central_cavity_heights[k]/2                            )*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2                            )*Sin(theta2), 0, h_cavity_inner};
+			Point(offset + 26) = {cavity_x_2[k] + (central_cavity_heights[k]/2 - central_cavity_transition)*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2 - central_cavity_transition)*Sin(theta2), 0, h_cavity_outer};
 		Else
-			Point(offset + 20) = {cavity_x_2[k] - (central_cavity_heights[k]/2 + central_cavity_transition)*Cos(theta2), cavity_y_2[k] + (central_cavity_heights[k]/2 + central_cavity_transition)*Sin(theta2), 0, h_refine/2};
-			Point(offset + 25) = {cavity_x_2[k] - (central_cavity_heights[k]/2                            )*Cos(theta2), cavity_y_2[k] + (central_cavity_heights[k]/2                            )*Sin(theta2), 0, h_refine/10};
-			Point(offset + 26) = {cavity_x_2[k] - (central_cavity_heights[k]/2 - central_cavity_transition)*Cos(theta2), cavity_y_2[k] + (central_cavity_heights[k]/2 - central_cavity_transition)*Sin(theta2), 0, h_refine/2};
+			Point(offset + 20) = {cavity_x_2[k] - (central_cavity_heights[k]/2 + central_cavity_transition)*Cos(theta2), cavity_y_2[k] + (central_cavity_heights[k]/2 + central_cavity_transition)*Sin(theta2), 0, h_cavity_outer};
+			Point(offset + 25) = {cavity_x_2[k] - (central_cavity_heights[k]/2                            )*Cos(theta2), cavity_y_2[k] + (central_cavity_heights[k]/2                            )*Sin(theta2), 0, h_cavity_inner};
+			Point(offset + 26) = {cavity_x_2[k] - (central_cavity_heights[k]/2 - central_cavity_transition)*Cos(theta2), cavity_y_2[k] + (central_cavity_heights[k]/2 - central_cavity_transition)*Sin(theta2), 0, h_cavity_outer};
 		EndIf
 	EndIf
 EndFor
@@ -603,28 +623,28 @@ For k In {0:no_placentones-2:1}
 		vein_x = wall_low_x[2*k] + septal_vein_position_1[k]*(wall_top_x[2*k] - wall_low_x[2*k]);
 		vein_y = wall_low_y[2*k] + septal_vein_position_1[k]*(wall_top_y[2*k] - wall_low_y[2*k]);
 
-		Point(offset + 30) = {vein_x - (vein_width/2)*Cos(theta_wall[2*k]),                                   vein_y + (vein_width/2)*Sin(theta_wall[2*k]),                                   0, h_refine};
-		Point(offset + 31) = {vein_x - (vein_width/2)*Cos(theta_wall[2*k]) + vein_width*Sin(theta_wall[2*k]), vein_y + (vein_width/2)*Sin(theta_wall[2*k]) + vein_width*Cos(theta_wall[2*k]), 0, h_refine};
-		Point(offset + 32) = {vein_x + (vein_width/2)*Cos(theta_wall[2*k]) + vein_width*Sin(theta_wall[2*k]), vein_y - (vein_width/2)*Sin(theta_wall[2*k]) + vein_width*Cos(theta_wall[2*k]), 0, h_refine};
-		Point(offset + 33) = {vein_x + (vein_width/2)*Cos(theta_wall[2*k]),                                   vein_y - (vein_width/2)*Sin(theta_wall[2*k]),                                   0, h_refine};
+		Point(offset + 30) = {vein_x - (vein_width/2)*Cos(theta_wall[2*k]),                                   vein_y + (vein_width/2)*Sin(theta_wall[2*k]),                                   0, h_vein_top};
+		Point(offset + 31) = {vein_x - (vein_width/2)*Cos(theta_wall[2*k]) + vein_width*Sin(theta_wall[2*k]), vein_y + (vein_width/2)*Sin(theta_wall[2*k]) + vein_width*Cos(theta_wall[2*k]), 0, h_vein_bottom};
+		Point(offset + 32) = {vein_x + (vein_width/2)*Cos(theta_wall[2*k]) + vein_width*Sin(theta_wall[2*k]), vein_y - (vein_width/2)*Sin(theta_wall[2*k]) + vein_width*Cos(theta_wall[2*k]), 0, h_vein_bottom};
+		Point(offset + 33) = {vein_x + (vein_width/2)*Cos(theta_wall[2*k]),                                   vein_y - (vein_width/2)*Sin(theta_wall[2*k]),                                   0, h_vein_top};
 	EndIf
 	If (septal_vein_2[k] == 1)
 		vein_x = wall_top_x[2*k] + septal_vein_position_2[k]*(wall_top_x[2*k+1] - wall_top_x[2*k]);
 		vein_y = wall_top_y[2*k] + septal_vein_position_2[k]*(wall_top_y[2*k+1] - wall_top_y[2*k]);
 
-		Point(offset + 34) = {vein_x - (vein_width/2)*Sin(theta_wall[2*k]),                                       vein_y - (vein_width/2)*Cos(theta_wall[2*k]),                                       0, h_refine};
-		Point(offset + 35) = {vein_x - (vein_width/2)*Sin(theta_wall[2*k])   + vein_width*Cos(theta_wall[2*k]),   vein_y - (vein_width/2)*Cos(theta_wall[2*k])   - vein_width*Sin(theta_wall[2*k]),   0, h_refine};
-		Point(offset + 36) = {vein_x + (vein_width/2)*Sin(theta_wall[2*k+1]) + vein_width*Cos(theta_wall[2*k+1]), vein_y + (vein_width/2)*Cos(theta_wall[2*k+1]) - vein_width*Sin(theta_wall[2*k+1]), 0, h_refine};
-		Point(offset + 37) = {vein_x + (vein_width/2)*Sin(theta_wall[2*k+1]),                                     vein_y + (vein_width/2)*Cos(theta_wall[2*k+1]),                                     0, h_refine};
+		Point(offset + 34) = {vein_x - (vein_width/2)*Sin(theta_wall[2*k]),                                       vein_y - (vein_width/2)*Cos(theta_wall[2*k]),                                       0, h_vein_top};
+		Point(offset + 35) = {vein_x - (vein_width/2)*Sin(theta_wall[2*k])   + vein_width*Cos(theta_wall[2*k]),   vein_y - (vein_width/2)*Cos(theta_wall[2*k])   - vein_width*Sin(theta_wall[2*k]),   0, h_vein_bottom};
+		Point(offset + 36) = {vein_x + (vein_width/2)*Sin(theta_wall[2*k+1]) + vein_width*Cos(theta_wall[2*k+1]), vein_y + (vein_width/2)*Cos(theta_wall[2*k+1]) - vein_width*Sin(theta_wall[2*k+1]), 0, h_vein_bottom};
+		Point(offset + 37) = {vein_x + (vein_width/2)*Sin(theta_wall[2*k+1]),                                     vein_y + (vein_width/2)*Cos(theta_wall[2*k+1]),                                     0, h_vein_top};
 	EndIf
 	If (septal_vein_3[k] == 1)
 		vein_x = wall_low_x[2*k+1] + septal_vein_position_3[k]*(wall_top_x[2*k+1] - wall_low_x[2*k+1]);
 		vein_y = wall_low_y[2*k+1] + septal_vein_position_3[k]*(wall_top_y[2*k+1] - wall_low_y[2*k+1]);
 
-		Point(offset + 38) = {vein_x - (vein_width/2)*Cos(theta_wall[2*k+1]),                                     vein_y + (vein_width/2)*Sin(theta_wall[2*k+1]),                                     0, h_refine};
-		Point(offset + 39) = {vein_x - (vein_width/2)*Cos(theta_wall[2*k+1]) - vein_width*Sin(theta_wall[2*k+1]), vein_y + (vein_width/2)*Sin(theta_wall[2*k+1]) - vein_width*Cos(theta_wall[2*k+1]), 0, h_refine};
-		Point(offset + 40) = {vein_x + (vein_width/2)*Cos(theta_wall[2*k+1]) - vein_width*Sin(theta_wall[2*k+1]), vein_y - (vein_width/2)*Sin(theta_wall[2*k+1]) - vein_width*Cos(theta_wall[2*k+1]), 0, h_refine};
-		Point(offset + 41) = {vein_x + (vein_width/2)*Cos(theta_wall[2*k+1]),                                     vein_y - (vein_width/2)*Sin(theta_wall[2*k+1]),                                     0, h_refine};
+		Point(offset + 38) = {vein_x - (vein_width/2)*Cos(theta_wall[2*k+1]),                                     vein_y + (vein_width/2)*Sin(theta_wall[2*k+1]),                                     0, h_vein_top};
+		Point(offset + 39) = {vein_x - (vein_width/2)*Cos(theta_wall[2*k+1]) - vein_width*Sin(theta_wall[2*k+1]), vein_y + (vein_width/2)*Sin(theta_wall[2*k+1]) - vein_width*Cos(theta_wall[2*k+1]), 0, h_vein_bottom};
+		Point(offset + 40) = {vein_x + (vein_width/2)*Cos(theta_wall[2*k+1]) - vein_width*Sin(theta_wall[2*k+1]), vein_y - (vein_width/2)*Sin(theta_wall[2*k+1]) - vein_width*Cos(theta_wall[2*k+1]), 0, h_vein_bottom};
+		Point(offset + 41) = {vein_x + (vein_width/2)*Cos(theta_wall[2*k+1]),                                     vein_y - (vein_width/2)*Sin(theta_wall[2*k+1]),                                     0, h_vein_top};
 	EndIf
 
 EndFor
@@ -656,40 +676,40 @@ For k In {0:no_placentones-1:1}
 	EndIf
 
 	If (vein_1[k] == 1)
-		Point(offset + 46) = {centre_x - radius*Cos(theta11 - fillet_radius/radius), centre_y - radius*Sin(theta11 - fillet_radius/radius), 0, h_refine/10};
-		Point(offset + 47) = {location_1_x_1[k] - fillet_radius*Cos(theta11), location_1_y_1[k] - fillet_radius*Sin(theta11), 0, h_refine/10};
-		Point(offset + 48) = {centre_x - radius*Cos(theta11 - fillet_radius/radius) - fillet_radius*Cos(theta11), centre_y - radius*Sin(theta11 - fillet_radius/radius) - fillet_radius*Sin(theta11), 0, h_refine/10};
-		Point(offset + 49) = {location_1_x_2[k] - fillet_radius*Cos(theta12), location_1_y_2[k] - fillet_radius*Sin(theta12), 0, h_refine/10};
-		Point(offset + 50) = {centre_x - radius*Cos(theta12 + fillet_radius/radius), centre_y - radius*Sin(theta12 + fillet_radius/radius), 0, h_refine/10};
-		Point(offset + 51) = {centre_x - radius*Cos(theta12 + fillet_radius/radius) - fillet_radius*Cos(theta12), centre_y - radius*Sin(theta12 + fillet_radius/radius) - fillet_radius*Sin(theta12), 0, h_refine/10};
+		Point(offset + 46) = {centre_x - radius*Cos(theta11 - fillet_radius/radius), centre_y - radius*Sin(theta11 - fillet_radius/radius), 0, h_vein_top};
+		Point(offset + 47) = {location_1_x_1[k] - fillet_radius*Cos(theta11), location_1_y_1[k] - fillet_radius*Sin(theta11), 0, h_vein_top};
+		Point(offset + 48) = {centre_x - radius*Cos(theta11 - fillet_radius/radius) - fillet_radius*Cos(theta11), centre_y - radius*Sin(theta11 - fillet_radius/radius) - fillet_radius*Sin(theta11), 0, 1};
+		Point(offset + 49) = {location_1_x_2[k] - fillet_radius*Cos(theta12), location_1_y_2[k] - fillet_radius*Sin(theta12), 0, h_vein_top};
+		Point(offset + 50) = {centre_x - radius*Cos(theta12 + fillet_radius/radius), centre_y - radius*Sin(theta12 + fillet_radius/radius), 0, h_vein_top};
+		Point(offset + 51) = {centre_x - radius*Cos(theta12 + fillet_radius/radius) - fillet_radius*Cos(theta12), centre_y - radius*Sin(theta12 + fillet_radius/radius) - fillet_radius*Sin(theta12), 0, 1};
 	EndIf
 
 	If (vein_2[k] == 1)
-		Point(offset + 52) = {centre_x - radius*Cos(theta31 - fillet_radius/radius), centre_y - radius*Sin(theta31 - fillet_radius/radius), 0, h_refine/10};
-		Point(offset + 53) = {location_3_x_1[k] - fillet_radius*Cos(theta31), location_3_y_1[k] - fillet_radius*Sin(theta31), 0, h_refine/10};
-		Point(offset + 54) = {centre_x - radius*Cos(theta31 - fillet_radius/radius) - fillet_radius*Cos(theta31), centre_y - radius*Sin(theta31 - fillet_radius/radius) - fillet_radius*Sin(theta31), 0, h_refine/10};
-		Point(offset + 55) = {location_3_x_2[k] - fillet_radius*Cos(theta32), location_3_y_2[k] - fillet_radius*Sin(theta32), 0, h_refine/10};
-		Point(offset + 56) = {centre_x - radius*Cos(theta32 + fillet_radius/radius), centre_y - radius*Sin(theta32 + fillet_radius/radius), 0, h_refine/10};
-		Point(offset + 57) = {centre_x - radius*Cos(theta32 + fillet_radius/radius) - fillet_radius*Cos(theta32), centre_y - radius*Sin(theta32 + fillet_radius/radius) - fillet_radius*Sin(theta32), 0, h_refine/10};
+		Point(offset + 52) = {centre_x - radius*Cos(theta31 - fillet_radius/radius), centre_y - radius*Sin(theta31 - fillet_radius/radius), 0, h_vein_top};
+		Point(offset + 53) = {location_3_x_1[k] - fillet_radius*Cos(theta31), location_3_y_1[k] - fillet_radius*Sin(theta31), 0, h_vein_top};
+		Point(offset + 54) = {centre_x - radius*Cos(theta31 - fillet_radius/radius) - fillet_radius*Cos(theta31), centre_y - radius*Sin(theta31 - fillet_radius/radius) - fillet_radius*Sin(theta31), 0, 1};
+		Point(offset + 55) = {location_3_x_2[k] - fillet_radius*Cos(theta32), location_3_y_2[k] - fillet_radius*Sin(theta32), 0, h_vein_top};
+		Point(offset + 56) = {centre_x - radius*Cos(theta32 + fillet_radius/radius), centre_y - radius*Sin(theta32 + fillet_radius/radius), 0, h_vein_top};
+		Point(offset + 57) = {centre_x - radius*Cos(theta32 + fillet_radius/radius) - fillet_radius*Cos(theta32), centre_y - radius*Sin(theta32 + fillet_radius/radius) - fillet_radius*Sin(theta32), 0, 1};
 	EndIf
 
 	If (artery[k] == 1)
 		phi = Atan2(artery_width/2 - artery_width_sm/2, artery_length_diverge);
-		weighting_guess = 0.75;
+		weighting_guess = 0.75; // <- This is real nasty. I'd love for someone clevererer than me to tell me why this works.
 
-		Point(numbering_start + k*placentone_step + 58)  = {location_2_x_pipe1_mid[k] + fillet_radius*Cos(phi + theta21b),                      location_2_y_pipe1_mid[k] + fillet_radius*Sin(phi + theta21b),                      0, h_refine/10};
-		Point(numbering_start + k*placentone_step + 59)  = {location_2_x_pipe1_mid[k] - fillet_radius*Cos(theta21b),                            location_2_y_pipe1_mid[k] - fillet_radius*Sin(theta21b),                            0, h_refine/10};
-		Point(numbering_start + k*placentone_step + 60)  = {location_2_x_pipe1_mid[k] + Tan(Pi/2 + phi/2)*fillet_radius*Sin(phi/2 + theta21b),  location_2_y_pipe1_mid[k] - Tan(Pi/2 + phi/2)*fillet_radius*Cos(phi/2 + theta21b),  0, h_refine/10};
-		Point(numbering_start + k*placentone_step + 61)  = {location_2_x_pipe2_mid[k] - fillet_radius*Cos(theta22b),                            location_2_y_pipe2_mid[k] - fillet_radius*Sin(theta22b),                            0, h_refine/10};
-		Point(numbering_start + k*placentone_step + 62)  = {location_2_x_pipe2_mid[k] + fillet_radius*Cos(-phi + theta22b),                     location_2_y_pipe2_mid[k] + fillet_radius*Sin(-phi + theta22b),                     0, h_refine/10};
-		Point(numbering_start + k*placentone_step + 63)  = {location_2_x_pipe2_mid[k] - Tan(Pi/2 + phi/2)*fillet_radius*Sin(-phi/2 + theta22b), location_2_y_pipe2_mid[k] - Tan(Pi/2 - phi/2)*fillet_radius*Cos(-phi/2 + theta22b), 0, h_refine/10};
+		Point(numbering_start + k*placentone_step + 58)  = {location_2_x_pipe1_mid[k] + fillet_radius*Cos(phi + theta21b),                      location_2_y_pipe1_mid[k] + fillet_radius*Sin(phi + theta21b),                      0, h_artery_middle};
+		Point(numbering_start + k*placentone_step + 59)  = {location_2_x_pipe1_mid[k] - fillet_radius*Cos(theta21b),                            location_2_y_pipe1_mid[k] - fillet_radius*Sin(theta21b),                            0, h_artery_middle};
+		Point(numbering_start + k*placentone_step + 60)  = {location_2_x_pipe1_mid[k] + Tan(Pi/2 + phi/2)*fillet_radius*Sin(phi/2 + theta21b),  location_2_y_pipe1_mid[k] - Tan(Pi/2 + phi/2)*fillet_radius*Cos(phi/2 + theta21b),  0, 1};
+		Point(numbering_start + k*placentone_step + 61)  = {location_2_x_pipe2_mid[k] - fillet_radius*Cos(theta22b),                            location_2_y_pipe2_mid[k] - fillet_radius*Sin(theta22b),                            0, h_artery_middle};
+		Point(numbering_start + k*placentone_step + 62)  = {location_2_x_pipe2_mid[k] + fillet_radius*Cos(-phi + theta22b),                     location_2_y_pipe2_mid[k] + fillet_radius*Sin(-phi + theta22b),                     0, h_artery_middle};
+		Point(numbering_start + k*placentone_step + 63)  = {location_2_x_pipe2_mid[k] - Tan(Pi/2 + phi/2)*fillet_radius*Sin(-phi/2 + theta22b), location_2_y_pipe2_mid[k] - Tan(Pi/2 - phi/2)*fillet_radius*Cos(-phi/2 + theta22b), 0, 1};
 
-		Point(numbering_start + k*placentone_step + 64) = {centre_x - radius*Cos(theta21t - fillet_radius/radius), centre_y - radius*Sin(theta21t - fillet_radius/radius), 0, h_refine/2};
-		Point(numbering_start + k*placentone_step + 65) = {location_2_x_1[k] - fillet_radius*Cos(phi + theta21t), location_2_y_1[k] - fillet_radius*Sin(phi + theta21t), 0, h_refine/10};
-		Point(numbering_start + k*placentone_step + 66) = {location_2_x_1[k] - Tan(Pi/4 + phi)*fillet_radius*Sin((Pi/2 + phi)/2 + theta21t - (1-weighting_guess)*fillet_radius/radius), location_2_y_1[k] + Tan(Pi/4 + phi)*fillet_radius*Cos((Pi/2 + phi)/2 + theta21t - (1-weighting_guess)*fillet_radius/radius), 0, h_refine/2};
-		Point(numbering_start + k*placentone_step + 67) = {location_2_x_2[k] - fillet_radius*Cos(-phi + theta22t), location_2_y_2[k] - fillet_radius*Sin(-phi + theta22t), 0, h_refine/10};
-		Point(numbering_start + k*placentone_step + 68) = {centre_x - radius*Cos(theta22t + fillet_radius/radius), centre_y - radius*Sin(theta22t + fillet_radius/radius), 0, h_refine/2};
-		Point(numbering_start + k*placentone_step + 69) = {location_2_x_2[k] + Tan(Pi/4 + phi)*fillet_radius*Sin(-Pi/4 - phi/2 + theta22t + (1-weighting_guess)*fillet_radius/radius), location_2_y_2[k] - Tan(Pi/4 + phi)*fillet_radius*Cos(-Pi/4 - phi/2 + theta22t + (1-weighting_guess)*fillet_radius/radius), 0, h_refine/2};
+		Point(numbering_start + k*placentone_step + 64) = {centre_x - radius*Cos(theta21t - fillet_radius/radius), centre_y - radius*Sin(theta21t - fillet_radius/radius), 0, h_artery_top};
+		Point(numbering_start + k*placentone_step + 65) = {location_2_x_1[k] - fillet_radius*Cos(phi + theta21t), location_2_y_1[k] - fillet_radius*Sin(phi + theta21t), 0, h_artery_top};
+		Point(numbering_start + k*placentone_step + 66) = {location_2_x_1[k] - Tan(Pi/4 + phi)*fillet_radius*Sin((Pi/2 + phi)/2 + theta21t - (1-weighting_guess)*fillet_radius/radius), location_2_y_1[k] + Tan(Pi/4 + phi)*fillet_radius*Cos((Pi/2 + phi)/2 + theta21t - (1-weighting_guess)*fillet_radius/radius), 0, 1};
+		Point(numbering_start + k*placentone_step + 67) = {location_2_x_2[k] - fillet_radius*Cos(-phi + theta22t), location_2_y_2[k] - fillet_radius*Sin(-phi + theta22t), 0, h_artery_top};
+		Point(numbering_start + k*placentone_step + 68) = {centre_x - radius*Cos(theta22t + fillet_radius/radius), centre_y - radius*Sin(theta22t + fillet_radius/radius), 0, h_artery_top};
+		Point(numbering_start + k*placentone_step + 69) = {location_2_x_2[k] + Tan(Pi/4 + phi)*fillet_radius*Sin(-Pi/4 - phi/2 + theta22t + (1-weighting_guess)*fillet_radius/radius), location_2_y_2[k] - Tan(Pi/4 + phi)*fillet_radius*Cos(-Pi/4 - phi/2 + theta22t + (1-weighting_guess)*fillet_radius/radius), 0, 1};
 	EndIf
 EndFor
 
@@ -1201,15 +1221,14 @@ For k In {0:no_placentones-1:1}
 	EndIf
 EndFor
 
-// Plane Surface(51)                = {51};
-// Plane Surface(52)                = {52};
-// Plane Surface(53)                = {53};
-// Plane Surface(54)                = {54};
-// Plane Surface(55)                = {55};
-// Plane Surface(56)                = {56};
-// Physical Surface("cavity1", 501) = {51};
-// Physical Surface("cavity2", 502) = {52};
-// Physical Surface("cavity3", 503) = {53};
-// Physical Surface("cavity4", 504) = {54};
-// Physical Surface("cavity5", 505) = {55};
-// Physical Surface("cavity6", 506) = {56};
+// Mesh 2;
+// placentone_no = 3;
+// Plugin(MeshVolume).Dimension = 2;
+// Plugin(MeshVolume).PhysicalGroup = 300 + placentone_no;
+// Plugin(MeshVolume).Run;
+// Plugin(MeshVolume).PhysicalGroup = 500 + placentone_no;
+// Plugin(MeshVolume).Run;
+// Plugin(MeshVolume).PhysicalGroup = 510 + placentone_no;
+// Plugin(MeshVolume).Run;
+// Plugin(MeshVolume).PhysicalGroup = 520 + placentone_no;
+// Plugin(MeshVolume).Run;

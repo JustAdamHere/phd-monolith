@@ -1,10 +1,11 @@
 flux_cache = []
 integral_cache = []
 
-def run(simulation_no, velocity_model, geometry, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, normal_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1, artery_width=0.06, no_time_steps=0, final_time=0.0, no_placentones=6, no_threads=20, run_type='openmp', no_reynold_ramp_steps = 1, reynold_ramp_start_ratio = 0.1, reynold_ramp_step_base = 2, linear_solver='mumps'):
+def run(simulation_no, velocity_model, geometry, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, normal_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1, artery_width=0.06, no_time_steps=0, final_time=0.0, no_placentones=6, no_threads=20, run_type='openmp', no_reynold_ramp_steps = 1, reynold_ramp_start_ratio = 0.1, reynold_ramp_step_base = 2, linear_solver='mumps', velocity_ic_from_ss=True, transport_ic_from_ss=True):
 
 	assert(velocity_model in ['nsb', 'ns-nsb', 'ns-b', 's-b'])
 	assert(run_type in ['serial', 'openmp', 'mpi'])
+	assert(geometry in ['placentone', 'placentone-3d', 'placenta'])
 
 	program = "velocity-transport"
 
@@ -13,8 +14,6 @@ def run(simulation_no, velocity_model, geometry, artery_location, vein_location_
 	else:
 		velocity_ss                 = False
 	transport_ss                  = True
-	velocity_ic_from_ss           = True
-	transport_ic_from_ss          = True
 	compute_transport             = True
 	large_boundary_v_penalisation = False
 
@@ -28,13 +27,12 @@ def run(simulation_no, velocity_model, geometry, artery_location, vein_location_
 	from miscellaneous import output_timer
 
 	run_simulation = True
-	h = mesh_resolution
 	while(run_simulation):
 		#################
 		# GENERATE MESH #
 		#################
 		output_timer.time(simulation_no, "mesh generation", terminal_output, clear_existing=True)
-		generate_mesh.generate_mesh(simulation_no, geometry, h, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output, normal_vessels, marginal_sinus, wall_height_ratio, artery_width, no_placentones)
+		generate_mesh.generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output, normal_vessels, marginal_sinus, wall_height_ratio, artery_width, no_placentones)
 		output_timer.time(simulation_no, "mesh generation", terminal_output)
 
 		##################
@@ -121,8 +119,11 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location,
 
 	# Number of threads.
 	import os
-	os.environ["OMP_NUM_THREADS"] = f"{no_threads}"
-	set_parameter.set_parameter("velocity-transport", geometry, 7, f"aptofem_no_openmp_threads {no_threads}")
+	if (run_type == 'openmp'):
+		os.environ["OMP_NUM_THREADS"] = f"{no_threads}"
+		set_parameter.set_parameter("velocity-transport", geometry, 7, f"aptofem_no_openmp_threads {no_threads}")
+	else:
+		os.environ["OMP_NUM_THREADS"] = "1"
 
 	# Set mesh.
 	set_parameter.set_parameter("velocity-transport", geometry, 13, f"mesh_file_name mesh_{simulation_no}.msh")
@@ -193,7 +194,7 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location,
 		run_process = subprocess.Popen([f'./{velocity_model}-transport_{geometry}.out', ], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 	# Display last line of output to screen, and write lines to file.
-	line_truncation = 100
+	line_truncation = 120
 	if (verbose_output):
 		end = '\r\n'
 	else:

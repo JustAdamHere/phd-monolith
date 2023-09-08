@@ -1,4 +1,6 @@
 module assembly_name_module
+  use aptofem_kernel
+
   implicit none
 
   contains
@@ -8,6 +10,6 @@ module assembly_name_module
 
     name = "ns-nsb"
 
-    print *, "Selecting velocity model: ", name
+    call write_message(io_msg, "Selecting velocity model: " // name)
   end subroutine
 end module

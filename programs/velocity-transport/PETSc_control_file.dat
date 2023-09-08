@@ -1,8 +1,69 @@
--ksp_monitor
--pctype asm
--sub_pc_type ilu
--sub_pc_factor_levels 1
--sub_ksp_type preonly
--ksp_atol 1e-14
--ksp_rtol 1e-20
--ksp_max_it 50000
+###Outer Krylov solvers, FGMRES right preconditioning by default
+-ksp_type fgmres
+
+###Splitting options
+-pc_type fieldsplit
+-pc_fieldsplit_detect_saddle_point
+-pc_fieldsplit_type schur
+-pc_fieldsplit_schur_fact_type full
+-pc_fieldsplit_schur_precondition selfp
+
+###PC for top left block
+#-fieldsplit_0_pc_type bjacobi
+#-fieldsplit_0_ksp_type cg
+#-fieldsplit_0_sub_pc_type ilu
+#-fieldsplit_0_sub_ksp_type preonly
+
+#-fieldsplit_0_pc_type asm
+#-fieldsplit_0_ksp_type preonly
+
+-fieldsplit_0_pc_type lu
+
+###PC for bottom right block
+-fieldsplit_1_ksp_type fgmres
+-fieldsplit_1_pc_type lsc
+-fieldsplit_1_lsc_ksp_type fgmres
+-fieldsplit_1_lsc_pc_type hypre
+-fieldsplit_1_lsc_pc_hypre_type boomeramg
+-fieldsplit_1_lsc_pc_hypre_boomeramg_cycle_type V
+-fieldsplit_1_lsc_pc_hypre_boomeramg_smooth_type ParaSails
+-fieldsplit_1_lsc_pc_hypre_boomeramg_coarsen_type Falgout
+-fieldsplit_1_lsc_pc_hypre_boomeramg_measure_type global #Measure type, local/global
+-fieldsplit_1_lsc_pc_hypre_boomeramg_relax_type_all symmetric-SOR/Jacobi #Relax type for the up and down cycles
+-fieldsplit_1_lsc_pc_hypre_boomeramg_relax_type_coarse symmetric-SOR/Jacobi #Relax type on coarse grid
+-fieldsplit_1_lsc_pc_hypre_boomeramg_strong_threshold 0.4 #AMG Strength Threshold. Suggested: 2D Laplace, 0.25; 3D Laplace, 0.5 to 0.6
+-fieldsplit_1_lsc_pc_hypre_boomeramg_max_levels 25 #Number of levels (of grids) allowed
+-fieldsplit_1_lsc_pc_hypre_boomeramg_smooth_num_levels 25 #Number of levels on which more complex smoothers are used
+-fieldsplit_1_lsc_pc_hypre_boomeramg_max_iter 1 #Maximum iterations used PER hypre call
+-fieldsplit_1_lsc_pc_hypre_boomeramg_agg_nl 1 #Number of levels of aggressive coarsening
+-fieldsplit_1_lsc_pc_hypre_boomeramg_agg_num_paths 1 #Number of paths for aggressive coarsening
+#-fieldsplit_1_lsc_pc_hypre_boomeramg_eu_bj #Use Block Jacobi for ILU in Euclid smoother?
+
+###Other Options
+#-log_view
+#-fieldsplit_0_log_view
+#-fieldsplit_1_log_view
+-ksp_diagonal_scale
+-pc_lsc_scale_diag
+-fieldsplit_1_pc_lsc_scale_diag
+#-ksp_monitor
+#-ksp_view
+#-ksp_monitor_true_residual
+-ksp_converged_reason
+-ksp_atol 1e-7
+-ksp_rtol 1e-9
+-ksp_max_it 100000
+-ksp_gmres_restart 500
+#-fieldsplit_0_ksp_monitor_true_residual
+#-fieldsplit_1_ksp_monitor_true_residual
+#-fieldsplit_1_lsc_ksp_monitor_true_residual
+#-fieldsplit_0_ksp_atol 1e-5
+-fieldsplit_0_ksp_rtol 1e-7
+#-fieldsplit_1_ksp_atol 1e-3
+-fieldsplit_1_ksp_rtol 1e-2
+-fieldsplit_1_lsc_ksp_rtol 1e-2
+
+##Higher order elements -
+#(1,1) block, bjacobi / CG
+#LSC PC ParaSails smoother better
+#2D viscous flow low threshold better, 0.2 > 0.8

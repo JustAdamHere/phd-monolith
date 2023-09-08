@@ -221,6 +221,15 @@ contains
         calculate_velocity_forcing_coefficient = velocity_forcing_coefficient
     end function
 
+    function calculate_poiseuille_flow(r, r_tot)
+        use param
+
+        real(db)             :: calculate_poiseuille_flow
+        real(db), intent(in) :: r, r_tot
+
+        calculate_poiseuille_flow = 1.0_db - (r/r_tot)**2
+    end function
+
     subroutine Boileau_velocity_amplitude(global_time)
         use param
     

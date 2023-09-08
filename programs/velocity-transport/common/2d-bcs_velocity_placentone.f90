@@ -84,7 +84,7 @@ module bcs_velocity
     real(db), intent(in)                         :: t
     integer, intent(in)                          :: element_region_id
 
-    real(db) :: x, y
+    real(db) :: x, y, r
     real(db) :: left, right
     real(db) :: amplitude
     real(db) :: global_time ! TODO: check relationship between local and global t
@@ -98,11 +98,8 @@ module bcs_velocity
     y = global_point(2)
 
     if (boundary_no == 111) then
-        left  = artery_location - artery_width_sm/2.0_db
-        right = artery_location + artery_width_sm/2.0_db
-        u(2) = -4.0_db/(right-left)**2*(x-left)*(x-right)
-
-        u(2) = u(2) * current_velocity_amplitude
+        r    = sqrt((x - artery_location)**2 + (0.0_db - 0.0_db)**2)
+        u(2) = current_velocity_amplitude * calculate_poiseuille_flow(r, artery_width_sm/2)
 
         if (u(2) <= -1e-5) then
           print *, "Error: inflow velocity negative"

@@ -21,15 +21,40 @@ SetFactory("OpenCASCADE");
 ////////////////////////
 // Default parameters //
 ////////////////////////
-If (!Exists(h))
-	h        = 0.1;
+If (!Exists(h_background))
+	h_background = 0.1;
 EndIf
-If (!Exists(h_refine))
-	h_refine = h/10;
+If (!Exists(h_vein_top))
+	h_vein_top = h_background/10;
+EndIf
+If (!Exists(h_vein_bottom))
+	h_vein_bottom = h_background/10;
+EndIf
+If (!Exists(h_artery_top))
+	h_artery_top = h_background/10;
+EndIf
+If (!Exists(h_artery_middle))
+	h_artery_middle = h_background/10;
+EndIf
+If (!Exists(h_artery_bottom))
+	h_artery_bottom = h_background/10;
+EndIf
+If (!Exists(h_cavity_inner))
+	h_cavity_inner = h_background/10;
+EndIf
+If (!Exists(h_cavity_outer))
+	h_cavity_outer = h_background/2;
 EndIf
 
-Printf("h = %f", h);
-Printf("h_refine = %f", h_refine);
+Printf("Mesh resolution settings:");
+Printf("  h_background    = %f", h_background);
+Printf("  h_vein_top      = %f", h_vein_top);
+Printf("  h_vein_bottom   = %f", h_vein_bottom);
+Printf("  h_artery_top    = %f", h_artery_top);
+Printf("  h_artery_middle = %f", h_artery_middle);
+Printf("  h_artery_bottom = %f", h_artery_bottom);
+Printf("  h_cavity_inner  = %f", h_cavity_inner);
+Printf("  h_cavity_outer  = %f", h_cavity_outer);
 
 If (!Exists(location_11))
 	location_11 = 0.2;
@@ -82,80 +107,72 @@ EndIf
 ////////////
 // Points //
 ////////////
-Point(1)  = {0,                                     0,                      0, h/2};
-// Point(2)  = {outlet_location_1 - vein_width/2,      0,                      0, h_refine/10};
-Point(3)  = {outlet_location_1 - vein_width/2,      -vein_width,            0, h_refine/10};
-Point(4)  = {outlet_location_1 + vein_width/2,      -vein_width,            0, h_refine};
-// Point(5)  = {outlet_location_1 + vein_width/2,      0,                      0, h_refine/10};
-Point(6)  = {inlet_location    - artery_width/2,    0,                      0, h_refine/2};
-// Point(7)  = {inlet_location    - artery_width_sm/2, -artery_length_diverge, 0, h_refine/10};
-Point(25) = {inlet_location    - artery_width_sm/2, -artery_length,         0, h_refine/10};
-Point(26) = {inlet_location    + artery_width_sm/2, -artery_length,         0, h_refine/10};
-// Point(8)  = {inlet_location    + artery_width_sm/2, -artery_length_diverge, 0, h_refine/10};
-Point(9)  = {inlet_location    + artery_width/2,    0,                      0, h_refine/2};
-// Point(10) = {outlet_location_2 - vein_width/2,      0,                      0, h_refine/10};
-Point(11) = {outlet_location_2 - vein_width/2,      -vein_width,            0, h_refine};
-Point(12) = {outlet_location_2 + vein_width/2,      -vein_width,            0, h_refine/10};
-// Point(13) = {outlet_location_2 + vein_width/2,      0,                      0, h_refine/10};
+Point(1)  = {0,                                     0,              0, h_background};
+Point(3)  = {outlet_location_1 - vein_width/2,      -vein_width,    0, h_vein_bottom};
+Point(4)  = {outlet_location_1 + vein_width/2,      -vein_width,    0, h_vein_bottom};
+Point(25) = {inlet_location    - artery_width_sm/2, -artery_length, 0, h_artery_bottom};
+Point(26) = {inlet_location    + artery_width_sm/2, -artery_length, 0, h_artery_bottom};
+Point(11) = {outlet_location_2 - vein_width/2,      -vein_width,    0, h_vein_bottom};
+Point(12) = {outlet_location_2 + vein_width/2,      -vein_width,    0, h_vein_bottom};
 
-Point(14) = {1,                                                                      0,                                             0, h/2};
-Point(15) = {1,                                                                      0.5,                                           0, h/2};
-Point(16) = {0.5,                                                                    1,                                             0, h/2};
-Point(17) = {0,                                                                      0.5,                                           0, h/2};
-Point(18) = {0.5,                                                                    0.5,                                           0, h_refine};
-Point(19) = {inlet_location - (central_cavity_width + central_cavity_transition)/2,  0,                                             0, h_refine/2};
-Point(22) = {inlet_location,                                                         0,                                             0, h_refine/2};
-Point(21) = {inlet_location + (central_cavity_width + central_cavity_transition)/2,  0,                                             0, h_refine/2};
-Point(20) = {inlet_location,                                                         (cavity_height)/2 + central_cavity_transition, 0, h_refine/2};
-Point(23) = {outlet_location_1,                                                      0,                                             0, h_refine};
-Point(24) = {outlet_location_2,                                                      0,                                             0, h_refine};
+Point(14) = {1,                                                                      0,                                             0, h_background};
+Point(15) = {1,                                                                      0.5,                                           0, h_background};
+Point(16) = {0.5,                                                                    1,                                             0, h_background};
+Point(17) = {0,                                                                      0.5,                                           0, h_background};
+Point(18) = {0.5,                                                                    0.5,                                           0, 1};
+Point(19) = {inlet_location - (central_cavity_width + central_cavity_transition)/2,  0,                                             0, h_cavity_outer};
+Point(22) = {inlet_location,                                                         0,                                             0, h_artery_middle};
+Point(21) = {inlet_location + (central_cavity_width + central_cavity_transition)/2,  0,                                             0, h_cavity_outer};
+Point(20) = {inlet_location,                                                         (cavity_height)/2 + central_cavity_transition, 0, h_cavity_outer};
+Point(23) = {outlet_location_1,                                                      0,                                             0, h_vein_top};
+Point(24) = {outlet_location_2,                                                      0,                                             0, h_vein_top};
 
-Point(27) = {inlet_location, (cavity_height)/2,                                     0, h_refine/10};
-Point(28) = {inlet_location, (cavity_height)/2 - central_cavity_transition,         0, h_refine/2};
-Point(29) = {inlet_location - (central_cavity_width)/2,                             0, 0, h_refine/10};
-Point(30) = {inlet_location - (central_cavity_width - central_cavity_transition)/2, 0, 0, h_refine/2};
-Point(31) = {inlet_location + (central_cavity_width - central_cavity_transition)/2, 0, 0, h_refine/2};
-Point(32) = {inlet_location + (central_cavity_width)/2,                             0, 0, h_refine/10};
+Point(27) = {inlet_location,                                                        (cavity_height)/2,                             0, h_cavity_inner};
+Point(28) = {inlet_location,                                                        (cavity_height)/2 - central_cavity_transition, 0, h_cavity_outer};
+Point(29) = {inlet_location - (central_cavity_width)/2,                             0,                                             0, h_cavity_inner};
+Point(30) = {inlet_location - (central_cavity_width - central_cavity_transition)/2, 0,                                             0, h_cavity_outer};
+Point(31) = {inlet_location + (central_cavity_width - central_cavity_transition)/2, 0,                                             0, h_cavity_outer};
+Point(32) = {inlet_location + (central_cavity_width)/2,                             0,                                             0, h_cavity_inner};
 
 ////////////////////
 // Fillets points //
 ////////////////////
 // Outlet 1.
-Point(33) = {outlet_location_1 - vein_width/2 - fillet_radius, 0,              0, h_refine/10};
-Point(34) = {outlet_location_1 - vein_width/2                , -fillet_radius, 0, h_refine/10};
-Point(35) = {outlet_location_1 - vein_width/2 - fillet_radius, -fillet_radius, 0, h_refine/10};
+Point(33) = {outlet_location_1 - vein_width/2 - fillet_radius, 0,              0, h_vein_top};
+Point(34) = {outlet_location_1 - vein_width/2                , -fillet_radius, 0, h_vein_top};
+Point(35) = {outlet_location_1 - vein_width/2 - fillet_radius, -fillet_radius, 0, 1};
 
-Point(36) = {outlet_location_1 + vein_width/2 + fillet_radius, 0,              0, h_refine/10};
-Point(37) = {outlet_location_1 + vein_width/2                , -fillet_radius, 0, h_refine/10};
-Point(38) = {outlet_location_1 + vein_width/2 + fillet_radius, -fillet_radius, 0, h_refine/10};
+Point(36) = {outlet_location_1 + vein_width/2 + fillet_radius, 0,              0, h_vein_top};
+Point(37) = {outlet_location_1 + vein_width/2                , -fillet_radius, 0, h_vein_top};
+Point(38) = {outlet_location_1 + vein_width/2 + fillet_radius, -fillet_radius, 0, 1};
 
 // Outlet 2.
-Point(39) = {outlet_location_2 - vein_width/2 - fillet_radius, 0,              0, h_refine/10};
-Point(40) = {outlet_location_2 - vein_width/2                , -fillet_radius, 0, h_refine/10};
-Point(41) = {outlet_location_2 - vein_width/2 - fillet_radius, -fillet_radius, 0, h_refine/10};
+Point(39) = {outlet_location_2 - vein_width/2 - fillet_radius, 0,              0, h_vein_top};
+Point(40) = {outlet_location_2 - vein_width/2                , -fillet_radius, 0, h_vein_top};
+Point(41) = {outlet_location_2 - vein_width/2 - fillet_radius, -fillet_radius, 0, 1};
 
-Point(42) = {outlet_location_2 + vein_width/2 + fillet_radius, 0,              0, h_refine/10};
-Point(43) = {outlet_location_2 + vein_width/2                , -fillet_radius, 0, h_refine/10};
-Point(44) = {outlet_location_2 + vein_width/2 + fillet_radius, -fillet_radius, 0, h_refine/10};
+Point(42) = {outlet_location_2 + vein_width/2 + fillet_radius, 0,              0, h_vein_top};
+Point(43) = {outlet_location_2 + vein_width/2                , -fillet_radius, 0, h_vein_top};
+Point(44) = {outlet_location_2 + vein_width/2 + fillet_radius, -fillet_radius, 0, 1};
 
 // Inlet divergence.
 phi = Atan2(artery_width/2 - artery_width_sm/2, artery_length_diverge);
-Point(45)  = {inlet_location - artery_width_sm/2 - fillet_radius*Sin(phi),                   -artery_length_diverge + fillet_radius*Cos(phi),                   0, h_refine/10};
-Point(46)  = {inlet_location - artery_width_sm/2,                                            -artery_length_diverge - fillet_radius,                            0, h_refine/10};
-Point(47)  = {inlet_location - artery_width_sm/2 + Tan(Pi/2+phi/2)*fillet_radius*Cos(phi/2), -artery_length_diverge + Tan(Pi/2+phi/2)*fillet_radius*Sin(phi/2), 0, h_refine/10};
+Point(45)  = {inlet_location - artery_width_sm/2 - fillet_radius*Sin(phi),                   -artery_length_diverge + fillet_radius*Cos(phi),                   0, h_artery_middle};
+Point(46)  = {inlet_location - artery_width_sm/2,                                            -artery_length_diverge - fillet_radius,                            0, h_artery_middle};
+Point(47)  = {inlet_location - artery_width_sm/2 + Tan(Pi/2+phi/2)*fillet_radius*Cos(phi/2), -artery_length_diverge + Tan(Pi/2+phi/2)*fillet_radius*Sin(phi/2), 0, 1};
 
-Point(48)  = {inlet_location + artery_width_sm/2,                                            -artery_length_diverge - fillet_radius,                            0, h_refine/10};
-Point(49)  = {inlet_location + artery_width_sm/2 + fillet_radius*Sin(phi),                   -artery_length_diverge + fillet_radius*Cos(phi),                   0, h_refine/10};
-Point(50)  = {inlet_location + artery_width_sm/2 - Tan(Pi/2+phi/2)*fillet_radius*Cos(phi/2), -artery_length_diverge + Tan(Pi/2+phi/2)*fillet_radius*Sin(phi/2), 0, h_refine/10};
+Point(48)  = {inlet_location + artery_width_sm/2,                                            -artery_length_diverge - fillet_radius,                            0, h_artery_middle};
+Point(49)  = {inlet_location + artery_width_sm/2 + fillet_radius*Sin(phi),                   -artery_length_diverge + fillet_radius*Cos(phi),                   0, h_artery_middle};
+Point(50)  = {inlet_location + artery_width_sm/2 - Tan(Pi/2+phi/2)*fillet_radius*Cos(phi/2), -artery_length_diverge + Tan(Pi/2+phi/2)*fillet_radius*Sin(phi/2), 0, 1};
 
 // Inlet near cavity.
-Point(51)  = {inlet_location - artery_width/2 - fillet_radius, 0, 0, h_refine/2};
-Point(52)  = {inlet_location - artery_width/2 + fillet_radius*Sin(phi), -fillet_radius*Cos(phi), 0, h_refine/2};
-Point(53)  = {inlet_location - artery_width/2 - Tan(Pi/4+phi)*fillet_radius*Sin((Pi/2 - phi)/2), -Tan(Pi/4+phi)*fillet_radius*Cos((Pi/2 - phi)/2), 0, h_refine/2};
+Point(51)  = {inlet_location - artery_width/2 - fillet_radius,                                   0,                                                0, h_artery_top};
+Point(52)  = {inlet_location - artery_width/2 + fillet_radius*Sin(phi),                          -fillet_radius*Cos(phi),                          0, h_artery_top};
+Point(53)  = {inlet_location - artery_width/2 - Tan(Pi/4+phi)*fillet_radius*Sin((Pi/2 - phi)/2), -Tan(Pi/4+phi)*fillet_radius*Cos((Pi/2 - phi)/2), 0, 1};
 
-Point(54)  = {inlet_location + artery_width/2 + fillet_radius, 0, 0, h_refine/2};
-Point(55)  = {inlet_location + artery_width/2 - fillet_radius*Sin(phi), -fillet_radius*Cos(phi), 0, h_refine/2};
-Point(56)  = {inlet_location + artery_width/2 + Tan(Pi/4+phi)*fillet_radius*Sin((Pi/2 - phi)/2), -Tan(Pi/4+phi)*fillet_radius*Cos((Pi/2 - phi)/2), 0, h_refine/2};
+Point(54)  = {inlet_location + artery_width/2 + fillet_radius,                                   0,                                                0, h_artery_top};
+Point(55)  = {inlet_location + artery_width/2 - fillet_radius*Sin(phi),                          -fillet_radius*Cos(phi),                          0, h_artery_top};
+Point(56)  = {inlet_location + artery_width/2 + Tan(Pi/4+phi)*fillet_radius*Sin((Pi/2 - phi)/2), -Tan(Pi/4+phi)*fillet_radius*Cos((Pi/2 - phi)/2), 0, 1};
 
 ///////////
 // Lines //

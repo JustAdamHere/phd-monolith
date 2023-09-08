@@ -1,4 +1,6 @@
 module program_name_module
+  use aptofem_kernel
+  
   implicit none
 
   contains
@@ -11,7 +13,7 @@ module program_name_module
 
     if (present(print_choice)) then
       if (print_choice) then
-        print *, "Selecting geometry: ", name
+        call write_message(io_msg, "Selecting geometry: " // name)
       end if
     end if
   end subroutine

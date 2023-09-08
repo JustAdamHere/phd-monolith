@@ -2,7 +2,7 @@
 //   Assumes width of 4cm [1 unit] and inlet/outlet size of 2mm [0.05 units]
 
 Geometry.OldNewReg=0;
-// TODO: Try OpenCASCADE kernel.
+// SetFactory("OpenCASCADE");
 
 //=/=/=/=/=/=/=/=/=/=//
 //=/ OUTPUT FORMAT /=//
@@ -189,10 +189,10 @@ Curve Loop(6) = {45, 48, 51, 54}; Plane Surface(18) = {6};
 // Placentone //
 ////////////////
 // Cavity (part one).
-Ellipse(83) = {19, 22, 22, 20};
-Ellipse(84) = {20, 22, 22, 21};
-Ellipse(85) = {40, 22, 22, 20};
-Ellipse(86) = {20, 22, 22, 41};
+Ellipse(83) = {19, 22, 20, 20};
+Ellipse(84) = {20, 22, 20, 21};
+Ellipse(85) = {40, 22, 20, 20};
+Ellipse(86) = {20, 22, 20, 41};
 
 Extrude {{0, 1, 0}, {0.5, 0, 0}, Pi/2} {
 	Line{83}; Line{84}; Line{85}; Line{86};

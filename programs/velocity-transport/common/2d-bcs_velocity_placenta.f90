@@ -84,11 +84,10 @@ module bcs_velocity
     real(db), intent(in)                         :: t
     integer, intent(in)                          :: element_region_id
 
-    real(db)                         :: x, y, x_centre, y_centre, radius
+    real(db)                         :: x, y, x_centre, y_centre, radius, r
     real(db)                         :: placentone_width, wall_width, placenta_width, placenta_height, wall_height, artery_length, &
       artery_width_sm, ms_pipe_width
-    real(db)                         :: left_bc, right_bc, left_top, right_top
-    real(db), dimension(problem_dim) :: centre_top
+    real(db), dimension(problem_dim) :: centre_top, centre_bc
     real(db)                         :: theta_bc, theta_top
     real(db), dimension(no_placentones) :: placentone_widths, cumulative_placentone_widths
     integer                          :: i
@@ -100,20 +99,17 @@ module bcs_velocity
     x        = global_point(1)
     y        = global_point(2)
 
-    placentone_width = 1.0_db                            ! 40 mm
-    wall_width       = 0.075_db*placentone_width         ! 3  mm
-    placenta_width   = 5.5_db                           ! 230mm
-    placenta_height  = 0.9065_db                        ! 36.26mm
-    ! pipe_width       = 0.05_db*placentone_width          ! 2  mm
-    wall_height      = 0.6_db*placentone_width           ! 24 mm
+    placentone_width = 1.0_db                    ! 40 mm
+    wall_width       = 0.075_db*placentone_width ! 3  mm
+    placenta_width   = 5.5_db                    ! 230mm
+    placenta_height  = 0.9065_db                 ! 36.26mm
+    wall_height      = 0.6_db*placentone_width   ! 24 mm
 
     artery_width_sm = 0.0125_db*placentone_width ! 0.5mm
     artery_length   = 0.25_db*placentone_width   ! 10mm
     ms_pipe_width   = 0.075_db                   ! 3mm
 
     x_centre = placenta_width/2
-    ! y_centre = sqrt(2*x_centre**2)
-    ! y_centre = 2.5_db*(2.0_db*x_centre**2)**0.5_db
     y_centre = (placenta_height - ms_pipe_width)/2.0_db + x_centre**2/(2.0_db*(placenta_height - ms_pipe_width))
     radius   = y_centre
 
@@ -142,92 +138,54 @@ module bcs_velocity
     if (boundary_no == 111) then
         centre_top(1) = cumulative_placentone_widths(1) + artery_location*placentone_widths(1)
         centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-        left_top      = centre_top(1) - artery_width_sm/2
-        right_top     = centre_top(1) + artery_width_sm/2
         theta_top     = -pi - atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-
-        left_bc  = x_centre + radius*cos(theta_top + (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
-        right_bc = x_centre + radius*cos(theta_top - (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
-        theta_bc = theta_top
     else if (boundary_no == 112) then
         centre_top(1) = cumulative_placentone_widths(2) + artery_location*placentone_widths(2)
         centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-        left_top      = centre_top(1) - artery_width_sm/2
-        right_top     = centre_top(1) + artery_width_sm/2
         theta_top     = -pi - atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-
-        left_bc  = x_centre + radius*cos(theta_top + (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
-        right_bc = x_centre + radius*cos(theta_top - (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
-        theta_bc = theta_top
     else if (boundary_no == 113) then
         centre_top(1) = cumulative_placentone_widths(3) + artery_location*placentone_widths(3)
         centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-        left_top      = centre_top(1) - artery_width_sm/2
-        right_top     = centre_top(1) + artery_width_sm/2
         theta_top     = -pi - atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-
-        left_bc  = x_centre + radius*cos(theta_top + (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
-        right_bc = x_centre + radius*cos(theta_top - (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
-        theta_bc = theta_top
     else if (boundary_no == 114) then
         centre_top(1) = cumulative_placentone_widths(4) + artery_location*placentone_widths(4)
         centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-        left_top      = centre_top(1) - artery_width_sm/2
-        right_top     = centre_top(1) + artery_width_sm/2
         theta_top     = -atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-
-        left_bc  = x_centre + radius*cos(theta_top + (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
-        right_bc = x_centre + radius*cos(theta_top - (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
-        theta_bc = theta_top
     else if (boundary_no == 115) then
         centre_top(1) = cumulative_placentone_widths(5) + artery_location*placentone_widths(5)
         centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-        left_top      = centre_top(1) - artery_width_sm/2
-        right_top     = centre_top(1) + artery_width_sm/2
         theta_top     = -atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-
-        left_bc  = x_centre + radius*cos(theta_top + (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
-        right_bc = x_centre + radius*cos(theta_top - (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
-        theta_bc = theta_top
     else if (boundary_no == 116) then
         centre_top = cumulative_placentone_widths(6) + artery_location*placentone_widths(6)
         centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-        left_top      = centre_top(1) - artery_width_sm/2
-        right_top     = centre_top(1) + artery_width_sm/2
         theta_top     = -atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-
-        left_bc  = x_centre + radius*cos(theta_top + (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
-        right_bc = x_centre + radius*cos(theta_top - (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
-        theta_bc = theta_top
     else if (boundary_no == 117) then
         centre_top = cumulative_placentone_widths(7) + artery_location*placentone_widths(7)
         centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-        left_top      = centre_top(1) - artery_width_sm/2
-        right_top     = centre_top(1) + artery_width_sm/2
         theta_top     = -atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-
-        left_bc  = x_centre + radius*cos(theta_top + (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
-        right_bc = x_centre + radius*cos(theta_top - (artery_width_sm/2.0_db)/radius) + artery_length*cos(theta_top)
-        theta_bc = theta_top
     end if
 
     if (111 <= boundary_no .and. boundary_no <= 117) then
-        u    = -4.0_db/(right_bc-left_bc)**2*(x-left_bc)*(x-right_bc)
+        theta_bc  = theta_top
+        centre_bc(1) = x_centre + radius*cos(theta_bc                                  ) + artery_length*cos(theta_bc)
+        centre_bc(2) = y_centre - ((radius+artery_length)**2 - (centre_bc(1) - x_centre)**2)**0.5
+
+        r    = sqrt((x - centre_bc(1))**2 + (y - centre_bc(2))**2)
+        u    = current_velocity_amplitude * calculate_poiseuille_flow(r, artery_width_sm/2)
         u(1) = -u(1) * cos(theta_bc)
         u(2) =  u(2) * sin(theta_bc)
-        
-        u(1) = u(1) * current_velocity_amplitude
-        u(2) = u(2) * current_velocity_amplitude
     end if
 
     if (u(2) <= -1e-5) then
-        print *, "Error: inflow velocity negative"
+        print *, "Error: vertical inflow velocity negative"
         print *, "boundary_no = ", boundary_no
         print *, "point = ", x, y
+        print *, "r = ", r
         print *, "centre = ", x_centre, y_centre
+        print *, "radius = ", radius
         print *, "centre_top = ", centre_top(1), centre_top(2)
         print *, "theta_top = ", theta_top
-        print *, "left and right = ", left_bc, right_bc
+        print *, "centre_bc = ", centre_bc
         print *, "artery_location = ", artery_location
         print *, "artery_width_sm = ", artery_width_sm
         print *, "no_placentones = ", no_placentones

@@ -18,12 +18,12 @@ program velocity_transport
     use matrix_rhs_transport
     use matrix_rhs_transport_ss
     use matrix_rhs_s_b_ss
-    ! TODO: jacobi_residual_ns_b
     use jacobi_residual_ns_b_ss
-    ! TODO: jacobi_residual_ns_nsb
     use jacobi_residual_ns_nsb_ss
     use jacobi_residual_nsb
     use jacobi_residual_nsb_ss
+
+    use coupled_sp_matrix_solvers
 
     implicit none
 
@@ -61,6 +61,8 @@ program velocity_transport
     integer  :: reynold_step, i
     real(db) :: velocity_time_coefficient_orig, velocity_convection_coefficient_orig, ratio, min_step, max_step
     real(db), dimension(:), allocatable :: steps
+
+    character(len=100) :: temp_string1, temp_string2
 
     !!!!!!!!!!!!!!!!!!!!!!
     !! SET CONTROL FILE !!
@@ -282,10 +284,15 @@ program velocity_transport
             velocity_convection_coefficient = velocity_convection_coefficient_orig * ratio
             velocity_time_coefficient       = velocity_time_coefficient_orig       * ratio
 
-            print *, "==================================================="
-            print *, "Reynolds step: ", reynold_step, " of ", no_reynold_ramp_steps
-            print *, "Current ratio: ", ratio
-            print *, "Convection coefficient: ", velocity_convection_coefficient, " of ", velocity_convection_coefficient_orig
+            call write_message(io_msg, "===================================================")
+            write(temp_string1, '(I5)') reynold_step
+            write(temp_string2, '(I5)') no_reynold_ramp_steps
+            call write_message(io_msg, "Reynolds step:" // trim(temp_string1) // " of " // trim(temp_string2))
+            write(temp_string1, '(f10.3)') ratio
+            call write_message(io_msg, "Current ratio: " // trim(temp_string1))
+            write(temp_string1, '(f10.3)') velocity_convection_coefficient
+            write(temp_string2, '(f10.3)') velocity_convection_coefficient_orig
+            call write_message(io_msg, "Convection coefficient: " // trim(temp_string1) // " of " // trim(temp_string2))
 
             if (trim(assembly_name) == 'nsb' .or. trim(assembly_name) == 'ns-nsb' .or. trim(assembly_name) == 'ns-b') then
                 call newton_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
@@ -296,7 +303,7 @@ program velocity_transport
                 call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
                     aptofem_stored_keys, sp_matrix_rhs_data_velocity, 4, scheme_data_velocity)
             else
-                print *, "ERROR: Unknown assembly name for velocity solver."
+                call write_message(io_msg, "ERROR: Unknown assembly name for velocity solver.")
                 error stop
             end if
 
@@ -345,6 +352,9 @@ program velocity_transport
         aptofem_stored_keys, sp_matrix_rhs_data_transport, 1, scheme_data_transport)
     call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
         aptofem_stored_keys, sp_matrix_rhs_data_transport, 2, scheme_data_transport)
+
+    ! FGMRES preconditioner for transport.
+    call set_petsc_options_fgmres()
 
     if (transport_ic_from_ss .and. compute_transport) then
         call store_subroutine_names(fe_solver_routines_transport, 'assemble_matrix_rhs_element', &
@@ -502,6 +512,9 @@ program velocity_transport
             ! Set velocity amplitude.
             call Carson_velocity_amplitude(solution_velocity%current_time)
 
+            ! Reset preconditioner to one specified in file.
+            call pop_petsc_options()
+
             call dirk_single_time_step(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
                 aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, dirk_scheme_velocity, &
                 scheme_data_velocity%current_time, scheme_data_velocity%time_step, no_dofs_velocity, time_step_no, .false., &
@@ -512,6 +525,9 @@ program velocity_transport
         end if
 
         if (compute_transport) then
+            ! FGMRES preconditioner for transport.
+            call set_petsc_options_fgmres()
+
             call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
                 aptofem_stored_keys, sp_matrix_rhs_data_transport, 3, scheme_data_transport)
             call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
