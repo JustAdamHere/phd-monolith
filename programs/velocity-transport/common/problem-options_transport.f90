@@ -134,7 +134,7 @@ contains
     function calculate_transport_reaction_coefficient(global_point, problem_dim, element_region_id)
         use param
         use problem_options
-        use program_name_module
+        use problem_options_geometry
 
         implicit none
 
@@ -143,15 +143,12 @@ contains
         real(db), dimension(problem_dim), intent(in) :: global_point
         integer, intent(in)                          :: element_region_id
 
-        character(len=20)      :: name
         real(db)               :: steepness
         real(db), dimension(2) :: translated_point
 
-        call program_name(name)
-
         steepness = 0.999_db
 
-        if (trim(name) == 'placentone') then
+        if (trim(geometry_name) == 'placentone') then
             if (300 <= element_region_id .and. element_region_id <= 399) then
                 calculate_transport_reaction_coefficient = transport_reaction_coefficient* &
                     1.0_db
@@ -170,7 +167,7 @@ contains
                 stop
             end if
 
-        else if (trim(name) == 'placenta') then
+        else if (trim(geometry_name) == 'placenta') then
             if (300 <= element_region_id .and. element_region_id <= 399) then
                 calculate_transport_reaction_coefficient = transport_reaction_coefficient* &
                     1.0_db
@@ -195,7 +192,10 @@ contains
                 print *, "element_region_id = ", element_region_id
                 stop
             end if
-
+        else
+            print *, "Error in calculate_transport_reaction_coefficient. Missed case."
+            print *, "geometry_name = ", trim(geometry_name)
+            stop
         end if
     end function
 

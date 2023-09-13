@@ -1,7 +1,7 @@
 flux_cache = []
 integral_cache = []
 
-def run(simulation_no, velocity_model, geometry, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, normal_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1, artery_width=0.06, no_time_steps=0, final_time=0.0, no_placentones=6, no_threads=20, run_type='openmp', no_reynold_ramp_steps = 1, reynold_ramp_start_ratio = 0.1, reynold_ramp_step_base = 2, linear_solver='mumps', velocity_ic_from_ss=True, transport_ic_from_ss=True):
+def run(simulation_no, velocity_model, geometry, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, normal_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], septal_veins=[[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1, artery_width=0.06, no_time_steps=0, final_time=0.0, no_placentones=6, no_threads=20, run_type='openmp', no_reynold_ramp_steps = 1, reynold_ramp_start_ratio = 0.1, reynold_ramp_step_base = 2, linear_solver='mumps', velocity_ic_from_ss=True, transport_ic_from_ss=True, moving_mesh=False):
 
 	assert(velocity_model in ['nsb', 'ns-nsb', 'ns-b', 's-b'])
 	assert(run_type in ['serial', 'openmp', 'mpi'])
@@ -32,14 +32,14 @@ def run(simulation_no, velocity_model, geometry, artery_location, vein_location_
 		# GENERATE MESH #
 		#################
 		output_timer.time(simulation_no, "mesh generation", terminal_output, clear_existing=True)
-		generate_mesh.generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output, normal_vessels, marginal_sinus, wall_height_ratio, artery_width, no_placentones)
+		generate_mesh.generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output, normal_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, no_placentones)
 		output_timer.time(simulation_no, "mesh generation", terminal_output)
 
 		##################
 		# RUN SIMULATION #
 		##################
 		output_timer.time(simulation_no, "AptoFEM simulation", terminal_output, clear_existing=True)
-		result = aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver)
+		result = aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver)
 		if (result == False):
 			return False
 		else:
@@ -99,7 +99,7 @@ def run(simulation_no, velocity_model, geometry, artery_location, vein_location_
 
 	return True
 
-def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver):
+def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_transition, pipe_transition, artery_length, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver):
 
 	# Programatically create coefficients. ##
 	#  Re 
@@ -157,17 +157,18 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location,
 	set_parameter.set_parameter("velocity-transport", geometry, 83, f"transport_ic_from_ss .{str(transport_ic_from_ss).lower()}.")
 	set_parameter.set_parameter("velocity-transport", geometry, 84, f"compute_transport .{str(compute_transport).lower()}.")
 	set_parameter.set_parameter("velocity-transport", geometry, 85, f"large_boundary_v_penalisation .{str(large_boundary_v_penalisation).lower()}.")
+	set_parameter.set_parameter("velocity-transport", geometry, 86, f"moving_mesh .{str(moving_mesh).lower()}.")
 
 	# Re ramping.
-	set_parameter.set_parameter("velocity-transport", geometry, 86, f"no_reynold_ramp_steps {no_reynold_ramp_steps}")
-	set_parameter.set_parameter("velocity-transport", geometry, 87, f"reynold_ramp_start_ratio {reynold_ramp_start_ratio}")
-	set_parameter.set_parameter("velocity-transport", geometry, 88, f"reynold_ramp_step_base {reynold_ramp_step_base}")
+	set_parameter.set_parameter("velocity-transport", geometry, 87, f"no_reynold_ramp_steps {no_reynold_ramp_steps}")
+	set_parameter.set_parameter("velocity-transport", geometry, 88, f"reynold_ramp_start_ratio {reynold_ramp_start_ratio}")
+	set_parameter.set_parameter("velocity-transport", geometry, 89, f"reynold_ramp_step_base {reynold_ramp_step_base}")
 
 	# Number of placentones (only relevant for placenta mesh).
-	set_parameter.set_parameter("velocity-transport", geometry, 90, f"no_placentones {no_placentones}")
+	set_parameter.set_parameter("velocity-transport", geometry, 91, f"no_placentones {no_placentones}")
 
 	# Structural parameters.
-	set_parameter.set_parameter("velocity-transport", geometry, 92, f"artery_location {artery_location:.4f}")
+	# set_parameter.set_parameter("velocity-transport", geometry, 93, f"artery_location {artery_location:.4f}")
 	set_parameter.set_parameter("velocity-transport", geometry, 93, f"central_cavity_width {central_cavity_width}")
 	set_parameter.set_parameter("velocity-transport", geometry, 94, f"central_cavity_transition {central_cavity_transition}")
 	set_parameter.set_parameter("velocity-transport", geometry, 95, f"pipe_transition {pipe_transition}")
@@ -175,23 +176,23 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location,
 	set_parameter.set_parameter("velocity-transport", geometry, 97, f"log_cavity_transition .{str(log_cavity_transition).lower()}.")
 
 	# Setup time dependence.
-	set_parameter.set_parameter("velocity-transport", geometry, 105, f"dirk_final_time {final_time}")
-	set_parameter.set_parameter("velocity-transport", geometry, 106, f"dirk_number_of_timesteps {no_time_steps}")
+	set_parameter.set_parameter("velocity-transport", geometry, 129, f"dirk_final_time {final_time}")
+	set_parameter.set_parameter("velocity-transport", geometry, 130, f"dirk_number_of_timesteps {no_time_steps}")
 
 	# Linear solver.
-	set_parameter.set_parameter("velocity-transport", geometry, 123, f"linear_solver {linear_solver}")
-	set_parameter.set_parameter("velocity-transport", geometry, 142, f"linear_solver {linear_solver}")
+	set_parameter.set_parameter("velocity-transport", geometry, 147, f"linear_solver {linear_solver}")
+	set_parameter.set_parameter("velocity-transport", geometry, 166, f"linear_solver {linear_solver}")
 
 	from miscellaneous import get_current_run_no, save_output, output, raise_error, get_dofs, get_newton_residual, get_newton_iterations
 	import subprocess
 	import sys
 
 	# Run AptoFEM simulation.
-	run_no = get_current_run_no.get_current_run_no(program) + 1
+	run_no = get_current_run_no.get_current_run_no(program) + 1 # +1 as the program hasn't run yet.
+	run_commands = [f'./velocity-transport.out', f'{velocity_model}', f'{geometry}']
 	if (run_type == 'mpi'):
-		run_process = subprocess.Popen(['mpirun', '-n', f'{no_threads}', f'./{velocity_model}-transport_{geometry}.out', ], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	else:
-		run_process = subprocess.Popen([f'./{velocity_model}-transport_{geometry}.out', ], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		run_commands = ['mpirun', '-n', f'{no_threads}'] + run_commands
+	run_process = subprocess.Popen(run_commands, cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 	# Display last line of output to screen, and write lines to file.
 	line_truncation = 120
@@ -235,7 +236,7 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location,
 # def convergence():
 # 	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration
 
-def setup(clean, terminal_output, compile=True, programs_to_compile='all', run_type='openmp'):
+def setup(clean, terminal_output, compile=True, compile_clean=False, run_type='openmp', verbose_output=False):
 	from miscellaneous import output
 
 	output.output("##########################", terminal_output)
@@ -272,16 +273,39 @@ def setup(clean, terminal_output, compile=True, programs_to_compile='all', run_t
 	import subprocess, sys
 	from miscellaneous import output_timer, save_output, choose_make_type
 
+	if (compile_clean):
+		make_clean_process = subprocess.run(['make', 'cleanall'], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
+
 	# Compile programs.
 	if (compile):
 		output_timer.time(0, "compilation", terminal_output)
 		choose_make_type.choose_make_type(run_type, program)
-		try:
-			#make_clean_output = subprocess.run(['make', 'cleanall'], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-			make_output       = subprocess.run(['make', programs_to_compile], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
-			save_output.save_output(make_output, f'compile_{program}', programs_to_compile, 0)
-		except subprocess.CalledProcessError as e:
-			output.output(f"## ERROR ##", True)
-			output.output(f"Error message: {e.stderr.decode('utf-8')}", True)
-			sys.exit(1)
+
+		make_process = subprocess.Popen(['make', 'velocity-transport'], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+		# Display last line of output to screen, and write lines to file.
+		line_truncation = 120
+		if (verbose_output):
+			end = '\r\n'
+		else:
+			end = '\r'
+		make_output = open(f"./output/compile_velocity-transport.txt", "w")
+		output.output("", terminal_output)
+		while make_process.poll() is None:
+			line = make_process.stdout.readline().decode('utf-8').rstrip('\r\n')
+			if (line != ""):
+				output.output(f">>> {line[:line_truncation]:<{line_truncation}}", terminal_output, end='')
+				if (len(line) > line_truncation):
+					output.output("...", terminal_output, end=end)
+				else:
+					output.output("", terminal_output, end=end)
+				make_output.write(line + '\n')
+		make_output.close()
+		output.output("", terminal_output, end='\x1b[1A\rStarting compilation... ')
+
+		# Possibly return an error.
+		from miscellaneous import raise_error
+		if (make_process.returncode != 0):
+			raise_error.raise_error(make_process.stderr.read().decode('utf-8'))
+			
 		output_timer.time(0, "compilation", terminal_output)

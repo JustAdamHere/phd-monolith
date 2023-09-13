@@ -1,4 +1,4 @@
-def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output, normal_vessels, marginal_sinus, wall_height_ratio, artery_width, no_placentones):
+def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_transition, artery_length, verbose_output, normal_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, no_placentones):
 	import subprocess
 
 	if (geometry == "placentone"):
@@ -103,6 +103,45 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 		artery_51 = normal_vessels[4][1]
 		artery_61 = normal_vessels[5][1]
 		artery_71 = normal_vessels[6][1]
+	
+	if (no_placentones == 6):
+		septal_vein_11 = septal_veins[0][0]
+		septal_vein_12 = septal_veins[0][1]
+		septal_vein_13 = septal_veins[0][2]
+		septal_vein_21 = septal_veins[1][0]
+		septal_vein_22 = septal_veins[1][1]
+		septal_vein_23 = septal_veins[1][2]
+		septal_vein_31 = septal_veins[2][0]
+		septal_vein_32 = septal_veins[2][1]
+		septal_vein_33 = septal_veins[2][2]
+		septal_vein_41 = septal_veins[3][0]
+		septal_vein_42 = septal_veins[3][1]
+		septal_vein_43 = septal_veins[3][2]
+		septal_vein_51 = septal_veins[4][0]
+		septal_vein_52 = septal_veins[4][1]
+		septal_vein_53 = septal_veins[4][2]
+		septal_vein_61 = 0
+		septal_vein_62 = 0
+		septal_vein_63 = 0
+	else:
+		septal_vein_11 = septal_veins[0][0]
+		septal_vein_12 = septal_veins[0][1]
+		septal_vein_13 = septal_veins[0][2]
+		septal_vein_21 = septal_veins[1][0]
+		septal_vein_22 = septal_veins[1][1]
+		septal_vein_23 = septal_veins[1][2]
+		septal_vein_31 = septal_veins[2][0]
+		septal_vein_32 = septal_veins[2][1]
+		septal_vein_33 = septal_veins[2][2]
+		septal_vein_41 = septal_veins[3][0]
+		septal_vein_42 = septal_veins[3][1]
+		septal_vein_43 = septal_veins[3][2]
+		septal_vein_51 = septal_veins[4][0]
+		septal_vein_52 = septal_veins[4][1]
+		septal_vein_53 = septal_veins[4][2]
+		septal_vein_61 = septal_veins[5][0]
+		septal_vein_62 = septal_veins[5][1]
+		septal_vein_63 = septal_veins[5][2]
 
 	ms_1 = marginal_sinus[0]
 	ms_2 = marginal_sinus[1]
@@ -140,6 +179,24 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 		'-setnumber', 'artery_51', str(artery_51), \
 		'-setnumber', 'artery_61', str(artery_61), \
 		'-setnumber', 'artery_71', str(artery_71), \
+		'-setnumber', 'septal_vein_11', str(septal_vein_11),\
+		'-setnumber', 'septal_vein_12', str(septal_vein_12),\
+		'-setnumber', 'septal_vein_13', str(septal_vein_13),\
+		'-setnumber', 'septal_vein_21', str(septal_vein_21),\
+		'-setnumber', 'septal_vein_22', str(septal_vein_22),\
+		'-setnumber', 'septal_vein_23', str(septal_vein_23),\
+		'-setnumber', 'septal_vein_31', str(septal_vein_31),\
+		'-setnumber', 'septal_vein_32', str(septal_vein_32),\
+		'-setnumber', 'septal_vein_33', str(septal_vein_33),\
+		'-setnumber', 'septal_vein_41', str(septal_vein_41),\
+		'-setnumber', 'septal_vein_42', str(septal_vein_42),\
+		'-setnumber', 'septal_vein_43', str(septal_vein_43),\
+		'-setnumber', 'septal_vein_51', str(septal_vein_51),\
+		'-setnumber', 'septal_vein_52', str(septal_vein_52),\
+		'-setnumber', 'septal_vein_53', str(septal_vein_53),\
+		'-setnumber', 'septal_vein_61', str(septal_vein_61),\
+		'-setnumber', 'septal_vein_62', str(septal_vein_62),\
+		'-setnumber', 'septal_vein_63', str(septal_vein_63),\
 		'-setnumber', 'central_cavity_width', str(central_cavity_width),\
 		'-setnumber', 'central_cavity_transition', str(central_cavity_transition),\
 		'-setnumber', 'wall_height_1', str(wall_height_1),\

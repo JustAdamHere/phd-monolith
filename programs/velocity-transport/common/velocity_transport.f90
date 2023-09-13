@@ -4,15 +4,14 @@ program velocity_transport
     use problem_options
     use problem_options_velocity
     use problem_options_transport
+    use problem_options_geometry
     use refine_region
-    use bcs_velocity
+    use velocity_bc_interface
     use bcs_transport
     use solution_storage_velocity
     use crossflow_flux
     use outflow_flux
     use outflow_transport_flux
-    use program_name_module
-    use assembly_name_module
     use integrate_transport_reaction
 
     use matrix_rhs_transport
@@ -34,7 +33,7 @@ program velocity_transport
 
     type(refinement_tree)              :: mesh_tree
     integer, dimension(:), allocatable :: refinement_marks
-    integer                            :: mesh_no, no_eles
+    integer                            :: mesh_no, no_eles, problem_dim
 
     class(sp_matrix_rhs), pointer   :: sp_matrix_rhs_data_velocity, sp_matrix_rhs_data_transport!, sp_matrix_rhs_data_uptake
     type(default_user_data)         :: scheme_data_velocity, scheme_data_transport!, scheme_data_uptake
@@ -52,8 +51,6 @@ program velocity_transport
 
     logical, dimension(20) :: mesh_smoother
 
-    character(len=20) :: control_file, assembly_name
-
     character(len=100) :: flux_file
     character(len=100) :: aptofem_run_number_string
     character(len=100) :: tsvFormat
@@ -64,25 +61,39 @@ program velocity_transport
 
     character(len=100) :: temp_string1, temp_string2
 
-    !!!!!!!!!!!!!!!!!!!!!!
-    !! SET CONTROL FILE !!
-    !!!!!!!!!!!!!!!!!!!!!!
-    call program_name(control_file, .true.)
-    if (control_file /= 'placentone' .and. control_file /= 'placenta' .and. control_file /= 'placentone-3d') then
-        call write_message(io_err, 'Error: program_name should be placentone or placenta or placentone-3d.')
-        stop
+    integer :: no_command_line_arguments
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    !! COMMAND LINE ARGUMENTS !!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    no_command_line_arguments = command_argument_count()
+    if (no_command_line_arguments /= 2) then
+        print *, "ERROR: Incorrect number of command line arguments."
+        print *, "       Usage: ./velocity_transport.out <nsb|ns-b|ns-nsb|s-b> <placentone|placenta|placentone-3d>"
+        error stop
+    end if
+    call get_command_argument(1, assembly_name)
+    if (assembly_name /= 'nsb' .and. assembly_name /= 'ns-b' .and. assembly_name /= 'ns-nsb' .and. assembly_name /= 's-b') then
+        call write_message(io_err, 'Error: assembly_name should be nsb or ns-b or ns-nsb or s-b.')
+        error stop
+    end if
+    call get_command_argument(2, geometry_name)
+    if (geometry_name /= 'placentone' .and. geometry_name /= 'placenta' .and. geometry_name /= 'placentone-3d') then
+        call write_message(io_err, 'Error: geometry_name should be placentone or placenta or placentone-3d.')
+        error stop
     end if
 
     !!!!!!!!!!!!!!!!!!!
     !! APTOFEM SETUP !!
     !!!!!!!!!!!!!!!!!!!
-    call AptoFEM_initialize     (aptofem_stored_keys, 'acf_' // trim(control_file) // '.dat', './common/')
+    call AptoFEM_initialize     (aptofem_stored_keys, 'acf_' // trim(geometry_name) // '.dat', './common/')
+    call setup_velocity_bcs     (geometry_name)
     call create_mesh            (mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
     call get_user_data          ('user_data', aptofem_stored_keys)
     call get_user_data_velocity ('user_data', aptofem_stored_keys)
     call get_user_data_transport('user_data', aptofem_stored_keys)
     call set_space_type_velocity(aptofem_stored_keys)
-    call get_assembly_name      (assembly_name)
+    call initialise_geometry    (geometry_name, no_placentones)
 
     !!!!!!!!!!!!!!!!!
     !! REFINE MESH !!
@@ -147,6 +158,12 @@ program velocity_transport
         call delete_mesh(mesh_data_orig)
     end do
 
+    !!!!!!!!!!!!!!!!!!!!!!!!!
+    !! GET MESH ATTRIBUTES !!
+    !!!!!!!!!!!!!!!!!!!!!!!!!
+    no_eles = mesh_data%no_eles
+    problem_dim = mesh_data%problem_dim
+
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! OUTPUT PERMEABILITY FIELD !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -202,7 +219,7 @@ program velocity_transport
 
     if (velocity_ic_from_ss) then
         if (trim(assembly_name) == 'nsb') then
-            call store_subroutine_names(fe_solver_routines_velocity,  'assemble_jac_matrix_element', &
+            call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
                 jacobian_nsb_ss, 1)
             call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
                 jacobian_face_nsb_ss, 1)
@@ -258,6 +275,11 @@ program velocity_transport
             allocate(steps(1))
             steps(1) = 0.0_db
             ratio    = 1.0_db
+        else if (no_reynold_ramp_steps == 2) then
+            allocate(steps(2))
+            steps(1) = 0.0_db
+            steps(2) = 1.0_db
+            ratio    = reynold_ramp_start_ratio
         else
             ! Creates "base steps" of size 0.1 through to 0.01 between different Reynolds numbers.
             max_step = -1
@@ -273,7 +295,7 @@ program velocity_transport
             steps = steps / sum(steps)
             steps = steps * (1 - reynold_ramp_start_ratio)
 
-            ratio                                = reynold_ramp_start_ratio
+            ratio = reynold_ramp_start_ratio
         end if
 
         velocity_convection_coefficient_orig = velocity_convection_coefficient
@@ -338,7 +360,7 @@ program velocity_transport
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 0, mesh_data, solution_velocity)
     call write_solution_for_restart(solution_velocity, mesh_data, 0, 'dg_velocity-transport_velocity_' &
-        // trim(control_file), '../../output/')
+        // trim(geometry_name), '../../output/')
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! TRANSPORT PROBLEM SETUP AND INITIAL CONDITION !!
@@ -393,7 +415,7 @@ program velocity_transport
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         call write_fe_data('output_mesh_solution_transport_2D', aptofem_stored_keys, 0, mesh_data, solution_transport)
         call write_solution_for_restart(solution_transport, mesh_data, 0, 'dg_velocity-transport_transport_' &
-            // trim(control_file), '../../output/')
+            // trim(geometry_name), '../../output/')
     end if
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -463,7 +485,7 @@ program velocity_transport
     !! SAVE FLUXES !!
     !!!!!!!!!!!!!!!!!
     write(aptofem_run_number_string, '(i10)') aptofem_run_number
-    flux_file = '../../output/flux' // '_' // 'velocity-transport' // '_' // trim(control_file) // '_' // &
+    flux_file = '../../output/flux' // '_' // 'velocity-transport' // '_' // trim(geometry_name) // '_' // &
         trim(adjustl(aptofem_run_number_string)) // '.dat'
     open(23111997, file=flux_file, status='replace')
     tsvFormat = '(*(G0.6,:,"'//achar(9)//'"))'
@@ -483,7 +505,7 @@ program velocity_transport
     !! TRANSPORT REACTION TERM INTEGRAL !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     write(aptofem_run_number_string, '(i10)') aptofem_run_number
-    flux_file = '../../output/transport-reaction-integral' // '_' // 'velocity-transport' // '_' // trim(control_file) // '_' // &
+    flux_file = '../../output/transport-reaction-integral' // '_' // 'velocity-transport' // '_' // trim(geometry_name) // '_' // &
         trim(adjustl(aptofem_run_number_string)) // '.dat'
     open(23111998, file=flux_file, status='replace')
     write(23111998, tsvFormat) 'Time step', 'Integral'
@@ -503,6 +525,14 @@ program velocity_transport
                 solution_transport)
             call set_current_time                 (solution_transport, scheme_data_transport%current_time)
             call project_dirichlet_boundary_values(solution_transport, mesh_data)
+        end if
+
+        !!!!!!!!!!!!!
+        ! MOVE MESH !
+        !!!!!!!!!!!!!
+        if (moving_mesh .and. trim(geometry_name) == 'placenta') then
+            call move_mesh(mesh_data, problem_dim, scheme_data_velocity%current_time, scheme_data_velocity%time_step)
+            call update_geometry(scheme_data_velocity%current_time, scheme_data_velocity%time_step)
         end if
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -565,13 +595,13 @@ program velocity_transport
                 call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, time_step_no, mesh_data, &
                     solution_velocity)
                 call write_solution_for_restart(solution_velocity, mesh_data, time_step_no, 'dg_velocity-transport_velocity_' &
-                    // trim(control_file), '../../output/')
+                    // trim(geometry_name), '../../output/')
             end if
             if (compute_transport) then
                 call write_fe_data('output_mesh_solution_transport_2D', aptofem_stored_keys, time_step_no, mesh_data, &
                     solution_transport)
                 call write_solution_for_restart(solution_transport, mesh_data, time_step_no, 'dg_velocity-transport_transport_' &
-                    // trim(control_file), '../../output/')
+                    // trim(geometry_name), '../../output/')
             end if
         end if
 
@@ -605,13 +635,15 @@ program velocity_transport
 
     call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
         aptofem_stored_keys, sp_matrix_rhs_data_transport, 5, scheme_data_transport)
-    call linear_fe_solver(solution_velocity,      mesh_data, fe_solver_routines_velocity,      'solver_velocity', &
-        aptofem_stored_keys, sp_matrix_rhs_data_velocity,      5, scheme_data_velocity)
+    call linear_fe_solver(solution_velocity,  mesh_data, fe_solver_routines_velocity,  'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity,  5, scheme_data_velocity)
 
-    call delete_solution (solution_transport)
-    call delete_solution (solution_velocity)
-    call delete_mesh     (mesh_data)
-    call AptoFEM_finalize(aptofem_stored_keys)
+    call delete_solution   (solution_transport)
+    call delete_solution   (solution_velocity)
+    call delete_mesh       (mesh_data)
+    call finalise_geometry (geometry_name)
+    call finalise_user_data()
+    call AptoFEM_finalize  (aptofem_stored_keys)
 end program
 
 ! subroutine write_to_file_headers(file_no, tsvFormat)

@@ -1,9 +1,9 @@
-module bcs_velocity
+module placentone_2d_bcs_velocity
   implicit none
 
   contains
 
-  subroutine convert_velocity_boundary_no(boundary_no, boundary_no_new)
+  subroutine placentone_2d_convert_velocity_boundary_no(boundary_no, boundary_no_new)
     integer, intent(in)  :: boundary_no
     integer, intent(out) :: boundary_no_new
 
@@ -21,7 +21,7 @@ module bcs_velocity
 
   end subroutine
 
-  subroutine convert_velocity_region_id(region_id, region_id_new)
+  subroutine placentone_2d_convert_velocity_region_id(region_id, region_id_new)
     integer, intent(in)  :: region_id
     integer, intent(out) :: region_id_new
 
@@ -43,7 +43,7 @@ module bcs_velocity
 
   end subroutine
 
-  subroutine forcing_function_velocity(f, global_point, problem_dim, no_vars, t, element_region_id)
+  subroutine placentone_2d_forcing_function_velocity(f, global_point, problem_dim, no_vars, t, element_region_id)
     use param
     use problem_options
 
@@ -69,10 +69,11 @@ module bcs_velocity
 
   end subroutine
 
-  subroutine anal_soln_velocity(u, global_point, problem_dim, no_vars, boundary_no, t, element_region_id)
+  subroutine placentone_2d_anal_soln_velocity(u, global_point, problem_dim, no_vars, boundary_no, t, element_region_id)
     use param
     use problem_options
     use problem_options_velocity
+    use problem_options_geometry
 
     implicit none
 
@@ -88,9 +89,6 @@ module bcs_velocity
     real(db) :: left, right
     real(db) :: amplitude
     real(db) :: global_time ! TODO: check relationship between local and global t
-    real(db) :: artery_width_sm
-
-    artery_width_sm = 0.0125_db ! 0.5mm
 
     u = 0.0_db
 
@@ -98,7 +96,7 @@ module bcs_velocity
     y = global_point(2)
 
     if (boundary_no == 111) then
-        r    = sqrt((x - artery_location)**2 + (0.0_db - 0.0_db)**2)
+        r    = sqrt((x - vessel_locations(1, 2))**2 + (0.0_db - 0.0_db)**2)
         u(2) = current_velocity_amplitude * calculate_poiseuille_flow(r, artery_width_sm/2)
 
         if (u(2) <= -1e-5) then
@@ -109,7 +107,7 @@ module bcs_velocity
     end if
   end subroutine
 
-  subroutine anal_soln_velocity_1(u_1, global_point, problem_dim, no_vars, t, element_region_id)
+  subroutine placentone_2d_anal_soln_velocity_1(u_1, global_point, problem_dim, no_vars, t, element_region_id)
     use param
     use problem_options
 
@@ -122,16 +120,10 @@ module bcs_velocity
     real(db), intent(in)                                   :: t
     integer, intent(in)                                    :: element_region_id
 
-    real(db) :: x, y
-    real(db) :: diffusion_coefficient
-
-    x = global_point(1)
-    y = global_point(2)
-
     u_1 = 0.0_db
   end subroutine
 
-  subroutine get_boundary_no_velocity(boundary_no, strongly_enforced_bcs, global_point, face_coords, no_face_vert,&
+  subroutine placentone_2d_get_boundary_no_velocity(boundary_no, strongly_enforced_bcs, global_point, face_coords, no_face_vert,&
       problem_dim, mesh_data)
     use param
     use fe_mesh
@@ -147,8 +139,6 @@ module bcs_velocity
     integer, intent(in)                                        :: problem_dim
     type(mesh), intent(in)                                     :: mesh_data
 
-    real(db) :: x, y, tol
-
     if (fe_space_velocity == 'DG') then
       strongly_enforced_bcs = '000'
     else
@@ -158,35 +148,9 @@ module bcs_velocity
         strongly_enforced_bcs = '000'
       end if
     end if
-
-    !strongly_enforced_bcs = '111'
-
-    ! x = global_point(1)
-    ! y = global_point(2)
-
-    ! tol = 1.0d-10
-
-    ! if (abs(x - 1.0_db) <= tol) then
-    !   boundary_no = 201
-    ! else if (abs(x + 1.0_db) <= tol) then
-    !   boundary_no = 102
-    ! else if (abs(y - 1.0_db) <= tol) then
-    !   boundary_no = 103
-    ! else if (abs(y + 1.0_db) <= tol) then
-    !   boundary_no = 104
-    ! else if (abs(x) <= 0.0_db .and. y <= tol) then
-    !   boundary_no = 105
-    ! else if (abs(y) <= 0.0_db .and. x >= tol) then
-    !   boundary_no = 106
-    ! else
-    !   print *, "Boundary unknown"
-    !   print *, "x = ", x
-    !   print *, "y = ", y
-    !   stop
-    ! end if
   end subroutine
 
-  subroutine dirichlet_bc_velocity(u, global_point, problem_dim, no_vars, boundary_no, t)
+  subroutine placentone_2d_dirichlet_bc_velocity(u, global_point, problem_dim, no_vars, boundary_no, t)
     use param
 
     implicit none
@@ -199,13 +163,13 @@ module bcs_velocity
 
     real(db), dimension(no_vars) :: sol
 
-    call anal_soln_velocity(sol, global_point, problem_dim, no_vars, boundary_no, t, -1)
+    call placentone_2d_anal_soln_velocity(sol, global_point, problem_dim, no_vars, boundary_no, t, -1)
 
     u(1:no_vars) = sol(1:no_vars)
 
   end subroutine
 
-  subroutine neumann_bc_velocity(un, global_point, problem_dim, boundary_no, t, element_region_id, normal)
+  subroutine placentone_2d_neumann_bc_velocity(un, global_point, problem_dim, boundary_no, t, element_region_id, normal)
     use param
     use problem_options
 
@@ -218,14 +182,6 @@ module bcs_velocity
     real(db), intent(in)                          :: t
     integer, intent(in)                           :: element_region_id
     real(db), dimension(problem_dim), intent(in)  :: normal
-
-    real(db), dimension(problem_dim+1)              :: u
-    real(db), dimension(problem_dim+1, problem_dim) :: u_1
-    real(db)                                        :: x, y
-    real(db)                                        :: diffusion_coefficient, pressure_coefficient
-
-    x = global_point(1)
-    y = global_point(2)
 
     un = 0.0_db
   end subroutine

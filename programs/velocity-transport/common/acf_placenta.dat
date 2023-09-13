@@ -83,18 +83,42 @@ velocity_ic_from_ss .true.
 transport_ic_from_ss .true.
 compute_transport .true.
 large_boundary_v_penalisation .false.
+moving_mesh .false.
 no_reynold_ramp_steps 10
 reynold_ramp_start_ratio 0.1
 reynold_ramp_step_base 2.0
 
 no_placentones 6
 
-artery_location 0.5
 central_cavity_width 0.25
 central_cavity_transition 0.15
 pipe_transition 0.03
 artery_length 0.05
 log_cavity_transition .false.
+
+vein_location_11 0.2
+vein_location_21 0.2
+vein_location_31 0.2
+vein_location_41 0.2
+vein_location_51 0.2
+vein_location_61 0.2
+vein_location_71 0.2
+
+artery_location_1 0.5
+artery_location_2 0.5
+artery_location_3 0.5
+artery_location_4 0.5
+artery_location_5 0.5
+artery_location_6 0.5
+artery_location_7 0.5
+
+vein_location_12 0.8
+vein_location_22 0.8
+vein_location_32 0.8
+vein_location_42 0.8
+vein_location_52 0.8
+vein_location_62 0.8
+vein_location_72 0.8
 # ==========================================================
 >>> solver_velocity
 solver_type dirk_timestepping

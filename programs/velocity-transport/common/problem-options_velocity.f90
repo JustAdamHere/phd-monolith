@@ -130,7 +130,7 @@ contains
     function calculate_velocity_reaction_coefficient(global_point, problem_dim, element_region_id)
         use param
         use problem_options
-        use program_name_module
+        use problem_options_geometry
 
         implicit none
 
@@ -139,24 +139,21 @@ contains
         real(db), dimension(problem_dim), intent(in) :: global_point
         integer, intent(in)                          :: element_region_id
 
-        character(len=20)      :: name
         real(db)               :: steepness
         real(db), dimension(2) :: translated_point
-
-        call program_name(name)
 
         steepness = 0.999_db
 
         if (400 <= element_region_id .and. element_region_id <= 599) then
-            if (trim(name) == 'placentone') then
+            if (trim(geometry_name) == 'placentone') then
                 translated_point = global_point
-            else if (trim(name) == 'placenta') then
+            else if (trim(geometry_name) == 'placenta') then
                 translated_point = translate_placenta_to_placentone_point(problem_dim, global_point, element_region_id)
-            else if (trim(name) == 'placentone-3d') then
+            else if (trim(geometry_name) == 'placentone-3d') then
                 translated_point = translate_placentone_3d_to_placentone_point(problem_dim, global_point, element_region_id)
             else
                 print *, "Error in calculate_velocity_reaction_coefficient. Missed case."
-                print *, "name = ", name
+                print *, "geometry_name = ", geometry_name
                 error stop
             end if
         else
@@ -183,7 +180,7 @@ contains
         else
             print *, "Error in calculate_velocity_reaction_coefficient. Missed case."
             print *, "element_region_id = ", element_region_id
-            stop
+            error stop
         end if
         
     end function

@@ -1,4 +1,5 @@
-// TODO: Need to fix surface numbers for septal walls.
+// TODO: Need to fix surface numbers for septal veins when no_placetones = 7.
+// TODO: Add fillets for septal veins.
 
 SetFactory("OpenCASCADE");
 
@@ -7,14 +8,14 @@ SetFactory("OpenCASCADE");
 //=/  EDGES
 //=/   Non-curved boundary: 100
 //=/   Curved boundary:     101
-//=/   Inlets:              111-117
-//=/   Outlets:             211-224
+//=/   Inlets:              111-116, (117)
+//=/   Outlets:             211-224, (225-227)
 //=/   Corner outlets:      230, 231
 //=/   (Septa outlet:       241, 242, 243, 251, ..., 283)
 //=/  SURFACES
 //=/   Placentones:  301, 302, 303, 304, 305, 306
 //=/   Corner pipes: 401, 402
-//=/   Pipes:        411, 412, 413, ..., 463
+//=/   Pipes:        411, 412, 413, ..., 463, (471, 472, 473)
 //=/   (Septa pipe:  471, ..., 495)
 //=/   Cavities:     501, 502, 503, 504, 505, 506
 //=/
@@ -52,7 +53,9 @@ EndIf
 If (!Exists(central_cavity_width))
 	central_cavity_width = 0.25*placentone_width; // 10 mm
 EndIf
-central_cavity_height = 2*central_cavity_width;
+If (!Exists(central_cavity_height))
+	central_cavity_height = 2*central_cavity_width;
+EndIf
 
 If (!Exists(central_cavity_transition))
 	central_cavity_transition = 0.04; // 1.6mm
@@ -957,7 +960,7 @@ For k In {0:no_placentones-2:1}
 		Physical Curve(100) += {offset + 15, offset + 16};
 	EndIf
 	If (septal_vein_3[k] == 1)
-		Physical Curve(100) += {offset + 43, offset + 44, offset + 45, offset + 46, offset + 48};
+		Physical Curve(100) += {offset + 43, offset + 44, offset + 46, offset + 48};
 		Physical Curve(240 + k*10 + 3) = {offset + 45};
 	Else
 		Physical Curve(100) += {offset + 17};
@@ -1133,43 +1136,6 @@ For k In {0:no_placentones-1:1}
 		Physical Surface(413 + k*10) = {113 + k*10};
 	EndIf
 EndFor
-
-// Plane Surface(111)                   = {111};
-// Plane Surface(112)                   = {112};
-// Plane Surface(113)                   = {113};
-// Plane Surface(121)                   = {121};
-// Plane Surface(122)                   = {122};
-// Plane Surface(123)                   = {123};
-// Plane Surface(131)                   = {131};
-// Plane Surface(132)                   = {132};
-// Plane Surface(133)                   = {133};
-// Plane Surface(141)                   = {141};
-// Plane Surface(142)                   = {142};
-// Plane Surface(143)                   = {143};
-// Plane Surface(151)                   = {151};
-// Plane Surface(152)                   = {152};
-// Plane Surface(153)                   = {153};
-// Plane Surface(161)                   = {161};
-// Plane Surface(162)                   = {162};
-// Plane Surface(163)                   = {163};
-// Physical Surface("flow-out_11", 411) = {111};
-// Physical Surface("flow-out_12", 412) = {112};
-// Physical Surface("flow-out_13", 413) = {113};
-// Physical Surface("flow-out_21", 421) = {121};
-// Physical Surface("flow-out_22", 422) = {122};
-// Physical Surface("flow-out_23", 423) = {123};
-// Physical Surface("flow-out_31", 431) = {131};
-// Physical Surface("flow-out_32", 432) = {132};
-// Physical Surface("flow-out_33", 433) = {133};
-// Physical Surface("flow-out_41", 441) = {141};
-// Physical Surface("flow-out_42", 442) = {142};
-// Physical Surface("flow-out_43", 443) = {143};
-// Physical Surface("flow-out_51", 451) = {151};
-// Physical Surface("flow-out_52", 452) = {152};
-// Physical Surface("flow-out_53", 453) = {153};
-// Physical Surface("flow-out_61", 461) = {161};
-// Physical Surface("flow-out_62", 462) = {162};
-// Physical Surface("flow-out_63", 463) = {163};
 
 If (ms_1 == 1)
 	Curve Loop(201) = {1007, 1008, 1009, 1010};
