@@ -85,70 +85,34 @@ module placenta_2d_bcs_velocity
     real(db), intent(in)                         :: t
     integer, intent(in)                          :: element_region_id
 
-    real(db)                         :: x, y, r, radius!, x_centre, y_centre, radius
-    ! real(db)                         :: placentone_width, wall_width, placenta_width, placenta_height, wall_height, artery_length, &
-    !   artery_width_sm, ms_pipe_width
+    real(db)                         :: r, radius
     real(db), dimension(problem_dim) :: centre_top, centre_bc
     real(db)                         :: theta_bc, theta_top
-    ! real(db), dimension(no_placentones) :: placentone_widths, cumulative_placentone_widths
-    integer                          :: i
     integer                          :: placentone_no
-    real(db) :: amplitude
 
     u = 0.0_db
-
-    x        = global_point(1)
-    y        = global_point(2)
-
-    radius = boundary_radius
 
     if (111 <= boundary_no .and. boundary_no <= 117) then
       placentone_no = boundary_no-110
 
+      ! Select arteries.
       centre_top(1) = vessel_tops  (placentone_no, 2, 1)
       centre_top(2) = vessel_tops  (placentone_no, 2, 2)
       theta_top     = vessel_angles(placentone_no, 2)
+      
+      theta_bc  = theta_top
+      radius    = boundary_radius
+      centre_bc(1) = x_centre + radius*cos(theta_bc) + artery_length*cos(theta_bc)
+      centre_bc(2) = y_centre - ((radius+artery_length)**2 - (centre_bc(1) - x_centre)**2)**0.5
+
+      r    = sqrt((global_point(1) - centre_bc(1))**2 + (global_point(2) - centre_bc(2))**2)
+      u    = current_velocity_amplitude * calculate_poiseuille_flow(r, artery_width_sm/2)
+      u(1) = -u(1) * cos(theta_bc)
+      u(2) =  u(2) * sin(theta_bc)
     end if
 
-    ! if (boundary_no == 111) then
-    !     centre_top(1) = cumulative_placentone_widths(1) + artery_location*placentone_widths(1)
-    !     centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-    !     theta_top     = -pi - atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-    ! else if (boundary_no == 112) then
-    !     centre_top(1) = cumulative_placentone_widths(2) + artery_location*placentone_widths(2)
-    !     centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-    !     theta_top     = -pi - atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-    ! else if (boundary_no == 113) then
-    !     centre_top(1) = cumulative_placentone_widths(3) + artery_location*placentone_widths(3)
-    !     centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-    !     theta_top     = -pi - atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-    ! else if (boundary_no == 114) then
-    !     centre_top(1) = cumulative_placentone_widths(4) + artery_location*placentone_widths(4)
-    !     centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-    !     theta_top     = -atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-    ! else if (boundary_no == 115) then
-    !     centre_top(1) = cumulative_placentone_widths(5) + artery_location*placentone_widths(5)
-    !     centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-    !     theta_top     = -atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-    ! else if (boundary_no == 116) then
-    !     centre_top = cumulative_placentone_widths(6) + artery_location*placentone_widths(6)
-    !     centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-    !     theta_top     = -atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-    ! else if (boundary_no == 117) then
-    !     centre_top = cumulative_placentone_widths(7) + artery_location*placentone_widths(7)
-    !     centre_top(2) = y_centre - (radius**2 - (centre_top(1) - x_centre)**2)**0.5
-    !     theta_top     = -atan((centre_top(2)-y_centre)/(centre_top(1)-x_centre))
-    ! end if
-
-    if (111 <= boundary_no .and. boundary_no <= 117) then
-        theta_bc  = theta_top
-        centre_bc(1) = x_centre + radius*cos(theta_bc) + artery_length*cos(theta_bc)
-        centre_bc(2) = y_centre - ((radius+artery_length)**2 - (centre_bc(1) - x_centre)**2)**0.5
-
-        r    = sqrt((x - centre_bc(1))**2 + (y - centre_bc(2))**2)
-        u    = current_velocity_amplitude * calculate_poiseuille_flow(r, artery_width_sm/2)
-        u(1) = -u(1) * cos(theta_bc)
-        u(2) =  u(2) * sin(theta_bc)
+    if (moving_mesh .and. .not. compute_ss_flag) then
+      u(1:2) = u(1:2) + calculate_mesh_velocity(global_point, problem_dim, t)
     end if
 
     ! if (u(2) <= -1e-5) then

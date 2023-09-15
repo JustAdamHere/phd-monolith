@@ -6,10 +6,11 @@ module problem_options
     real(db)          :: interior_penalty_parameter
     integer           :: no_uniform_refinements_cavity, no_uniform_refinements_everywhere, no_uniform_refinements_inlet
     logical           :: velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, moving_mesh
-    real(db)          :: final_local_time, central_cavity_width, central_cavity_transition, pipe_transition
+    real(db)          :: final_local_time, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition
     integer           :: no_time_steps
     integer           :: no_placentones
     character(len=20) :: geometry_name, assembly_name
+    logical           :: compute_ss_flag
 
     real(db), dimension(:, :), allocatable :: vessel_locations
 
@@ -45,6 +46,8 @@ module problem_options
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('central_cavity_width',              central_cavity_width,              section_name, &
             aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('central_cavity_height',             central_cavity_height,             section_name, &
+            aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('central_cavity_transition',         central_cavity_transition,         section_name, &
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('pipe_transition',                   pipe_transition,                   section_name, &
@@ -70,6 +73,8 @@ module problem_options
             call get_aptofem_key_definition('vein_location_'   // temp_integer // '2', vessel_locations(i, 3), section_name, &
                 aptofem_stored_keys, ierr)
         end do
+
+        compute_ss_flag = .true.
     end subroutine
 
     subroutine finalise_user_data()

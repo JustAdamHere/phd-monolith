@@ -69,7 +69,7 @@ contains
         integer, intent(in)                          :: boundary_no
         real(db), intent(in)                         :: t
 
-        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, 300)
+        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, 301)
 
     end subroutine
 
@@ -85,7 +85,7 @@ contains
         integer, intent(in)                          :: boundary_no
         real(db), intent(in)                         :: t
 
-        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, 422)
+        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, 423)
 
     end subroutine
 
@@ -141,6 +141,7 @@ contains
 
         real(db)               :: steepness
         real(db), dimension(2) :: translated_point
+        integer                :: placentone_no
 
         steepness = 0.999_db
 
@@ -174,9 +175,10 @@ contains
         else if (500 <= element_region_id .and. element_region_id <= 509) then
             calculate_velocity_reaction_coefficient = &
                 0.0_db
-        else if (510 <= element_region_id .and. element_region_id <= 529) then
+        else if (510 <= element_region_id .and. element_region_id <= 527) then
+            placentone_no = mod(element_region_id, 10)
             calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
-                calculate_placentone_cavity_transition(translated_point, problem_dim, element_region_id, steepness)
+                calculate_placentone_cavity_transition(translated_point, problem_dim, element_region_id, steepness, placentone_no)
         else
             print *, "Error in calculate_velocity_reaction_coefficient. Missed case."
             print *, "element_region_id = ", element_region_id

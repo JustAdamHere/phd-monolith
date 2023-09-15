@@ -198,6 +198,8 @@ program velocity_transport
 
     call delete_solution(solution_uptake)
 
+    stop
+
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! VELOCITY PROBLEM SETUP AND INITIAL CONDITION !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -319,6 +321,11 @@ program velocity_transport
             if (trim(assembly_name) == 'nsb' .or. trim(assembly_name) == 'ns-nsb' .or. trim(assembly_name) == 'ns-b') then
                 call newton_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
                     aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, ifail)
+
+                if (ifail) then
+                    call write_message(io_msg, "ERROR: Newton solver failed to converge.")
+                    error stop
+                end if
             else if (trim(assembly_name) == 's-b') then
                 call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
                     aptofem_stored_keys, sp_matrix_rhs_data_velocity, 3, scheme_data_velocity)
@@ -481,6 +488,8 @@ program velocity_transport
 
     no_dofs_velocity = get_no_dofs(solution_velocity)
 
+    compute_ss_flag = .false.
+
     !!!!!!!!!!!!!!!!!
     !! SAVE FLUXES !!
     !!!!!!!!!!!!!!!!!
@@ -531,8 +540,10 @@ program velocity_transport
         ! MOVE MESH !
         !!!!!!!!!!!!!
         if (moving_mesh .and. trim(geometry_name) == 'placenta') then
-            call move_mesh(mesh_data, problem_dim, scheme_data_velocity%current_time, scheme_data_velocity%time_step)
-            call update_geometry(scheme_data_velocity%current_time, scheme_data_velocity%time_step)
+            ! Plus dt since t has not yet been updated.
+            call move_mesh(mesh_data, problem_dim, scheme_data_velocity%current_time + scheme_data_velocity%time_step, &
+                scheme_data_velocity%time_step)
+            call update_geometry(scheme_data_velocity%current_time + scheme_data_velocity%time_step, scheme_data_velocity%time_step)
         end if
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
