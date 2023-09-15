@@ -198,8 +198,6 @@ program velocity_transport
 
     call delete_solution(solution_uptake)
 
-    stop
-
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! VELOCITY PROBLEM SETUP AND INITIAL CONDITION !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
