@@ -3,14 +3,12 @@ module problem_options
 
     save
 
-    real(db)          :: interior_penalty_parameter
-    integer           :: no_uniform_refinements_cavity, no_uniform_refinements_everywhere, no_uniform_refinements_inlet
-    logical           :: velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, moving_mesh
-    real(db)          :: final_local_time, central_cavity_transition, pipe_transition, artery_width_sm !central_cavity_width, central_cavity_height
-    integer           :: no_time_steps
-    integer           :: no_placentones
+    real(db)          :: interior_penalty_parameter, final_local_time, central_cavity_transition, pipe_transition, artery_width_sm
+    integer           :: no_uniform_refinements_cavity, no_uniform_refinements_everywhere, no_uniform_refinements_inlet, &
+        no_time_steps, output_frequency, no_placentones
+    logical           :: velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, &
+        compute_permeability, compute_uptake, moving_mesh, compute_ss_flag
     character(len=20) :: geometry_name, assembly_name
-    logical           :: compute_ss_flag
 
     real(db), dimension(:, :), allocatable :: vessel_locations
     real(db), dimension(:), allocatable    :: central_cavity_widths, central_cavity_heights
@@ -37,13 +35,19 @@ module problem_options
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('velocity_ic_from_ss',               velocity_ic_from_ss,               section_name, &
             aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('compute_velocity',                  compute_velocity,                  section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('compute_transport',                 compute_transport,                 section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('compute_permeability',              compute_permeability,              section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('compute_uptake',                    compute_uptake,                    section_name, &
+            aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('transport_ic_from_ss',              transport_ic_from_ss,              section_name, &
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('dirk_final_time',                   final_local_time,                  'solver_velocity', &
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('dirk_number_of_timesteps',          no_time_steps,                     'solver_velocity', &
-            aptofem_stored_keys, ierr)
-        call get_aptofem_key_definition('compute_transport',                 compute_transport,                 section_name, &
             aptofem_stored_keys, ierr)
         ! call get_aptofem_key_definition('central_cavity_width',              central_cavity_width,              section_name, &
         !     aptofem_stored_keys, ierr)
@@ -59,10 +63,17 @@ module problem_options
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('moving_mesh',                       moving_mesh,                       section_name, &
             aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('output_frequency',                  output_frequency,                  section_name, &
+            aptofem_stored_keys, ierr)
+
+        if (.not. compute_velocity .and. compute_transport) then
+            print *, "Error in get_user_data. compute_transport is true but compute_velocity is false. Stopping."
+            error stop
+        end if
 
         if (no_placentones /= 1 .and. no_placentones /= 6 .and. no_placentones /= 7) then
             print *, "Error in get_user_data. no_placentones must be 1 or 6 or 7. Stopping."
-            stop 1
+            error stop
         end if
 
         allocate(vessel_locations(7, 3))

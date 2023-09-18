@@ -81,7 +81,10 @@ no_uniform_refinements_everywhere 0
 velocity_ss .false.
 velocity_ic_from_ss .true.
 transport_ic_from_ss .true.
+compute_velocity .true.
 compute_transport .true.
+compute_permeability .true.
+compute_uptake .true.
 large_boundary_v_penalisation .false.
 moving_mesh .false.
 no_reynold_ramp_steps 10
@@ -89,6 +92,8 @@ reynold_ramp_start_ratio 0.1
 reynold_ramp_step_base 2.0
 
 no_placentones 6
+
+output_frequency 1
 
 central_cavity_transition 0.15
 pipe_transition 0.03
