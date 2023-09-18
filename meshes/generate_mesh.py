@@ -31,7 +31,7 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 		h_artery_bottom = mesh_resolution[5]
 		h_cavity_inner  = mesh_resolution[6]
 		h_cavity_outer  = mesh_resolution[7]
-	elif (type(mesh_resolution) == float):
+	elif (type(mesh_resolution) == float or type(mesh_resolution) == int):
 		h_background    = mesh_resolution
 		h_vein_top      = mesh_resolution/10
 		h_vein_bottom   =	mesh_resolution/10
@@ -146,11 +146,7 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 	ms_1 = marginal_sinus[0]
 	ms_2 = marginal_sinus[1]
 
-	subprocess.run([\
-		'/home/pmyambl/software/gmsh-4.11.1-Linux64/bin/gmsh',\
-		f'./meshes/{geo_file}',\
-		'-string', 'Mesh.MshFileVersion=2;',\
-		'-setnumber', 'h_background', str(h_background),\
+	options = ['-setnumber', 'h_background', str(h_background),\
 		'-setnumber', 'h_vein_top', str(h_vein_top),\
 		'-setnumber', 'h_vein_bottom', str(h_vein_bottom),\
 		'-setnumber', 'h_artery_top', str(h_artery_top),\
@@ -197,8 +193,6 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 		'-setnumber', 'septal_vein_61', str(septal_vein_61),\
 		'-setnumber', 'septal_vein_62', str(septal_vein_62),\
 		'-setnumber', 'septal_vein_63', str(septal_vein_63),\
-		'-setnumber', 'central_cavity_width', str(central_cavity_width),\
-		'-setnumber', 'central_cavity_height', str(central_cavity_height),\
 		'-setnumber', 'central_cavity_transition', str(central_cavity_transition),\
 		'-setnumber', 'wall_height_1', str(wall_height_1),\
 		'-setnumber', 'wall_height_2', str(wall_height_2),\
@@ -210,7 +204,39 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 		'-setnumber', 'ms_1', str(ms_1),\
 		'-setnumber', 'ms_2', str(ms_2),\
 		'-setnumber', 'no_placentones', str(no_placentones),\
-	 f'-{dim}',\
+	]
+
+	if (type(central_cavity_width) == list):
+		assert(len(central_cavity_width) == no_placentones)
+
+		for i in range(no_placentones):
+			options += ['-setnumber', f'central_cavity_width_{i+1}', str(central_cavity_width[i])]
+	elif (type(central_cavity_width) == float or type(central_cavity_width) == int):
+		for i in range(no_placentones):
+			options += ['-setnumber', f'central_cavity_width', str(central_cavity_width)]
+	else:
+		raise ValueError("central_cavity_width must be float or list of length [no_placentones]")
+	
+	if (type(central_cavity_height) == list):
+		assert(len(central_cavity_height) == no_placentones)
+
+		for i in range(no_placentones):
+			options += ['-setnumber', f'central_cavity_height_{i+1}', str(central_cavity_height[i])]
+	elif (type(central_cavity_height) == float or type(central_cavity_height) == int):
+		for i in range(no_placentones):
+			options += ['-setnumber', f'central_cavity_height', str(central_cavity_height)]
+	else:
+		raise ValueError("central_cavity_width must be float or list of length [no_placentones]")
+
+	command = [\
+		'/home/pmyambl/software/gmsh-4.11.1-Linux64/bin/gmsh',\
+		f'./meshes/{geo_file}',\
+		'-string', 'Mesh.MshFileVersion=2;'\
+	]
+
+	output = [\
+		f'-{dim}',\
 		'-o', f'meshes/mesh_{simulation_no}.msh'\
-	],
-	stdout=subprocess.DEVNULL)
+	]
+
+	subprocess.run(command + options + output, stdout=subprocess.DEVNULL)

@@ -90,12 +90,24 @@ reynold_ramp_step_base 2.0
 
 no_placentones 1
 
-central_cavity_width 0.25
-central_cavity_height 0.5
 central_cavity_transition 0.15
 pipe_transition 0.03
 artery_length 0.05
 log_cavity_transition .false.
+
+central_cavity_width_1 0.25
+central_cavity_width_2 0.25
+central_cavity_width_3 0.25
+central_cavity_width_4 0.25
+central_cavity_width_5 0.25
+central_cavity_width_6 0.25
+
+central_cavity_height_1 0.5
+central_cavity_height_2 0.5
+central_cavity_height_3 0.5
+central_cavity_height_4 0.5
+central_cavity_height_5 0.5
+central_cavity_height_6 0.5
 
 vein_location_11 0.2
 vein_location_21 0.2

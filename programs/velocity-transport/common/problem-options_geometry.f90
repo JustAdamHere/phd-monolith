@@ -5,13 +5,11 @@ module problem_options_geometry
     save
     
     real(db)                               :: placentone_width, wall_width, placenta_width, placenta_height, wall_height, &
-        artery_width_sm, artery_length, ms_pipe_width, x_centre, y_centre, boundary_radius, central_cavity_width_height_ratio, &
-        inflation_ratio
-    real(db), dimension(:), allocatable    :: placentone_widths, cumulative_placentone_widths
+        artery_width_sm, artery_length, ms_pipe_width, x_centre, y_centre, boundary_radius, inflation_ratio
+    real(db), dimension(:), allocatable    :: placentone_widths, cumulative_placentone_widths, central_cavity_ratios
     real(db), dimension(:, :, :), allocatable :: vessel_tops
-    real(db), dimension(:, :), allocatable    :: vessel_angles
-    real(db), dimension(:, :), allocatable    :: single_cavity_tops
-    real(db), dimension(:), allocatable       :: central_cavity_widths, central_cavity_heights, central_cavity_transitions
+    real(db), dimension(:, :), allocatable    :: vessel_angles, single_cavity_tops
+    !real(db), dimension(:), allocatable       :: central_cavity_widths, central_cavity_heights
     
     contains
     
@@ -84,31 +82,34 @@ module problem_options_geometry
                 end do
             end do
 
+            ! Store ratio between central cavity height and widths.
+            allocate(central_cavity_ratios(no_placentones))
+            do i = 1, no_placentones
+                central_cavity_ratios(i) = central_cavity_heights(i)/central_cavity_widths(i)
+            end do
+
             ! Stores top of one of the larger central cavities.
             !  single_cavity_tops(1, :) = lower cavity top
             !  single_cavity_tops(2, :) = upper cavity top
             allocate(single_cavity_tops(2, problem_dim))
             single_cavity_tops(1, 1) = vessel_tops(3, 2, 1) - &
-                (central_cavity_height/2 - central_cavity_transition)*cos(vessel_angles(3, 2))
+                (central_cavity_heights(3)/2 - central_cavity_transition*central_cavity_ratios(3)/2)*cos(vessel_angles(3, 2))
             single_cavity_tops(1, 2) = vessel_tops(3, 2, 2) + &
-                (central_cavity_height/2 - central_cavity_transition)*sin(vessel_angles(3, 2))
+                (central_cavity_heights(3)/2 - central_cavity_transition*central_cavity_ratios(3)/2)*sin(vessel_angles(3, 2))
             single_cavity_tops(2, 1) = vessel_tops(3, 2, 1) - &
-                (central_cavity_height/2 + central_cavity_transition)*cos(vessel_angles(3, 2))
+                (central_cavity_heights(3)/2 + central_cavity_transition*central_cavity_ratios(3)/2)*cos(vessel_angles(3, 2))
             single_cavity_tops(2, 2) = vessel_tops(3, 2, 2) + &
-                (central_cavity_height/2 + central_cavity_transition)*sin(vessel_angles(3, 2))
-
-            ! Store ratio between width and height of central cavity.
-            central_cavity_width_height_ratio = central_cavity_width/central_cavity_height
+                (central_cavity_heights(3)/2 + central_cavity_transition*central_cavity_ratios(3)/2)*sin(vessel_angles(3, 2))
 
             ! Store all cavity sizings per placentone.
-            allocate(central_cavity_widths(no_placentones))
-            allocate(central_cavity_heights(no_placentones))
-            allocate(central_cavity_transitions(no_placentones))
-            do i = 1, no_placentones
-                central_cavity_widths(i)      = central_cavity_width     *placentone_widths(i)
-                central_cavity_heights(i)     = central_cavity_height    *placentone_widths(i)
-                central_cavity_transitions(i) = central_cavity_transition*placentone_widths(i)
-            end do
+            ! allocate(central_cavity_widths(no_placentones))
+            ! allocate(central_cavity_heights(no_placentones))
+            ! allocate(central_cavity_transitions(no_placentones))
+            ! do i = 1, no_placentones
+            !     central_cavity_widths(i)      = central_cavity_width     *placentone_widths(i)
+            !     central_cavity_heights(i)     = central_cavity_height    *placentone_widths(i)
+            !     central_cavity_transitions(i) = central_cavity_transition*placentone_widths(i)
+            ! end do
 
             ! Inflation ratio.
             inflation_ratio = 1.0_db
@@ -125,23 +126,26 @@ module problem_options_geometry
                 vessel_angles(1, j)  = 0.0_db
             end do
 
+            ! Store ratio between central cavity height and widths.
+            allocate(central_cavity_ratios(1))
+            central_cavity_ratios(1) = central_cavity_heights(1)/central_cavity_widths(1)
+
             ! Stores top of one of the larger central cavities.
             allocate(single_cavity_tops(2, problem_dim))
             single_cavity_tops(1, 1) = vessel_tops(3, 2, 1)
-            single_cavity_tops(1, 2) = vessel_tops(3, 2, 2) + (central_cavity_height/2 - central_cavity_transition)
+            single_cavity_tops(1, 2) = vessel_tops(3, 2, 2) + (central_cavity_heights(1)/2 &
+                - central_cavity_transition*central_cavity_ratios(1)/2)
             single_cavity_tops(2, 1) = vessel_tops(3, 2, 1)
-            single_cavity_tops(2, 2) = vessel_tops(3, 2, 2) + (central_cavity_height/2 + central_cavity_transition)
-
-            ! Store ratio between width and height of central cavity.
-            central_cavity_width_height_ratio = central_cavity_width/central_cavity_height
+            single_cavity_tops(2, 2) = vessel_tops(3, 2, 2) + (central_cavity_heights(1)/2 &
+                + central_cavity_transition*central_cavity_ratios(1)/2)
 
             ! Store all cavity sizings per placentone.
-            allocate(central_cavity_widths(1))
-            allocate(central_cavity_heights(1))
-            allocate(central_cavity_transitions(1))
-            central_cavity_widths(1)      = central_cavity_width     
-            central_cavity_heights(1)     = central_cavity_height    
-            central_cavity_transitions(1) = central_cavity_transition
+            ! allocate(central_cavity_widths(1))
+            ! allocate(central_cavity_heights(1))
+            ! allocate(central_cavity_transitions(1))
+            ! central_cavity_widths(1)      = central_cavity_width     
+            ! central_cavity_heights(1)     = central_cavity_height    
+            ! central_cavity_transitions(1) = central_cavity_transition
 
             ! Inflation ratio.
             inflation_ratio = 1.0_db
@@ -157,8 +161,7 @@ module problem_options_geometry
         character(len=20), intent(in) :: control_file
         
         if (trim(control_file) == 'placenta') then
-            deallocate(placentone_widths, cumulative_placentone_widths, vessel_tops, single_cavity_tops, central_cavity_widths, &
-                central_cavity_heights, central_cavity_transitions)
+            deallocate(placentone_widths, cumulative_placentone_widths, vessel_tops, single_cavity_tops, central_cavity_ratios)
         end if
     end subroutine
     
@@ -326,7 +329,7 @@ module problem_options_geometry
         y = global_point(2)
         
         ! Centre of ellipse.
-        centre(1) = 0.5_db!vessel_locations(1, 2)
+        centre(1) = vessel_locations(placentone_no, 2) ! location 2 is artery
         centre(2) = 0.0_db
         
         ! Angle and radius from ellipse centre to point.
@@ -334,13 +337,13 @@ module problem_options_geometry
         r     = sqrt((x - centre(1))**2 + (y - centre(2))**2)
         
         ! Semi-major and semi-minor axes for all 3 ellipses.
-        a2 = (central_cavity_width + central_cavity_transition)/2
-        b2 = a2*2
+        a1 = central_cavity_widths(placentone_no) /2.0_db
+        b1 = central_cavity_heights(placentone_no)/2.0_db
         
-        a0 = a2 -   central_cavity_transition  
-        a1 = a2 -   central_cavity_transition/2
-        b0 = b2 - 2*central_cavity_transition  
-        b1 = b2 - 2*central_cavity_transition/2
+        a0 = a1 - central_cavity_transition/2.0_db
+        a2 = a1 + central_cavity_transition/2.0_db
+        b0 = b1 - central_cavity_transition*central_cavity_ratios(placentone_no)/2.0_db
+        b2 = b1 + central_cavity_transition*central_cavity_ratios(placentone_no)/2.0_db
         
         ! Scaled "radius" for ellispe.
         r0 = a0*b0/sqrt(a0**2*sin(theta)**2 + b0**2*cos(theta)**2)
@@ -422,9 +425,6 @@ module problem_options_geometry
             print *, "element_region_id = ", element_region_id
             stop
         end if
-
-        ! print *, "PLACENTA POINT = ", placenta_point
-        ! print *, "PLACENTONE NO = ", placentone_no
         
         translate_placenta_to_placentone_point(1) =   (placenta_point(1) - x_centre)*sin(translate_angle) &
         + (placenta_point(2) - y_centre)*cos(translate_angle)
@@ -436,8 +436,6 @@ module problem_options_geometry
         translate_placenta_to_placentone_point = translate_placenta_to_placentone_point/scaling_factor
 
         translate_placenta_to_placentone_point(1) = translate_placenta_to_placentone_point(1) + vessel_locations(placentone_no, 2)
-
-        ! print *, "TRANSLATED POINT = ", translate_placenta_to_placentone_point
     end function
     
     function translate_placentone_3d_to_placentone_point(problem_dim, placenta_point, element_region_id)

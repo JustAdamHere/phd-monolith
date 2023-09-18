@@ -174,20 +174,38 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location,
 
 	# Structural parameters.
 	# set_parameter.set_parameter("velocity-transport", geometry, 93, f"artery_location {artery_location:.4f}")
-	set_parameter.set_parameter("velocity-transport", geometry, 93, f"central_cavity_width {central_cavity_width}")
-	set_parameter.set_parameter("velocity-transport", geometry, 94, f"central_cavity_height {central_cavity_height}")
-	set_parameter.set_parameter("velocity-transport", geometry, 95, f"central_cavity_transition {central_cavity_transition}")
-	set_parameter.set_parameter("velocity-transport", geometry, 96, f"pipe_transition {pipe_transition}")
-	set_parameter.set_parameter("velocity-transport", geometry, 97, f"artery_length {artery_length}")
-	set_parameter.set_parameter("velocity-transport", geometry, 98, f"log_cavity_transition .{str(log_cavity_transition).lower()}.")
+	# set_parameter.set_parameter("velocity-transport", geometry, 93, f"central_cavity_width {central_cavity_width}")
+	# set_parameter.set_parameter("velocity-transport", geometry, 94, f"central_cavity_height {central_cavity_height}")
+	set_parameter.set_parameter("velocity-transport", geometry, 93, f"central_cavity_transition {central_cavity_transition}")
+	set_parameter.set_parameter("velocity-transport", geometry, 94, f"pipe_transition {pipe_transition}")
+	set_parameter.set_parameter("velocity-transport", geometry, 95, f"artery_length {artery_length}")
+	set_parameter.set_parameter("velocity-transport", geometry, 96, f"log_cavity_transition .{str(log_cavity_transition).lower()}.")
+
+	# Parameters per-placentone.
+	if (type(central_cavity_width) == list):
+		central_cavity_widths = central_cavity_width
+	else:
+		central_cavity_widths = [central_cavity_width] * no_placentones
+
+	if (type(central_cavity_height) == list):
+		central_cavity_heights = central_cavity_height
+	else:
+		central_cavity_heights = [central_cavity_height] * no_placentones
+		
+	for i in range(no_placentones):
+		set_parameter.set_parameter("velocity-transport", geometry, 98+i, f"central_cavity_width_{i+1} {central_cavity_widths[i]}")
+		set_parameter.set_parameter("velocity-transport", geometry, 106+i, f"central_cavity_height_{i+1} {central_cavity_heights[i]}")
+		set_parameter.set_parameter("velocity-transport", geometry, 114+i, f"vein_location_{i+1}1 {0.2}")
+		set_parameter.set_parameter("velocity-transport", geometry, 122+i, f"artery_location_{i+1} {0.5}")
+		set_parameter.set_parameter("velocity-transport", geometry, 130+i, f"vein_location_{i+1}2 {0.8}")
 
 	# Setup time dependence.
-	set_parameter.set_parameter("velocity-transport", geometry, 130, f"dirk_final_time {final_time}")
-	set_parameter.set_parameter("velocity-transport", geometry, 131, f"dirk_number_of_timesteps {no_time_steps}")
+	set_parameter.set_parameter("velocity-transport", geometry, 144, f"dirk_final_time {final_time}")
+	set_parameter.set_parameter("velocity-transport", geometry, 145, f"dirk_number_of_timesteps {no_time_steps}")
 
 	# Linear solver.
-	set_parameter.set_parameter("velocity-transport", geometry, 148, f"linear_solver {linear_solver}")
-	set_parameter.set_parameter("velocity-transport", geometry, 167, f"linear_solver {linear_solver}")
+	set_parameter.set_parameter("velocity-transport", geometry, 162, f"linear_solver {linear_solver}")
+	set_parameter.set_parameter("velocity-transport", geometry, 181, f"linear_solver {linear_solver}")
 
 	from miscellaneous import get_current_run_no, save_output, output, raise_error, get_dofs, get_newton_residual, get_newton_iterations
 	import subprocess

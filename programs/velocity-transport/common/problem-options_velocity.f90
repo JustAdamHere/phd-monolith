@@ -101,7 +101,7 @@ contains
         integer, intent(in)                          :: boundary_no
         real(db), intent(in)                         :: t
 
-        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, 511)
+        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, 512)
 
     end subroutine
 

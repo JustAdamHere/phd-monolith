@@ -6,13 +6,14 @@ module problem_options
     real(db)          :: interior_penalty_parameter
     integer           :: no_uniform_refinements_cavity, no_uniform_refinements_everywhere, no_uniform_refinements_inlet
     logical           :: velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_transport, moving_mesh
-    real(db)          :: final_local_time, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition
+    real(db)          :: final_local_time, central_cavity_transition, pipe_transition !central_cavity_width, central_cavity_height
     integer           :: no_time_steps
     integer           :: no_placentones
     character(len=20) :: geometry_name, assembly_name
     logical           :: compute_ss_flag
 
     real(db), dimension(:, :), allocatable :: vessel_locations
+    real(db), dimension(:), allocatable    :: central_cavity_widths, central_cavity_heights
 
     contains
     subroutine get_user_data(section_name, aptofem_stored_keys)
@@ -44,10 +45,10 @@ module problem_options
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('compute_transport',                 compute_transport,                 section_name, &
             aptofem_stored_keys, ierr)
-        call get_aptofem_key_definition('central_cavity_width',              central_cavity_width,              section_name, &
-            aptofem_stored_keys, ierr)
-        call get_aptofem_key_definition('central_cavity_height',             central_cavity_height,             section_name, &
-            aptofem_stored_keys, ierr)
+        ! call get_aptofem_key_definition('central_cavity_width',              central_cavity_width,              section_name, &
+        !     aptofem_stored_keys, ierr)
+        ! call get_aptofem_key_definition('central_cavity_height',             central_cavity_height,             section_name, &
+        !     aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('central_cavity_transition',         central_cavity_transition,         section_name, &
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('pipe_transition',                   pipe_transition,                   section_name, &
@@ -74,13 +75,24 @@ module problem_options
                 aptofem_stored_keys, ierr)
         end do
 
+        allocate(central_cavity_widths(7))
+        allocate(central_cavity_heights(7))
+        do i = 1, 7
+            write(temp_integer, '(I1)') i
+
+            call get_aptofem_key_definition('central_cavity_width_'  // temp_integer, central_cavity_widths(i),  section_name, &
+                aptofem_stored_keys, ierr)
+            call get_aptofem_key_definition('central_cavity_height_' // temp_integer, central_cavity_heights(i), section_name, &
+                aptofem_stored_keys, ierr)
+        end do
+
         compute_ss_flag = .true.
     end subroutine
 
     subroutine finalise_user_data()
         implicit none
 
-        deallocate(vessel_locations)
+        deallocate(vessel_locations, central_cavity_heights, central_cavity_widths)
     end subroutine
 
     function smooth_tanh_function(x, steepness, x0, x2)

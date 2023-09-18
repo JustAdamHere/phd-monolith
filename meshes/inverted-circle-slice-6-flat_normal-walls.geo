@@ -118,12 +118,23 @@ If (no_placentones == 7)
 	// Central cavity sizes.
 	central_cavity_widths  = {};
 	central_cavity_heights = {};
+	central_cavity_ratios  = {};
 	For k In {no_placentones-1:Floor(no_placentones/2):-1}
-		width = central_cavity_width*ratio^Fabs(k-Floor(no_placentones/2));
-		central_cavity_widths += {width};
+		If (Exists(central_cavity_width~{k+1}))
+			central_cavity_widths += {central_cavity_width~{k+1}};
+		Else
+			width = central_cavity_width*ratio^Fabs(k-Floor(no_placentones/2));
+			central_cavity_widths += {width};
+		EndIf
 
-		height = central_cavity_height*ratio^Fabs(k-Floor(no_placentones/2));
-		central_cavity_heights += {height};
+		If (Exists(central_cavity_height~{k+1}))
+			central_cavity_heights += {central_cavity_height~{k+1}};
+		Else
+			height = central_cavity_height*ratio^Fabs(k-Floor(no_placentones/2));
+			central_cavity_heights += {height};
+		EndIf
+
+		central_cavity_ratios += {central_cavity_heights[k]/central_cavity_widths[k]};
 	EndFor
 	For k In {Floor(no_placentones/2)-1:0:-1}
 		width = central_cavity_width*ratio^Fabs(k-Floor(no_placentones/2));
@@ -131,6 +142,8 @@ If (no_placentones == 7)
 
 		height = central_cavity_height*ratio^Fabs(k-Floor(no_placentones/2));
 		central_cavity_heights += {height};
+
+		central_cavity_ratios += {central_cavity_heights[k]/central_cavity_widths[k]};
 	EndFor
 
 ElseIf (no_placentones == 6)
@@ -154,6 +167,7 @@ ElseIf (no_placentones == 6)
 	// Central cavity sizes.
 	central_cavity_widths  = {0, 0, 0, 0, 0, 0};
 	central_cavity_heights = {0, 0, 0, 0, 0, 0};
+	central_cavity_ratios  = {0, 0, 0, 0, 0, 0};
 	For k In {0:Ceil(no_placentones/2)-1:1}
 		If (!Exists(central_cavity_width~{k+1}))
 			central_cavity_width~{k+1} = central_cavity_width*ratio^(2-k);
@@ -174,6 +188,9 @@ ElseIf (no_placentones == 6)
 
 		central_cavity_heights[k]                  = central_cavity_height~{k+1};
 		central_cavity_heights[no_placentones-1-k] = central_cavity_height~{no_placentones-k};
+
+		central_cavity_ratios[k]                  = central_cavity_heights[k]/central_cavity_widths[k];
+		central_cavity_ratios[no_placentones-1-k] = central_cavity_heights[no_placentones-1-k]/central_cavity_widths[no_placentones-1-k];
 	EndFor
 EndIf
 
@@ -493,11 +510,11 @@ For k In {0:no_placentones-1:1}
 	cavity_x_2 += {(location_2_x_1[k] + location_2_x_2[k])/2};
 	cavity_y_2 += {centre_y - (radius^2 - (centre_x - cavity_x_2[k])^2)^0.5};
 
-	cavity_x_1 += {centre_x + radius*Cos(theta_pipe[k*3+1] + ((central_cavity_widths[k] + central_cavity_transition)/2)/radius)};
-	cavity_y_1 += {centre_y - radius*Sin(theta_pipe[k*3+1] + ((central_cavity_widths[k] + central_cavity_transition)/2)/radius)};
+	cavity_x_1 += {centre_x + radius*Cos(theta_pipe[k*3+1] + ((central_cavity_widths[k])/2)/radius)};
+	cavity_y_1 += {centre_y - radius*Sin(theta_pipe[k*3+1] + ((central_cavity_widths[k])/2)/radius)};
 
-	cavity_x_3 += {centre_x + radius*Cos(theta_pipe[k*3+1] - ((central_cavity_widths[k] + central_cavity_transition)/2)/radius)};
-	cavity_y_3 += {centre_y - radius*Sin(theta_pipe[k*3+1] - ((central_cavity_widths[k] + central_cavity_transition)/2)/radius)};
+	cavity_x_3 += {centre_x + radius*Cos(theta_pipe[k*3+1] - ((central_cavity_widths[k])/2)/radius)};
+	cavity_y_3 += {centre_y - radius*Sin(theta_pipe[k*3+1] - ((central_cavity_widths[k])/2)/radius)};
 EndFor
 
 ////////////////////////////////////////
@@ -579,28 +596,29 @@ For k In {0:no_placentones-1:1}
 
 	// Essentially, a nasty hack that works. Is it so bad if it works?
 	If (no_placentones % 2 != 0 && k == Floor(no_placentones/2))
-		Point(offset + 19) = {cavity_x_1[k], cavity_y_1[k], 0, h_cavity_outer};
-		Point(offset + 42) = {cavity_x_1[k] - (central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] - (central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_inner};
-		Point(offset + 43) = {cavity_x_1[k] - (central_cavity_transition)  *Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] - (central_cavity_transition)  *Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_outer};
+		Point(offset + 19) = {cavity_x_1[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_inner};
+		Point(offset + 42) = {cavity_x_1[k], cavity_y_1[k], 0, h_cavity_outer};
+		Point(offset + 43) = {cavity_x_1[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_outer};
 	Else
-		Point(offset + 19) = {cavity_x_1[k], cavity_y_1[k], 0, h_cavity_outer};
-		Point(offset + 42) = {cavity_x_1[k] + (central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] + (central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_inner};
-		Point(offset + 43) = {cavity_x_1[k] + (central_cavity_transition)  *Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] + (central_cavity_transition)  *Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_outer};
+		Point(offset + 19) = {cavity_x_1[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_inner};
+		Point(offset + 42) = {cavity_x_1[k], cavity_y_1[k], 0, h_cavity_outer};
+		Point(offset + 43) = {cavity_x_1[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_outer};
 	EndIf
 
 	Point(offset + 22) = {cavity_x_2[k], cavity_y_2[k], 0, h_artery_top};
-	Point(offset + 21) = {cavity_x_3[k], cavity_y_3[k], 0, h_cavity_outer};
-	Point(offset + 44) = {cavity_x_3[k] - (central_cavity_transition/2)*Sin(theta3), centre_y - (radius^2 - (cavity_x_3[k] - (central_cavity_transition/2)*Sin(theta3) - centre_x)^2)^0.5, 0, h_cavity_inner};
-	Point(offset + 45) = {cavity_x_3[k] - (central_cavity_transition)  *Sin(theta3), centre_y - (radius^2 - (cavity_x_3[k] - (central_cavity_transition)  *Sin(theta3) - centre_x)^2)^0.5, 0, h_cavity_outer};
+
+	Point(offset + 21) = {cavity_x_3[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta3), centre_y - (radius^2 - (cavity_x_3[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta3) - centre_x)^2)^0.5, 0, h_cavity_inner};
+	Point(offset + 44) = {cavity_x_3[k], cavity_y_3[k], 0, h_cavity_outer};
+	Point(offset + 45) = {cavity_x_3[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta3), centre_y - (radius^2 - (cavity_x_3[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta3) - centre_x)^2)^0.5, 0, h_cavity_outer};
 	If (artery[k] == 1)
 		If (no_placentones % 2 != 0 && k == Floor(no_placentones/2))
-			Point(offset + 20) = {cavity_x_2[k] + (central_cavity_heights[k]/2 + central_cavity_transition)*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2 + central_cavity_transition)*Sin(theta2), 0, h_cavity_outer};
+			Point(offset + 20) = {cavity_x_2[k] + (central_cavity_heights[k]/2 + placentone_widths[k]*central_cavity_transition*central_cavity_ratios[k]/2)*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2 + placentone_widths[k]*central_cavity_transition*central_cavity_ratios[k]/2)*Sin(theta2), 0, h_cavity_outer};
 			Point(offset + 25) = {cavity_x_2[k] + (central_cavity_heights[k]/2                            )*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2                            )*Sin(theta2), 0, h_cavity_inner};
-			Point(offset + 26) = {cavity_x_2[k] + (central_cavity_heights[k]/2 - central_cavity_transition)*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2 - central_cavity_transition)*Sin(theta2), 0, h_cavity_outer};
+			Point(offset + 26) = {cavity_x_2[k] + (central_cavity_heights[k]/2 - placentone_widths[k]*central_cavity_transition*central_cavity_ratios[k]/2)*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2 - placentone_widths[k]*central_cavity_transition*central_cavity_ratios[k]/2)*Sin(theta2), 0, h_cavity_outer};
 		Else
-			Point(offset + 20) = {cavity_x_2[k] - (central_cavity_heights[k]/2 + central_cavity_transition)*Cos(theta2), cavity_y_2[k] + (central_cavity_heights[k]/2 + central_cavity_transition)*Sin(theta2), 0, h_cavity_outer};
+			Point(offset + 20) = {cavity_x_2[k] - (central_cavity_heights[k]/2 + placentone_widths[k]*central_cavity_transition*central_cavity_ratios[k]/2)*Cos(theta2), cavity_y_2[k] + (central_cavity_heights[k]/2 + placentone_widths[k]*central_cavity_transition*central_cavity_ratios[k]/2)*Sin(theta2), 0, h_cavity_outer};
 			Point(offset + 25) = {cavity_x_2[k] - (central_cavity_heights[k]/2                            )*Cos(theta2), cavity_y_2[k] + (central_cavity_heights[k]/2                            )*Sin(theta2), 0, h_cavity_inner};
-			Point(offset + 26) = {cavity_x_2[k] - (central_cavity_heights[k]/2 - central_cavity_transition)*Cos(theta2), cavity_y_2[k] + (central_cavity_heights[k]/2 - central_cavity_transition)*Sin(theta2), 0, h_cavity_outer};
+			Point(offset + 26) = {cavity_x_2[k] - (central_cavity_heights[k]/2 - placentone_widths[k]*central_cavity_transition*central_cavity_ratios[k]/2)*Cos(theta2), cavity_y_2[k] + (central_cavity_heights[k]/2 - placentone_widths[k]*central_cavity_transition*central_cavity_ratios[k]/2)*Sin(theta2), 0, h_cavity_outer};
 		EndIf
 	EndIf
 EndFor

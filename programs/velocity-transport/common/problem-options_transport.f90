@@ -145,6 +145,7 @@ contains
 
         real(db)               :: steepness
         real(db), dimension(2) :: translated_point
+        integer                :: placentone_no
 
         steepness = 0.999_db
 
@@ -160,7 +161,7 @@ contains
                     calculate_placentone_pipe_transition(global_point, problem_dim, element_region_id, steepness)
             else if (500 <= element_region_id .and. element_region_id <= 599) then
                 calculate_transport_reaction_coefficient = transport_reaction_coefficient* &
-                    calculate_placentone_cavity_transition(global_point, problem_dim, element_region_id, steepness)
+                    calculate_placentone_cavity_transition(global_point, problem_dim, element_region_id, steepness, 1)
             else
                 print *, "Error in calculate_transport_reaction_coefficient. Missed case."
                 print *, "element_region_id = ", element_region_id
@@ -182,10 +183,12 @@ contains
                     calculate_placentone_pipe_transition(translated_point, problem_dim, element_region_id, steepness)
 
             else if (500 <= element_region_id .and. element_region_id <= 599) then
+                placentone_no    = mod(element_region_id, 10)
                 translated_point = translate_placenta_to_placentone_point(problem_dim, global_point, element_region_id)
 
                 calculate_transport_reaction_coefficient = transport_reaction_coefficient* &
-                    calculate_placentone_cavity_transition(translated_point, problem_dim, element_region_id, steepness)
+                    calculate_placentone_cavity_transition(translated_point, problem_dim, element_region_id, steepness, &
+                        placentone_no)
 
             else
                 print *, "Error in calculate_nsku_reaction_coefficient. Missed case."
