@@ -5,7 +5,7 @@ module problem_options_geometry
     save
     
     real(db)                               :: placentone_width, wall_width, placenta_width, placenta_height, wall_height, &
-        artery_width_sm, artery_length, ms_pipe_width, x_centre, y_centre, boundary_radius, inflation_ratio
+        artery_length, ms_pipe_width, x_centre, y_centre, boundary_radius, inflation_ratio
     real(db), dimension(:), allocatable    :: placentone_widths, cumulative_placentone_widths, central_cavity_ratios
     real(db), dimension(:, :, :), allocatable :: vessel_tops
     real(db), dimension(:, :), allocatable    :: vessel_angles, single_cavity_tops
@@ -25,7 +25,6 @@ module problem_options_geometry
         
         ! TODO: THIS NEEDS TO CHANGE BASED ON USER INPUT.
         placentone_width = 1.0_db                        ! 40 mm
-        artery_width_sm = 0.0125_db*placentone_width     ! 0.5mm
         artery_length   = 0.25_db*placentone_width       ! 10mm
         if (trim(control_file) == 'placenta') then
             wall_width       = 0.075_db*placentone_width ! 3  mm

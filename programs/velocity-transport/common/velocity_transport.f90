@@ -278,7 +278,7 @@ program velocity_transport
         else if (no_reynold_ramp_steps == 2) then
             allocate(steps(2))
             steps(1) = 0.0_db
-            steps(2) = 1.0_db
+            steps(2) = 1.0_db - reynold_ramp_start_ratio
             ratio    = reynold_ramp_start_ratio
         else
             ! Creates "base steps" of size 0.1 through to 0.01 between different Reynolds numbers.

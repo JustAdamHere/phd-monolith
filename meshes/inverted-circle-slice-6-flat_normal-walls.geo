@@ -1,7 +1,7 @@
 // TODO: Need to fix surface numbers for septal veins when no_placetones = 7.
 // TODO: Add fillets for septal veins.
 
-SetFactory("OpenCASCADE");
+//SetFactory("OpenCASCADE");
 
 //=/=/=/=/=/=/=/=/=/=//
 //=/ OUTPUT FORMAT /=//
@@ -29,7 +29,6 @@ wall_width            = 0.075*placentone_width;            // 3  mm
 // placenta_width     = 6*placentone_width + 5*wall_width; // 255mm
 placenta_width        = 5.5;                               // 220mm
 ms_pipe_width         = 0.075*placentone_width;            // 3  mm
-artery_width_sm       = 0.0125*placentone_width;           // 0.5mm
 artery_length         = 0.25*placentone_width;             // 10 mm
 artery_length_diverge = 0.075*placentone_width;            // 3  mm
 vein_width            = 0.0375*placentone_width;           // 1.5mm
@@ -47,6 +46,9 @@ EndIf
 // Default artery width.
 If (!Exists(artery_width))
 	artery_width = 0.06*placentone_width; // 2.4mm
+EndIf
+If (!Exists(artery_width_sm))
+	artery_width_sm = 0.0125*placentone_width; // 0.5mm
 EndIf
 
 // Default cavity size.
@@ -720,17 +722,31 @@ For k In {0:no_placentones-1:1}
 
 		Point(numbering_start + k*placentone_step + 58)  = {location_2_x_pipe1_mid[k] + fillet_radius*Cos(phi + theta21b),                      location_2_y_pipe1_mid[k] + fillet_radius*Sin(phi + theta21b),                      0, h_artery_middle};
 		Point(numbering_start + k*placentone_step + 59)  = {location_2_x_pipe1_mid[k] - fillet_radius*Cos(theta21b),                            location_2_y_pipe1_mid[k] - fillet_radius*Sin(theta21b),                            0, h_artery_middle};
-		Point(numbering_start + k*placentone_step + 60)  = {location_2_x_pipe1_mid[k] + Tan(Pi/2 + phi/2)*fillet_radius*Sin(phi/2 + theta21b),  location_2_y_pipe1_mid[k] - Tan(Pi/2 + phi/2)*fillet_radius*Cos(phi/2 + theta21b),  0, 1};
+		If (artery_width > artery_width_sm)
+			Point(numbering_start + k*placentone_step + 60)  = {location_2_x_pipe1_mid[k] + Tan(Pi/2 + phi/2)*fillet_radius*Sin(phi/2 + theta21b),  location_2_y_pipe1_mid[k] - Tan(Pi/2 + phi/2)*fillet_radius*Cos(phi/2 + theta21b),  0, 1};
+		EndIf
 		Point(numbering_start + k*placentone_step + 61)  = {location_2_x_pipe2_mid[k] - fillet_radius*Cos(theta22b),                            location_2_y_pipe2_mid[k] - fillet_radius*Sin(theta22b),                            0, h_artery_middle};
 		Point(numbering_start + k*placentone_step + 62)  = {location_2_x_pipe2_mid[k] + fillet_radius*Cos(-phi + theta22b),                     location_2_y_pipe2_mid[k] + fillet_radius*Sin(-phi + theta22b),                     0, h_artery_middle};
-		Point(numbering_start + k*placentone_step + 63)  = {location_2_x_pipe2_mid[k] - Tan(Pi/2 + phi/2)*fillet_radius*Sin(-phi/2 + theta22b), location_2_y_pipe2_mid[k] - Tan(Pi/2 - phi/2)*fillet_radius*Cos(-phi/2 + theta22b), 0, 1};
+		If (artery_width > artery_width_sm)
+			Point(numbering_start + k*placentone_step + 63)  = {location_2_x_pipe2_mid[k] - Tan(Pi/2 + phi/2)*fillet_radius*Sin(-phi/2 + theta22b), location_2_y_pipe2_mid[k] - Tan(Pi/2 - phi/2)*fillet_radius*Cos(-phi/2 + theta22b), 0, 1};
+		EndIf
 
 		Point(numbering_start + k*placentone_step + 64) = {centre_x - radius*Cos(theta21t - fillet_radius/radius), centre_y - radius*Sin(theta21t - fillet_radius/radius), 0, h_artery_top};
 		Point(numbering_start + k*placentone_step + 65) = {location_2_x_1[k] - fillet_radius*Cos(phi + theta21t), location_2_y_1[k] - fillet_radius*Sin(phi + theta21t), 0, h_artery_top};
-		Point(numbering_start + k*placentone_step + 66) = {location_2_x_1[k] - Tan(Pi/4 + phi)*fillet_radius*Sin((Pi/2 + phi)/2 + theta21t - (1-weighting_guess)*fillet_radius/radius), location_2_y_1[k] + Tan(Pi/4 + phi)*fillet_radius*Cos((Pi/2 + phi)/2 + theta21t - (1-weighting_guess)*fillet_radius/radius), 0, 1};
+		If (artery_width > artery_width_sm)
+			Point(numbering_start + k*placentone_step + 66) = {location_2_x_1[k] - Tan(Pi/4 + phi)*fillet_radius*Sin((Pi/2 + phi)/2 + theta21t - (1-weighting_guess)*fillet_radius/radius), location_2_y_1[k] + Tan(Pi/4 + phi)*fillet_radius*Cos((Pi/2 + phi)/2 + theta21t - (1-weighting_guess)*fillet_radius/radius), 0, 1};
+		Else
+			// Another nasty hack.
+			Point(numbering_start + k*placentone_step + 66) = {centre_x - (radius+fillet_radius+0.0000201)*Cos(theta21t - fillet_radius/radius), centre_y - (radius+fillet_radius+0.0000201)*Sin(theta21t - fillet_radius/radius), 0, 1};
+		EndIf
 		Point(numbering_start + k*placentone_step + 67) = {location_2_x_2[k] - fillet_radius*Cos(-phi + theta22t), location_2_y_2[k] - fillet_radius*Sin(-phi + theta22t), 0, h_artery_top};
 		Point(numbering_start + k*placentone_step + 68) = {centre_x - radius*Cos(theta22t + fillet_radius/radius), centre_y - radius*Sin(theta22t + fillet_radius/radius), 0, h_artery_top};
-		Point(numbering_start + k*placentone_step + 69) = {location_2_x_2[k] + Tan(Pi/4 + phi)*fillet_radius*Sin(-Pi/4 - phi/2 + theta22t + (1-weighting_guess)*fillet_radius/radius), location_2_y_2[k] - Tan(Pi/4 + phi)*fillet_radius*Cos(-Pi/4 - phi/2 + theta22t + (1-weighting_guess)*fillet_radius/radius), 0, 1};
+		If (artery_width > artery_width_sm)
+			Point(numbering_start + k*placentone_step + 69) = {location_2_x_2[k] + Tan(Pi/4 + phi)*fillet_radius*Sin(-Pi/4 - phi/2 + theta22t + (1-weighting_guess)*fillet_radius/radius), location_2_y_2[k] - Tan(Pi/4 + phi)*fillet_radius*Cos(-Pi/4 - phi/2 + theta22t + (1-weighting_guess)*fillet_radius/radius), 0, 1};
+		Else
+			// Another nasty hack.
+			Point(numbering_start + k*placentone_step + 69) = {centre_x - (radius+fillet_radius+0.0000201)*Cos(theta22t + fillet_radius/radius), centre_y - (radius+fillet_radius+0.0000201)*Sin(theta22t + fillet_radius/radius), 0, 1};
+		EndIf
 	EndIf
 EndFor
 
@@ -947,8 +963,13 @@ For k In {0:no_placentones-1:1}
 	EndIf
 
 	If (artery[k] == 1)
-		Circle(offset + 61) = {offset + 58, offset + 60, offset + 59};
-		Circle(offset + 62) = {offset + 61, offset + 63, offset + 62};
+		If (artery_width > artery_width_sm)
+			Circle(offset + 61) = {offset + 58, offset + 60, offset + 59};
+			Circle(offset + 62) = {offset + 61, offset + 63, offset + 62};
+		Else
+			Line(offset + 61) = {offset + 58, offset + 59};
+			Line(offset + 62) = {offset + 61, offset + 62};
+		EndIf
 
 		Circle(offset + 63) = {offset + 64, offset + 66, offset + 65};
 		Circle(offset + 64) = {offset + 67, offset + 69, offset + 68};
