@@ -29,7 +29,7 @@ contains
 
     end subroutine
 
-    subroutine project_uptake_300(u, global_point, problem_dim, no_vars, boundary_no, t)
+    subroutine project_uptake(u, global_point, problem_dim, no_vars, boundary_no, t, element_region_id)
         implicit none
 
         real(db), dimension(no_vars), intent(out)    :: u
@@ -38,34 +38,9 @@ contains
         integer, intent(in)                          :: no_vars
         integer, intent(in)                          :: boundary_no
         real(db), intent(in)                         :: t
+        integer, intent(in)                          :: element_region_id
 
-        u = calculate_transport_reaction_coefficient(global_point, problem_dim, 300)
-    end subroutine
-
-    subroutine project_uptake_400(u, global_point, problem_dim, no_vars, boundary_no, t)
-        implicit none
-
-        real(db), dimension(no_vars), intent(out)    :: u
-        real(db), dimension(problem_dim), intent(in) :: global_point
-        integer, intent(in)                          :: problem_dim
-        integer, intent(in)                          :: no_vars
-        integer, intent(in)                          :: boundary_no
-        real(db), intent(in)                         :: t
-
-        u = calculate_transport_reaction_coefficient(global_point, problem_dim, 411)
-    end subroutine
-
-    subroutine project_uptake_500(u, global_point, problem_dim, no_vars, boundary_no, t)
-        implicit none
-
-        real(db), dimension(no_vars), intent(out)    :: u
-        real(db), dimension(problem_dim), intent(in) :: global_point
-        integer, intent(in)                          :: problem_dim
-        integer, intent(in)                          :: no_vars
-        integer, intent(in)                          :: boundary_no
-        real(db), intent(in)                         :: t
-
-        u = calculate_transport_reaction_coefficient(global_point, problem_dim, 501)
+        u = calculate_transport_reaction_coefficient(global_point, problem_dim, element_region_id)
     end subroutine
 
     subroutine calculate_convective_velocity(velocity, global_point, problem_dim, element_no, mesh_data)

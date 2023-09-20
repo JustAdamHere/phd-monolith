@@ -57,7 +57,7 @@ contains
         end if
     end subroutine
 
-    subroutine project_permeability_300(u, global_point, problem_dim, no_vars, boundary_no, t)
+    subroutine project_permeability(u, global_point, problem_dim, no_vars, boundary_no, t, element_region_id)
         use fe_mesh
 
         implicit none
@@ -68,40 +68,9 @@ contains
         integer, intent(in)                          :: no_vars
         integer, intent(in)                          :: boundary_no
         real(db), intent(in)                         :: t
+        integer, intent(in)                          :: element_region_id
 
-        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, 301)
-
-    end subroutine
-
-    subroutine project_permeability_400(u, global_point, problem_dim, no_vars, boundary_no, t)
-        use fe_mesh
-
-        implicit none
-
-        real(db), dimension(no_vars), intent(out)    :: u
-        real(db), dimension(problem_dim), intent(in) :: global_point
-        integer, intent(in)                          :: problem_dim
-        integer, intent(in)                          :: no_vars
-        integer, intent(in)                          :: boundary_no
-        real(db), intent(in)                         :: t
-
-        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, 423)
-
-    end subroutine
-
-    subroutine project_permeability_500(u, global_point, problem_dim, no_vars, boundary_no, t)
-        use fe_mesh
-
-        implicit none
-
-        real(db), dimension(no_vars), intent(out)    :: u
-        real(db), dimension(problem_dim), intent(in) :: global_point
-        integer, intent(in)                          :: problem_dim
-        integer, intent(in)                          :: no_vars
-        integer, intent(in)                          :: boundary_no
-        real(db), intent(in)                         :: t
-
-        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, 512)
+        u = calculate_velocity_reaction_coefficient(global_point, problem_dim, element_region_id)
 
     end subroutine
 
@@ -161,20 +130,25 @@ contains
             translated_point = 0.0_db
         end if
 
+        ! IVS.
         if (300 <= element_region_id .and. element_region_id <= 399) then
             calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
                 1.0_db
+        ! Arteries.
         else if (element_region_id == 412 .or. element_region_id == 422 .or. element_region_id == 432 .or. &
                  element_region_id == 442 .or. element_region_id == 452 .or. element_region_id == 462 .or. &
                  element_region_id == 472) then
             calculate_velocity_reaction_coefficient = &
                 0.0_db
+        ! Veins.
         else if (400 <= element_region_id .and. element_region_id <= 499) then
             calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
                 calculate_placentone_pipe_transition(translated_point, problem_dim, element_region_id, steepness)
+        ! Cavities.
         else if (500 <= element_region_id .and. element_region_id <= 509) then
             calculate_velocity_reaction_coefficient = &
                 0.0_db
+        ! Cavity transitions.
         else if (510 <= element_region_id .and. element_region_id <= 527) then
             placentone_no = mod(element_region_id, 10)
             calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &

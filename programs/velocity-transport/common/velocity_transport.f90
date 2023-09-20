@@ -13,6 +13,7 @@ program velocity_transport
     use outflow_flux
     use outflow_transport_flux
     use integrate_transport_reaction
+    use projections
 
     use matrix_rhs_transport
     use matrix_rhs_transport_ss
@@ -62,6 +63,8 @@ program velocity_transport
     character(len=100) :: temp_string1, temp_string2
 
     integer :: no_command_line_arguments
+
+    real(db) :: current_time, time_step
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! COMMAND LINE ARGUMENTS !!
@@ -171,14 +174,8 @@ program velocity_transport
         call create_fe_solution(solution_permeability, mesh_data, 'fe_projection_permeability', aptofem_stored_keys, &
             anal_soln_transport, get_boundary_no_transport) ! Doesn't matter what dirichlet bc is passed.
 
-        call project_function(solution_permeability, mesh_data, project_permeability_300)
-        call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 300, mesh_data, solution_permeability)
-
-        call project_function(solution_permeability, mesh_data, project_permeability_400)
-        call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 400, mesh_data, solution_permeability)
-
-        call project_function(solution_permeability, mesh_data, project_permeability_500)
-        call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 500, mesh_data, solution_permeability)
+        call project_function_region_id(solution_permeability, mesh_data, project_permeability)
+        call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 0, mesh_data, solution_permeability)
 
         call delete_solution(solution_permeability)
     end if
@@ -190,14 +187,8 @@ program velocity_transport
         call create_fe_solution(solution_uptake, mesh_data, 'fe_projection_uptake', aptofem_stored_keys, &
             anal_soln_transport, get_boundary_no_transport) ! Doesn't matter what dirichlet bc is passed.
 
-        call project_function(solution_uptake, mesh_data, project_uptake_300)
-        call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, 300, mesh_data, solution_uptake)
-
-        call project_function(solution_uptake, mesh_data, project_uptake_400)
-        call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, 400, mesh_data, solution_uptake)
-
-        call project_function(solution_uptake, mesh_data, project_uptake_500)
-        call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, 500, mesh_data, solution_uptake)
+        call project_function_region_id(solution_uptake, mesh_data, project_uptake)
+        call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, 0, mesh_data, solution_uptake)
 
         call delete_solution(solution_uptake)
     end if
@@ -205,6 +196,13 @@ program velocity_transport
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! VELOCITY PROBLEM SETUP AND INITIAL CONDITION !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    current_time = 0.0_db
+    if (no_time_steps == 0) then
+        time_step = 0.0_db
+    else
+        time_step = final_local_time/real(no_time_steps, db)
+    end if    
+
     if (compute_velocity) then
         call create_fe_solution(solution_velocity, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, &
             dirichlet_bc_velocity)
@@ -216,11 +214,11 @@ program velocity_transport
         call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
             aptofem_stored_keys, sp_matrix_rhs_data_velocity, 2, scheme_data_velocity)
 
-        solution_velocity%current_time    = 0.0_db
-        scheme_data_velocity%current_time = 0.0_db
-        scheme_data_velocity%time_step    = 0.1_db
+        solution_velocity%current_time    = current_time
+        scheme_data_velocity%current_time = current_time
+        scheme_data_velocity%time_step    = time_step
 
-        call set_current_time(solution_velocity, 0.0_db)
+        call set_current_time(solution_velocity, current_time)
 
         if (velocity_ic_from_ss) then
             if (trim(assembly_name) == 'nsb') then
@@ -386,7 +384,7 @@ program velocity_transport
         call create_fe_solution(solution_transport, mesh_data, 'fe_solution_transport', aptofem_stored_keys, &
             anal_soln_transport, get_boundary_no_transport)
 
-        call set_current_time(solution_transport, 0.0_db)
+        call set_current_time(solution_transport, current_time)
 
         call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
             aptofem_stored_keys, sp_matrix_rhs_data_transport, 1, scheme_data_transport)
@@ -448,12 +446,8 @@ program velocity_transport
             stiffness_matrix_load_vector_face_transport, 1)
 
         ! Storage for transport timestepping.
-        if (no_time_steps == 0) then
-            scheme_data_transport%time_step = 0.0_db
-        else
-            scheme_data_transport%time_step = final_local_time/real(no_time_steps, db)
-        end if
-        scheme_data_transport%current_time = 0.0_db
+        scheme_data_transport%time_step    = time_step
+        scheme_data_transport%current_time = current_time
         no_dofs_transport                  = get_no_dofs(solution_transport)
 
         allocate(scheme_data_transport%temp_real_array(1, no_dofs_transport))
@@ -542,26 +536,55 @@ program velocity_transport
     !! TIMESTEPPING !!
     !!!!!!!!!!!!!!!!!!
     do time_step_no = 1, no_time_steps
+        current_time = current_time + time_step
+
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! SETUP FOR NEXT TRANSPORT TIMESTEP !
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if (compute_transport) then
-            scheme_data_transport%current_time = scheme_data_transport%current_time + scheme_data_transport%time_step
+            scheme_data_transport%current_time = current_time
 
             call get_solution_vector              (scheme_data_transport%temp_real_array(1, :), no_dofs_transport, &
                 solution_transport)
-            call set_current_time                 (solution_transport, scheme_data_transport%current_time)
+            call set_current_time                 (solution_transport, current_time)
             call project_dirichlet_boundary_values(solution_transport, mesh_data)
         end if
 
         !!!!!!!!!!!!!
         ! MOVE MESH !
         !!!!!!!!!!!!!
-        if (moving_mesh .and. trim(geometry_name) == 'placenta') then
+        if (moving_mesh) then
             ! Plus dt since t has not yet been updated.
-            call move_mesh(mesh_data, problem_dim, scheme_data_velocity%current_time + scheme_data_velocity%time_step, &
-                scheme_data_velocity%time_step)
-            call update_geometry(scheme_data_velocity%current_time + scheme_data_velocity%time_step, scheme_data_velocity%time_step)
+            ! TODO: Is this right?! ^^
+            call move_mesh(mesh_data, problem_dim, current_time + time_step, time_step)
+            call update_geometry(current_time + time_step, time_step)
+        end if
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ! OUTPUT PERMEABILITY FIELD !
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (compute_permeability) then
+            call create_fe_solution(solution_permeability, mesh_data, 'fe_projection_permeability', aptofem_stored_keys, &
+                anal_soln_transport, get_boundary_no_transport) ! Doesn't matter what dirichlet bc is passed.
+
+            call project_function_region_id(solution_permeability, mesh_data, project_permeability)
+            call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, time_step_no, mesh_data, &
+                solution_permeability)
+
+            call delete_solution(solution_permeability)
+        end if
+
+        !!!!!!!!!!!!!!!!!!!!!!!
+        ! OUTPUT UPTAKE FIELD !
+        !!!!!!!!!!!!!!!!!!!!!!!
+        if (compute_uptake) then
+            call create_fe_solution(solution_uptake, mesh_data, 'fe_projection_uptake', aptofem_stored_keys, &
+                anal_soln_transport, get_boundary_no_transport) ! Doesn't matter what dirichlet bc is passed.
+
+            call project_function_region_id(solution_uptake, mesh_data, project_uptake)
+            call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, time_step_no, mesh_data, solution_uptake)
+
+            call delete_solution(solution_uptake)
         end if
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -569,7 +592,7 @@ program velocity_transport
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if (.not. velocity_ss .and. compute_velocity) then
             ! Set velocity amplitude.
-            call Carson_velocity_amplitude(solution_velocity%current_time)
+            call Carson_velocity_amplitude(current_time)
 
             ! Reset preconditioner to one specified in file.
             call pop_petsc_options()
