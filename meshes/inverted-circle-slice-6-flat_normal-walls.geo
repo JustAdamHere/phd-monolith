@@ -212,8 +212,6 @@ For k In {1:no_placentones:1}
 	If (!Exists(vessel_locations~{10*k+3}))
 		vessel_locations~{10*k+3} = 0.8;
 	EndIf
-
-	Printf("	vessel_locations_%g = %f, %f, %f", k, vessel_locations~{10*k+1}, vessel_locations~{10*k+2}, vessel_locations~{10*k+3});
 EndFor
 
 // Default locations of the 3 vessels, given as x-coordinates.
