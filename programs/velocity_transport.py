@@ -1,7 +1,7 @@
 flux_cache = []
 integral_cache = []
 
-def run(simulation_no, velocity_model, geometry, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, normal_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], septal_veins=[[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1, artery_width=0.06, no_time_steps=0, final_time=0.0, no_placentones=6, no_threads=20, run_type='openmp', no_reynold_ramp_steps = 1, reynold_ramp_start_ratio = 0.1, reynold_ramp_step_base = 2, linear_solver='mumps', velocity_ic_from_ss=True, transport_ic_from_ss=True, moving_mesh=False, artery_width_sm=0.0125, compute_velocity=True, compute_transport=True, compute_permeability=True, compute_uptake=True):
+def run(simulation_no, velocity_model, geometry, vessel_locations, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, normal_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], septal_veins=[[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1, artery_width=0.06, no_time_steps=0, final_time=0.0, no_placentones=6, no_threads=20, run_type='openmp', no_reynold_ramp_steps = 1, reynold_ramp_start_ratio = 0.1, reynold_ramp_step_base = 2, linear_solver='mumps', velocity_ic_from_ss=True, transport_ic_from_ss=True, moving_mesh=False, artery_width_sm=0.0125, compute_velocity=True, compute_transport=True, compute_permeability=True, compute_uptake=True):
 
 	assert(velocity_model in ['nsb', 'ns-nsb', 'ns-b', 's-b'])
 	assert(run_type in ['serial', 'openmp', 'mpi'])
@@ -32,14 +32,14 @@ def run(simulation_no, velocity_model, geometry, artery_location, vein_location_
 		# GENERATE MESH #
 		#################
 		output_timer.time(simulation_no, "mesh generation", terminal_output, clear_existing=True)
-		generate_mesh.generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, normal_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones)
+		generate_mesh.generate_mesh(simulation_no, geometry, mesh_resolution, vessel_locations, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, normal_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones)
 		output_timer.time(simulation_no, "mesh generation", terminal_output)
 
 		##################
 		# RUN SIMULATION #
 		##################
 		output_timer.time(simulation_no, "AptoFEM simulation", terminal_output, clear_existing=True)
-		result = aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, artery_width_sm, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, compute_permeability, compute_uptake, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver)
+		result = aptofem_simulation(simulation_no, velocity_model, geometry, vessel_locations, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, artery_width_sm, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, compute_permeability, compute_uptake, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver)
 		if (result == False):
 			return False
 		else:
@@ -109,7 +109,7 @@ def run(simulation_no, velocity_model, geometry, artery_location, vein_location_
 
 	return True
 
-def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, artery_width_sm, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, compute_permeability, compute_uptake, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver):
+def aptofem_simulation(simulation_no, velocity_model, geometry, vessel_locations, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, artery_width_sm, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, compute_permeability, compute_uptake, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver):
 
 	# Programatically create coefficients. ##
 	#  Re 
@@ -201,9 +201,9 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, artery_location,
 	for i in range(no_placentones):
 		set_parameter.set_parameter("velocity-transport", geometry, 104+i, f"central_cavity_width_{i+1} {central_cavity_widths[i]}")
 		set_parameter.set_parameter("velocity-transport", geometry, 112+i, f"central_cavity_height_{i+1} {central_cavity_heights[i]}")
-		set_parameter.set_parameter("velocity-transport", geometry, 120+i, f"vein_location_{i+1}1 {0.2}")
-		set_parameter.set_parameter("velocity-transport", geometry, 128+i, f"artery_location_{i+1} {0.5}")
-		set_parameter.set_parameter("velocity-transport", geometry, 136+i, f"vein_location_{i+1}2 {0.8}")
+		set_parameter.set_parameter("velocity-transport", geometry, 120+i, f"vein_location_{i+1}1 {vessel_locations[i][0]}")
+		set_parameter.set_parameter("velocity-transport", geometry, 128+i, f"artery_location_{i+1} {vessel_locations[i][1]}")
+		set_parameter.set_parameter("velocity-transport", geometry, 136+i, f"vein_location_{i+1}2 {vessel_locations[i][2]}")
 
 	# Setup time dependence.
 	set_parameter.set_parameter("velocity-transport", geometry, 150, f"dirk_final_time {final_time}")

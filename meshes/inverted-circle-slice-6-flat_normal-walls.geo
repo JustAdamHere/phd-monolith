@@ -60,7 +60,7 @@ If (!Exists(central_cavity_height))
 EndIf
 
 If (!Exists(central_cavity_transition))
-	central_cavity_transition = 0.04; // 1.6mm
+	central_cavity_transition = 0.12;//0.04; // 1.6mm
 EndIf
 
 ////////////////////////
@@ -201,20 +201,35 @@ For k In {1:no_placentones:1}
 	Printf("  placentone_width_%g = %f", k, placentone_widths[k-1]);
 EndFor
 
-// Default locations of the 3 vessels.
+// Default locations of the 3 vessels, given as proportions along placentones.
+For k In {1:no_placentones:1}
+	If (!Exists(vessel_locations~{10*k+1}))
+		vessel_locations~{10*k+1} = 0.2;
+	EndIf
+	If (!Exists(vessel_locations~{10*k+2}))
+		vessel_locations~{10*k+2} = 0.4;
+	EndIf
+	If (!Exists(vessel_locations~{10*k+3}))
+		vessel_locations~{10*k+3} = 0.8;
+	EndIf
+
+	Printf("	vessel_locations_%g = %f, %f, %f", k, vessel_locations~{10*k+1}, vessel_locations~{10*k+2}, vessel_locations~{10*k+3});
+EndFor
+
+// Default locations of the 3 vessels, given as x-coordinates.
 location_1_x = {};
 location_2_x = {};
 location_3_x = {};
 cumulative_width = 0;
 For k In {1:no_placentones:1}
 	If (!Exists(location~{10*k + 1}))
-		location~{10*k + 1} = cumulative_width + 0.2*placentone_widths[k-1];
+		location~{10*k + 1} = cumulative_width + vessel_locations~{10*k+1}*placentone_widths[k-1];
 	EndIf
 	If (!Exists(location~{10*k + 2}))
-		location~{10*k + 2} = cumulative_width + 0.5*placentone_widths[k-1];
+		location~{10*k + 2} = cumulative_width + vessel_locations~{10*k+2}*placentone_widths[k-1];
 	EndIf
 	If (!Exists(location~{10*k + 3}))
-		location~{10*k + 3} = cumulative_width + 0.8*placentone_widths[k-1];
+		location~{10*k + 3} = cumulative_width + vessel_locations~{10*k+3}*placentone_widths[k-1];
 	EndIf
 
 	location_1_x += {location~{10*k + 1}};

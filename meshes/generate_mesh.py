@@ -1,4 +1,4 @@
-def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vein_location_1, vein_location_2, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, normal_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones):
+def generate_mesh(simulation_no, geometry, mesh_resolution, vessel_locations, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, normal_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones):
 	import subprocess
 
 	if (geometry == "placentone"):
@@ -207,6 +207,7 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 		'-setnumber', 'no_placentones', str(no_placentones),\
 	]
 
+	# Cavity widths.
 	if (type(central_cavity_width) == list):
 		assert(len(central_cavity_width) == no_placentones)
 
@@ -218,6 +219,7 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 	else:
 		raise ValueError("central_cavity_width must be float or list of length [no_placentones]")
 	
+	# Cavity heights.
 	if (type(central_cavity_height) == list):
 		assert(len(central_cavity_height) == no_placentones)
 
@@ -228,6 +230,16 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 			options += ['-setnumber', f'central_cavity_height', str(central_cavity_height)]
 	else:
 		raise ValueError("central_cavity_width must be float or list of length [no_placentones]")
+	
+	# Vessel locations.
+	no_vessels = 3
+	if (type(vessel_locations) == list):
+		assert(len(vessel_locations)    == no_placentones)
+		assert(len(vessel_locations[0]) == no_vessels)
+
+		for i in range(no_placentones):
+			for j in range(no_vessels):
+				options += ['-setnumber', f'vessel_locations_{10*(i+1) + j+1}', str(vessel_locations[i][j])]
 
 	command = [\
 		'/home/pmyambl/software/gmsh-4.11.1-Linux64/bin/gmsh',\
@@ -240,4 +252,10 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, artery_location, vei
 		'-o', f'meshes/mesh_{simulation_no}.msh'\
 	]
 
-	subprocess.run(command + options + output, stdout=subprocess.DEVNULL)
+	# if (verbose_output):
+	# 	stdout = None
+	# else:
+	# 	stdout = subprocess.DEVNULL
+
+	stdout = subprocess.DEVNULL
+	subprocess.run(command + options + output, stdout=stdout)

@@ -97,7 +97,8 @@ output_frequency 1
 
 central_cavity_transition 0.15
 pipe_transition 0.03
-artery_length 0.05
+artery_length 0.25
+artery_width_sm 0.0125
 log_cavity_transition .false.
 
 central_cavity_width_1 0.25
