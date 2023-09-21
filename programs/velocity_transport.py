@@ -1,7 +1,7 @@
 flux_cache = []
 integral_cache = []
 
-def run(simulation_no, velocity_model, geometry, vessel_locations, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, normal_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], septal_veins=[[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1, artery_width=0.06, no_time_steps=0, final_time=0.0, no_placentones=6, no_threads=20, run_type='openmp', no_reynold_ramp_steps = 1, reynold_ramp_start_ratio = 0.1, reynold_ramp_step_base = 2, linear_solver='mumps', velocity_ic_from_ss=True, transport_ic_from_ss=True, moving_mesh=False, artery_width_sm=0.0125, compute_velocity=True, compute_transport=True, compute_permeability=True, compute_uptake=True):
+def run(simulation_no, velocity_model, geometry, vessel_locations, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, normal_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], septal_veins=[[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1, artery_width=0.06, no_time_steps=0, final_time=0.0, no_placentones=6, no_threads=20, run_type='openmp', no_reynold_ramp_steps = 1, reynold_ramp_start_ratio = 0.1, reynold_ramp_step_base = 2, linear_solver='mumps', velocity_ic_from_ss=True, transport_ic_from_ss=True, moving_mesh=False, artery_width_sm=0.0125, compute_velocity=True, compute_transport=True, compute_permeability=True, compute_uptake=True, vessel_fillet_radius=0.01):
 
 	assert(velocity_model in ['nsb', 'ns-nsb', 'ns-b', 's-b'])
 	assert(run_type in ['serial', 'openmp', 'mpi'])
@@ -32,7 +32,7 @@ def run(simulation_no, velocity_model, geometry, vessel_locations, central_cavit
 		# GENERATE MESH #
 		#################
 		output_timer.time(simulation_no, "mesh generation", terminal_output, clear_existing=True)
-		generate_mesh.generate_mesh(simulation_no, geometry, mesh_resolution, vessel_locations, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, normal_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones)
+		generate_mesh.generate_mesh(simulation_no, geometry, mesh_resolution, vessel_locations, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, normal_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones, vessel_fillet_radius)
 		output_timer.time(simulation_no, "mesh generation", terminal_output)
 
 		##################

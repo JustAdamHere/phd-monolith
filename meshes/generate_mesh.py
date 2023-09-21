@@ -1,4 +1,4 @@
-def generate_mesh(simulation_no, geometry, mesh_resolution, vessel_locations, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, normal_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones):
+def generate_mesh(simulation_no, geometry, mesh_resolution, vessel_locations, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, normal_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones, vessel_fillet_radius):
 	import subprocess
 
 	if (geometry == "placentone"):
@@ -205,6 +205,7 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, vessel_locations, ce
 		'-setnumber', 'ms_1', str(ms_1),\
 		'-setnumber', 'ms_2', str(ms_2),\
 		'-setnumber', 'no_placentones', str(no_placentones),\
+		'-setnumber', 'fillet_radius', str(vessel_fillet_radius),\
 	]
 
 	# Cavity widths.
