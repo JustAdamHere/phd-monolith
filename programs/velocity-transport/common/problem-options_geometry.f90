@@ -345,6 +345,10 @@ module problem_options_geometry
         real(db), dimension(2) :: update_velocity
         integer                :: i, j
 
+        call write_message(io_msg, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        call write_message(io_msg, "!! WARNING: update_geometry is still in development. !!")
+        call write_message(io_msg, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
         ! TODO: Input geometry name?
         
         !!!!!!!!!!!!!!!!!!!!!!!
@@ -629,9 +633,19 @@ module problem_options_geometry
         translate_placenta_to_placentone_point(2) = - (placenta_point(1) - circle_centre(1))*cos(translate_angle) &
         + (placenta_point(2) - circle_centre(2))*sin(translate_angle)
 
-        translate_placenta_to_placentone_point(2) = translate_placenta_to_placentone_point(2) + circle_centre(2)
-        translate_placenta_to_placentone_point    = translate_placenta_to_placentone_point/scaling_factor
-        translate_placenta_to_placentone_point(1) = translate_placenta_to_placentone_point(1) + vessel_locations(placentone_no, 2)
+        !translate_placenta_to_placentone_point    = translate_placenta_to_placentone_point/scaling_factor
+        ! translate_placenta_to_placentone_point(1) = translate_placenta_to_placentone_point(1)/scaling_factor + &
+        ! vessel_locations(placentone_no, 2)
+        translate_placenta_to_placentone_point(1) = translate_placenta_to_placentone_point(1)/scaling_factor + &
+            vessel_locations(placentone_no, 2)
+        translate_placenta_to_placentone_point(2) = (translate_placenta_to_placentone_point(2) + circle_centre(2))/scaling_factor
+
+        ! if (element_region_id == 511) then
+        !     print *, "DEBUG"
+        !     print *, "placenta_point = ", placenta_point
+        !     print *, "translate_placenta_to_placentone_point = ", translate_placenta_to_placentone_point
+        !     print *, ""
+        ! end if
     end function
     
     function translate_placentone_3d_to_placentone_point(problem_dim, placenta_point, element_region_id)
