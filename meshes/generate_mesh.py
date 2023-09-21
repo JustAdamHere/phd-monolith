@@ -205,7 +205,7 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, vessel_locations, ce
 		'-setnumber', 'ms_1', str(ms_1),\
 		'-setnumber', 'ms_2', str(ms_2),\
 		'-setnumber', 'no_placentones', str(no_placentones),\
-		'-setnumber', 'fillet_radius', str(vessel_fillet_radius),\
+		'-setnumber', 'vessel_fillet_radius', str(vessel_fillet_radius),\
 	]
 
 	# Cavity widths.
