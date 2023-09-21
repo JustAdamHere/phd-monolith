@@ -21,7 +21,6 @@
 //////////////////////
 placentone_width      = 1.0;                               // 40 mm
 wall_width            = 0.075*placentone_width;            // 3  mm
-// placenta_width     = 6*placentone_width + 5*wall_width; // 255mm
 placenta_width        = 5.5;                               // 220mm
 ms_pipe_width         = 0.075*placentone_width;            // 3  mm
 artery_length         = 0.25*placentone_width;             // 10 mm
