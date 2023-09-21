@@ -100,6 +100,7 @@ pipe_transition 0.03
 artery_length 0.25
 artery_width_sm 0.0125
 log_cavity_transition .false.
+wall_height_ratio 1.0
 
 central_cavity_width_1 0.25
 central_cavity_width_2 0.25

@@ -4,9 +4,10 @@ module problem_options_geometry
     
     save
     
-    real(db)                               :: placentone_width, wall_width, placenta_width, placenta_height, wall_height, &
-        artery_length, ms_pipe_width, x_centre, y_centre, boundary_radius, inflation_ratio
-    real(db), dimension(:), allocatable    :: placentone_widths, cumulative_placentone_widths, central_cavity_ratios
+    real(db)                               :: placentone_width, wall_width, placenta_width, placenta_height, &
+        artery_length, ms_pipe_width, x_centre, y_centre, boundary_radius, inflation_ratio, x, y
+    real(db), dimension(:), allocatable    :: placentone_widths, cumulative_placentone_widths, central_cavity_ratios, wall_angles, &
+        wall_heights
     real(db), dimension(:, :, :), allocatable :: vessel_tops, cavity_tops, cavity_sides, placentone_sides
     real(db), dimension(:, :), allocatable    :: vessel_angles
     !real(db), dimension(:), allocatable       :: central_cavity_widths, central_cavity_heights
@@ -149,7 +150,6 @@ module problem_options_geometry
             wall_width       = 0.075_db*placentone_width ! 3  mm
             placenta_width   = 5.5_db                    ! 220mm
             placenta_height  = 0.9065_db                 ! 36.26mm
-            wall_height      = 0.6_db*placentone_width   ! 24 mm
             ms_pipe_width   = 0.075_db                   ! 3mm
             
             x_centre = placenta_width/2
@@ -198,6 +198,39 @@ module problem_options_geometry
                 placentone_sides(i, 2, 1) = cumulative_placentone_widths(i) + placentone_widths(i)
                 placentone_sides(i, 2, 2) = y_centre - sqrt((boundary_radius**2 - (placentone_sides(i, 2, 1) - x_centre)**2))
             end do
+
+            !!!!!!!!!!!!!!!!!!
+            !! WALL HEIGHTS !!
+            !!!!!!!!!!!!!!!!!!
+            allocate(wall_heights(no_placentones-1))
+            
+            if (no_placentones == 6) then
+                wall_heights(1) = 0.1725_db  * wall_height_ratio
+                wall_heights(2) = 0.35175_db * wall_height_ratio
+                wall_heights(3) = 0.1725_db  * wall_height_ratio
+                wall_heights(4) = 0.35175_db * wall_height_ratio
+                wall_heights(5) = 0.1725_db  * wall_height_ratio
+            else if (no_placentones == 7) then
+                wall_heights(1) = 0.1725_db * wall_height_ratio
+                wall_heights(2) = 0.1725_db * wall_height_ratio
+                wall_heights(3) = 0.1725_db * wall_height_ratio
+                wall_heights(4) = 0.1725_db * wall_height_ratio
+                wall_heights(5) = 0.1725_db * wall_height_ratio
+                wall_heights(6) = 0.1725_db * wall_height_ratio
+            else
+                print *, "Error: no_placentones not supported", no_placentones
+                error stop
+            end if
+
+            !!!!!!!!!!!!!!!!!
+            !! WALL ANGLES !!
+            !!!!!!!!!!!!!!!!!
+            allocate(wall_angles(no_placentones))
+            do i = 1, no_placentones
+                x = cumulative_placentone_widths(i) + placentone_widths(i) + wall_width/2.0_db
+                y = y_centre - sqrt((boundary_radius**2 - (x - x_centre)**2))
+                wall_angles(i) = -atan2(y - y_centre, x - x_centre)
+            end do
             
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!
             !! VESSEL TOPS AND ANGLES !!
@@ -212,7 +245,7 @@ module problem_options_geometry
                     vessel_tops(i, j, 2) = y_centre - (boundary_radius**2 - (vessel_tops(i, j, 1) - x_centre)**2)**0.5
                     vessel_angles(i, j) = -atan2((vessel_tops(i, j, 2)-y_centre), (vessel_tops(i, j, 1)-x_centre))
                 end do
-            end do            
+            end do
 
         else if (trim(control_file) == 'placentone') then
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -291,7 +324,7 @@ module problem_options_geometry
         character(len=20), intent(in) :: control_file
         
         if (trim(control_file) == 'placenta') then
-            deallocate(placentone_widths, cumulative_placentone_widths, placentone_sides)
+            deallocate(placentone_widths, cumulative_placentone_widths, placentone_sides, wall_angles, wall_heights)
         end if
         deallocate(vessel_tops, cavity_tops, cavity_sides, central_cavity_ratios)
     end subroutine
@@ -584,7 +617,7 @@ module problem_options_geometry
         integer, intent(in)                          :: element_region_id
         
         real(db), dimension(problem_dim) :: circle_centre
-        real(db)                         :: radius, translate_angle, scaling_factor
+        real(db)                         :: radius, translate_angle, scaling_factor, y_offset
         integer                          :: placentone_no, vessel_no
         
         radius   = y_centre
@@ -595,26 +628,42 @@ module problem_options_geometry
             scaling_factor   = 2.0_db
             circle_centre(1) = placenta_height - ms_pipe_width/2.0_db
             circle_centre(2) = placenta_height - ms_pipe_width/2.0_db
+            y_offset         = circle_centre(2)
         else if (element_region_id == 402) then
             placentone_no    = 1
             translate_angle  = 0.0_db
             scaling_factor   = 2.0_db
             circle_centre(1) = placenta_width - placenta_height + ms_pipe_width/2.0_db
             circle_centre(2) =                  placenta_height - ms_pipe_width/2.0_db
+            y_offset         = circle_centre(2)
         else if (411 <= element_region_id .and. element_region_id <= 473) then
             placentone_no    = (element_region_id-400)/10
             vessel_no        = mod(element_region_id-400, 10)
-            translate_angle  = vessel_angles(placentone_no, vessel_no)
-            scaling_factor   = 1.0_db
-            circle_centre(1) = x_centre
-            circle_centre(2) = y_centre
-            ! TODO: SEPTAL VEINS.
-        else if (471 <= element_region_id .and. element_region_id <= 496) then
-            placentone_no    = 1
-            translate_angle  = 0.0_db
-            scaling_factor   = 1.0_db
-            circle_centre(1) = x_centre
-            circle_centre(2) = y_centre
+            if (1 <= vessel_no .and. vessel_no <= 3) then
+                translate_angle  = vessel_angles(placentone_no, vessel_no)
+                scaling_factor   = placentone_widths(placentone_no)
+                circle_centre(1) = x_centre
+                circle_centre(2) = y_centre
+                y_offset         = circle_centre(2)
+            else
+                scaling_factor  = 1.0_db
+                circle_centre(1) = x_centre
+                circle_centre(2) = y_centre
+                if (vessel_no == 7) then
+                    translate_angle = wall_angles(placentone_no)
+                    y_offset        = circle_centre(2)
+                else if (vessel_no == 8) then
+                    translate_angle = wall_angles(placentone_no)
+                    y_offset        = circle_centre(2) - wall_heights(placentone_no)
+                else if (vessel_no == 9) then
+                    translate_angle = wall_angles(placentone_no)
+                    y_offset        = circle_centre(2)
+                else 
+                    print *, "Error in translate_placenta_to_placentone_point. Missed case."
+                    print *, "element_region_id = ", element_region_id
+                    error stop
+                end if
+            end if
         else if (501 <= element_region_id .and. element_region_id <= 527) then
             placentone_no    = mod(element_region_id-500, 10)
             vessel_no        = 2 ! Always on artery.
@@ -622,10 +671,11 @@ module problem_options_geometry
             scaling_factor   = placentone_widths(placentone_no)
             circle_centre(1) = x_centre
             circle_centre(2) = y_centre
+            y_offset         = circle_centre(2)
         else
             print *, "Error in translate_placenta_to_placentone_point. Missed case."
             print *, "element_region_id = ", element_region_id
-            stop
+            error stop
         end if
         
         translate_placenta_to_placentone_point(1) =   (placenta_point(1) - circle_centre(1))*sin(translate_angle) &
@@ -638,9 +688,9 @@ module problem_options_geometry
         ! vessel_locations(placentone_no, 2)
         translate_placenta_to_placentone_point(1) = translate_placenta_to_placentone_point(1)/scaling_factor + &
             vessel_locations(placentone_no, 2)
-        translate_placenta_to_placentone_point(2) = (translate_placenta_to_placentone_point(2) + circle_centre(2))/scaling_factor
+        translate_placenta_to_placentone_point(2) = (translate_placenta_to_placentone_point(2) + y_offset)/scaling_factor
 
-        ! if (element_region_id == 511) then
+        ! if (element_region_id == 428) then
         !     print *, "DEBUG"
         !     print *, "placenta_point = ", placenta_point
         !     print *, "translate_placenta_to_placentone_point = ", translate_placenta_to_placentone_point
