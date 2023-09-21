@@ -207,7 +207,7 @@ For k In {1:no_placentones:1}
 		vessel_locations~{10*k+1} = 0.2;
 	EndIf
 	If (!Exists(vessel_locations~{10*k+2}))
-		vessel_locations~{10*k+2} = 0.4;
+		vessel_locations~{10*k+2} = 0.5;
 	EndIf
 	If (!Exists(vessel_locations~{10*k+3}))
 		vessel_locations~{10*k+3} = 0.8;
@@ -661,28 +661,40 @@ For k In {0:no_placentones-2:1}
 		vein_x = wall_low_x[2*k] + septal_vein_position_1[k]*(wall_top_x[2*k] - wall_low_x[2*k]);
 		vein_y = wall_low_y[2*k] + septal_vein_position_1[k]*(wall_top_y[2*k] - wall_low_y[2*k]);
 
-		Point(offset + 30) = {vein_x - (vein_width/2)*Cos(theta_wall[2*k]),                                   vein_y + (vein_width/2)*Sin(theta_wall[2*k]),                                   0, h_vein_top};
-		Point(offset + 31) = {vein_x - (vein_width/2)*Cos(theta_wall[2*k]) + vein_width*Sin(theta_wall[2*k]), vein_y + (vein_width/2)*Sin(theta_wall[2*k]) + vein_width*Cos(theta_wall[2*k]), 0, h_vein_bottom};
-		Point(offset + 32) = {vein_x + (vein_width/2)*Cos(theta_wall[2*k]) + vein_width*Sin(theta_wall[2*k]), vein_y - (vein_width/2)*Sin(theta_wall[2*k]) + vein_width*Cos(theta_wall[2*k]), 0, h_vein_bottom};
-		Point(offset + 33) = {vein_x + (vein_width/2)*Cos(theta_wall[2*k]),                                   vein_y - (vein_width/2)*Sin(theta_wall[2*k]),                                   0, h_vein_top};
+		Point(offset + 70) = {vein_x - (vein_width/2 + fillet_radius)*Cos(theta_wall[2*k]),                                      vein_y + (vein_width/2 + fillet_radius)*Sin(theta_wall[2*k]),                                      0, h_vein_top};
+		Point(offset + 30) = {vein_x - (vein_width/2)*Cos(theta_wall[2*k]) + fillet_radius*Sin(theta_wall[2*k]),                 vein_y + (vein_width/2)*Sin(theta_wall[2*k]) + fillet_radius*Cos(theta_wall[2*k]),                 0, h_vein_top};
+		Point(offset + 73) = {vein_x - (vein_width/2 + fillet_radius)*Cos(theta_wall[2*k]) + fillet_radius*Sin(theta_wall[2*k]), vein_y + (vein_width/2 + fillet_radius)*Sin(theta_wall[2*k]) + fillet_radius*Cos(theta_wall[2*k]), 0, h_vein_top};
+		Point(offset + 31) = {vein_x - (vein_width/2)*Cos(theta_wall[2*k]) + vein_width*Sin(theta_wall[2*k]),                    vein_y + (vein_width/2)*Sin(theta_wall[2*k]) + vein_width*Cos(theta_wall[2*k]),                    0, h_vein_bottom};
+		Point(offset + 32) = {vein_x + (vein_width/2)*Cos(theta_wall[2*k]) + vein_width*Sin(theta_wall[2*k]),                    vein_y - (vein_width/2)*Sin(theta_wall[2*k]) + vein_width*Cos(theta_wall[2*k]),                    0, h_vein_bottom};
+		Point(offset + 33) = {vein_x + (vein_width/2)*Cos(theta_wall[2*k]) + fillet_radius*Sin(theta_wall[2*k]),                 vein_y - (vein_width/2)*Sin(theta_wall[2*k]) + fillet_radius*Cos(theta_wall[2*k]),                 0, h_vein_top};
+		Point(offset + 71) = {vein_x + (vein_width/2 + fillet_radius)*Cos(theta_wall[2*k]),                                      vein_y - (vein_width/2 + fillet_radius)*Sin(theta_wall[2*k]),                                      0, h_vein_top};
+		Point(offset + 72) = {vein_x + (vein_width/2 + fillet_radius)*Cos(theta_wall[2*k]) + fillet_radius*Sin(theta_wall[2*k]), vein_y - (vein_width/2 + fillet_radius)*Sin(theta_wall[2*k]) + fillet_radius*Cos(theta_wall[2*k]), 0, h_vein_top};
 	EndIf
 	If (septal_vein_2[k] == 1)
 		vein_x = wall_top_x[2*k] + septal_vein_position_2[k]*(wall_top_x[2*k+1] - wall_top_x[2*k]);
 		vein_y = wall_top_y[2*k] + septal_vein_position_2[k]*(wall_top_y[2*k+1] - wall_top_y[2*k]);
 
-		Point(offset + 34) = {vein_x - (vein_width/2)*Sin(theta_wall[2*k]),                                       vein_y - (vein_width/2)*Cos(theta_wall[2*k]),                                       0, h_vein_top};
-		Point(offset + 35) = {vein_x - (vein_width/2)*Sin(theta_wall[2*k])   + vein_width*Cos(theta_wall[2*k]),   vein_y - (vein_width/2)*Cos(theta_wall[2*k])   - vein_width*Sin(theta_wall[2*k]),   0, h_vein_bottom};
-		Point(offset + 36) = {vein_x + (vein_width/2)*Sin(theta_wall[2*k+1]) + vein_width*Cos(theta_wall[2*k+1]), vein_y + (vein_width/2)*Cos(theta_wall[2*k+1]) - vein_width*Sin(theta_wall[2*k+1]), 0, h_vein_bottom};
-		Point(offset + 37) = {vein_x + (vein_width/2)*Sin(theta_wall[2*k+1]),                                     vein_y + (vein_width/2)*Cos(theta_wall[2*k+1]),                                     0, h_vein_top};
+		Point(offset + 74) = {vein_x - (vein_width/2 + fillet_radius)*Sin(theta_wall[2*k]),                                          vein_y - (vein_width/2 + fillet_radius)*Cos(theta_wall[2*k]),                                          0, h_vein_top};
+		Point(offset + 34) = {vein_x - (vein_width/2)*Sin(theta_wall[2*k])   + fillet_radius*Cos(theta_wall[2*k]),                   vein_y - (vein_width/2)*Cos(theta_wall[2*k])   - fillet_radius*Sin(theta_wall[2*k]),                   0, h_vein_top};
+		Point(offset + 76) = {vein_x - (vein_width/2 + fillet_radius)*Sin(theta_wall[2*k]) + fillet_radius*Cos(theta_wall[2*k]),     vein_y - (vein_width/2 + fillet_radius)*Cos(theta_wall[2*k]) - fillet_radius*Sin(theta_wall[2*k]),     0, h_vein_top};
+		Point(offset + 35) = {vein_x - (vein_width/2)*Sin(theta_wall[2*k])   + vein_width*Cos(theta_wall[2*k]),                      vein_y - (vein_width/2)*Cos(theta_wall[2*k])   - vein_width*Sin(theta_wall[2*k]),                      0, h_vein_bottom};
+		Point(offset + 36) = {vein_x + (vein_width/2)*Sin(theta_wall[2*k+1]) + vein_width*Cos(theta_wall[2*k+1]),                    vein_y + (vein_width/2)*Cos(theta_wall[2*k+1]) - vein_width*Sin(theta_wall[2*k+1]),                    0, h_vein_bottom};
+		Point(offset + 37) = {vein_x + (vein_width/2)*Sin(theta_wall[2*k+1]) + fillet_radius*Cos(theta_wall[2*k+1]),                 vein_y + (vein_width/2)*Cos(theta_wall[2*k+1]) - fillet_radius*Sin(theta_wall[2*k+1]),                 0, h_vein_top};
+		Point(offset + 75) = {vein_x + (vein_width/2 + fillet_radius)*Sin(theta_wall[2*k+1]),                                        vein_y + (vein_width/2 + fillet_radius)*Cos(theta_wall[2*k+1]),                                        0, h_vein_top};
+		Point(offset + 77) = {vein_x + (vein_width/2 + fillet_radius)*Sin(theta_wall[2*k+1]) + fillet_radius*Cos(theta_wall[2*k+1]), vein_y + (vein_width/2 + fillet_radius)*Cos(theta_wall[2*k+1]) - fillet_radius*Sin(theta_wall[2*k+1]), 0, h_vein_top};
 	EndIf
 	If (septal_vein_3[k] == 1)
 		vein_x = wall_low_x[2*k+1] + septal_vein_position_3[k]*(wall_top_x[2*k+1] - wall_low_x[2*k+1]);
 		vein_y = wall_low_y[2*k+1] + septal_vein_position_3[k]*(wall_top_y[2*k+1] - wall_low_y[2*k+1]);
 
-		Point(offset + 38) = {vein_x - (vein_width/2)*Cos(theta_wall[2*k+1]),                                     vein_y + (vein_width/2)*Sin(theta_wall[2*k+1]),                                     0, h_vein_top};
+		Point(offset + 78) = {vein_x - (vein_width/2 + fillet_radius)*Cos(theta_wall[2*k+1]),                                      vein_y + (vein_width/2 + fillet_radius)*Sin(theta_wall[2*k+1]),                                      0, h_vein_top};
+		Point(offset + 38) = {vein_x - (vein_width/2)*Cos(theta_wall[2*k+1]) - fillet_radius*Sin(theta_wall[2*k+1]),                 vein_y + (vein_width/2)*Sin(theta_wall[2*k+1]) - fillet_radius*Cos(theta_wall[2*k+1]),                 0, h_vein_top};
+		Point(offset + 80) = {vein_x - (vein_width/2 + fillet_radius)*Cos(theta_wall[2*k+1]) - fillet_radius*Sin(theta_wall[2*k+1]), vein_y + (vein_width/2 + fillet_radius)*Sin(theta_wall[2*k+1]) - fillet_radius*Cos(theta_wall[2*k+1]), 0, h_vein_top};
 		Point(offset + 39) = {vein_x - (vein_width/2)*Cos(theta_wall[2*k+1]) - vein_width*Sin(theta_wall[2*k+1]), vein_y + (vein_width/2)*Sin(theta_wall[2*k+1]) - vein_width*Cos(theta_wall[2*k+1]), 0, h_vein_bottom};
 		Point(offset + 40) = {vein_x + (vein_width/2)*Cos(theta_wall[2*k+1]) - vein_width*Sin(theta_wall[2*k+1]), vein_y - (vein_width/2)*Sin(theta_wall[2*k+1]) - vein_width*Cos(theta_wall[2*k+1]), 0, h_vein_bottom};
-		Point(offset + 41) = {vein_x + (vein_width/2)*Cos(theta_wall[2*k+1]),                                     vein_y - (vein_width/2)*Sin(theta_wall[2*k+1]),                                     0, h_vein_top};
+		Point(offset + 41) = {vein_x + (vein_width/2)*Cos(theta_wall[2*k+1]) - fillet_radius*Sin(theta_wall[2*k+1]), vein_y - (vein_width/2)*Sin(theta_wall[2*k+1]) - fillet_radius*Cos(theta_wall[2*k+1]), 0, h_vein_top};
+		Point(offset + 79) = {vein_x + (vein_width/2 + fillet_radius)*Cos(theta_wall[2*k+1]),                                      vein_y - (vein_width/2 + fillet_radius)*Sin(theta_wall[2*k+1]),                                      0, h_vein_top};
+		Point(offset + 81) = {vein_x + (vein_width/2 + fillet_radius)*Cos(theta_wall[2*k+1]) - fillet_radius*Sin(theta_wall[2*k+1]), vein_y - (vein_width/2 + fillet_radius)*Sin(theta_wall[2*k+1]) - fillet_radius*Cos(theta_wall[2*k+1]), 0, h_vein_top};
 	EndIf
 
 EndFor
@@ -858,40 +870,46 @@ For k In {0:no_placentones-2:1}
 	offset = numbering_start + k*placentone_step;
 
 	If (septal_vein_1[k] == 1)
-		Line(offset + 30) = {offset + 13, offset + 33};
+		Line(offset + 30) = {offset + 13, offset + 71};
 
-		Line(offset + 31) = {offset + 33, offset + 32};
-		Line(offset + 32) = {offset + 32, offset + 31};
-		Line(offset + 33) = {offset + 31, offset + 30};
-		Line(offset + 34) = {offset + 30, offset + 33};
+		Circle(offset + 65) = {offset + 71, offset + 72, offset + 33};
+		Line(offset + 31)   = {offset + 33, offset + 32};
+		Line(offset + 32)   = {offset + 32, offset + 31};
+		Line(offset + 33)   = {offset + 31, offset + 30};
+		Line(offset + 34)   = {offset + 70, offset + 71};
+		Circle(offset + 66) = {offset + 30, offset + 73, offset + 70};
 
-		Line(offset + 35) = {offset + 30, offset + 14};
+		Line(offset + 35) = {offset + 70, offset + 14};
 	Else
 		Line(offset + 14) = {offset + 13, offset + 14};
 	EndIf
 	If (septal_vein_2[k] == 1)
-		Line(offset + 36) = {offset + 14, offset + 34};
+		Line(offset + 36) = {offset + 14, offset + 74};
 
-		Line(offset + 37) = {offset + 34, offset + 35};
-		Line(offset + 38) = {offset + 35, offset + 36};
-		Line(offset + 39) = {offset + 36, offset + 37};
-		Line(offset + 40) = {offset + 37, offset + 15};
-		Line(offset + 41) = {offset + 15, offset + 34};
+		Circle(offset + 67) = {offset + 74, offset + 76, offset + 34};
+		Line(offset + 37)   = {offset + 34, offset + 35};
+		Line(offset + 38)   = {offset + 35, offset + 36};
+		Line(offset + 39)   = {offset + 36, offset + 37};
+		Line(offset + 40)   = {offset + 75, offset + 15};
+		Line(offset + 41)   = {offset + 15, offset + 74};
+		Circle(offset + 68) = {offset + 37, offset + 77, offset + 75};
 
-		Line(offset + 42) =  {offset + 37, offset + 16};
+		Line(offset + 42) =  {offset + 75, offset + 16};
 	Else
 		Line(offset + 15) = {offset + 14, offset + 15};
 		Line(offset + 16) = {offset + 15, offset + 16};
 	EndIf
 	If (septal_vein_3[k] == 1)
-		Line(offset + 43) = {offset + 16, offset + 38};
+		Line(offset + 43) = {offset + 16, offset + 78};
 
-		Line(offset + 44) = {offset + 38, offset + 39};
-		Line(offset + 45) = {offset + 39, offset + 40};
-		Line(offset + 46) = {offset + 40, offset + 41};
-		Line(offset + 47) = {offset + 41, offset + 38};
+		Circle(offset + 69) = {offset + 78, offset + 80, offset + 38};
+		Line(offset + 44)   = {offset + 38, offset + 39};
+		Line(offset + 45)   = {offset + 39, offset + 40};
+		Line(offset + 46)   = {offset + 40, offset + 41};
+		Line(offset + 47)   = {offset + 79, offset + 78};
+		Circle(offset + 70) = {offset + 41, offset + 81, offset + 79};
 
-		Line(offset + 48) = {offset + 41, offset + 17};
+		Line(offset + 48) = {offset + 79, offset + 17};
 	Else
 		Line(offset + 17) = {offset + 16, offset + 17};
 	EndIf
@@ -1002,19 +1020,19 @@ For k In {0:no_placentones-2:1}
 	offset = numbering_start + k*placentone_step;
 
 	If (septal_vein_1[k] == 1)
-		Physical Curve(100) += {offset + 30, offset + 31, offset + 33, offset + 35};
+		Physical Curve(100) += {offset + 30, offset + 65, offset + 31, offset + 33, offset + 66, offset + 35};
 		Physical Curve(240 + k*10 + 1) = {offset + 32};
 	Else
 		Physical Curve(100) += {offset + 14};
 	EndIf
 	If (septal_vein_2[k] == 1)
-		Physical Curve(100) += {offset + 36, offset + 37, offset + 39, offset + 42};
+		Physical Curve(100) += {offset + 36, offset + 67, offset + 37, offset + 39, offset + 68, offset + 42};
 		Physical Curve(240 + k*10 + 2) = {offset + 38};
 	Else
 		Physical Curve(100) += {offset + 15, offset + 16};
 	EndIf
 	If (septal_vein_3[k] == 1)
-		Physical Curve(100) += {offset + 43, offset + 44, offset + 46, offset + 48};
+		Physical Curve(100) += {offset + 43, offset + 69, offset + 44, offset + 46, offset + 70, offset + 48};
 		Physical Curve(240 + k*10 + 3) = {offset + 45};
 	Else
 		Physical Curve(100) += {offset + 17};
@@ -1206,17 +1224,17 @@ For k In {0:no_placentones-2:1}
 	offset = numbering_start + k*placentone_step;
 
 	If (septal_vein_1[k] == 1)
-		Curve Loop      (471 + k) = {offset + 31, offset + 32, offset + 33, offset + 34};
+		Curve Loop      (471 + k) = {offset + 65, offset + 31, offset + 32, offset + 33, offset + 66, offset + 34};
 		Plane Surface   (471 + k) = {471 + k};
 		Physical Surface(471 + k) = {471 + k};
 	EndIf
 	If (septal_vein_2[k] == 1)
-		Curve Loop      (481 + k) = {offset + 37, offset + 38, offset + 39, offset + 40, offset + 41};
+		Curve Loop      (481 + k) = {offset + 67, offset + 37, offset + 38, offset + 39, offset + 68, offset + 40, offset + 41};
 		Plane Surface   (481 + k) = {481 + k};
 		Physical Surface(481 + k) = {481 + k};
 	EndIf
 	If (septal_vein_3[k] == 1)
-		Curve Loop      (491 + k) = {offset + 44, offset + 45, offset + 46, offset + 47};
+		Curve Loop      (491 + k) = {offset + 69, offset + 44, offset + 45, offset + 46, offset + 70, offset + 47};
 		Plane Surface   (491 + k) = {491 + k};
 		Physical Surface(491 + k) = {491 + k};
 	EndIf
