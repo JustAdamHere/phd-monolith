@@ -1,8 +1,3 @@
-// TODO: Need to fix surface numbers for septal veins when no_placetones = 7.
-// TODO: Add fillets for septal veins.
-
-//SetFactory("OpenCASCADE");
-
 //=/=/=/=/=/=/=/=/=/=//
 //=/ OUTPUT FORMAT /=//
 //=/  EDGES
@@ -1225,19 +1220,19 @@ For k In {0:no_placentones-2:1}
 	offset = numbering_start + k*placentone_step;
 
 	If (septal_vein_1[k] == 1)
-		Curve Loop      (471 + k) = {offset + 65, offset + 31, offset + 32, offset + 33, offset + 66, offset + 34};
-		Plane Surface   (471 + k) = {471 + k};
-		Physical Surface(471 + k) = {471 + k};
+		Curve Loop      (417 + 10*k) = {offset + 65, offset + 31, offset + 32, offset + 33, offset + 66, offset + 34};
+		Plane Surface   (417 + 10*k) = {417 + 10*k};
+		Physical Surface(417 + 10*k) = {417 + 10*k};
 	EndIf
 	If (septal_vein_2[k] == 1)
-		Curve Loop      (481 + k) = {offset + 67, offset + 37, offset + 38, offset + 39, offset + 68, offset + 40, offset + 41};
-		Plane Surface   (481 + k) = {481 + k};
-		Physical Surface(481 + k) = {481 + k};
+		Curve Loop      (418 + 10*k) = {offset + 67, offset + 37, offset + 38, offset + 39, offset + 68, offset + 40, offset + 41};
+		Plane Surface   (418 + 10*k) = {418 + 10*k};
+		Physical Surface(418 + 10*k) = {418 + 10*k};
 	EndIf
 	If (septal_vein_3[k] == 1)
-		Curve Loop      (491 + k) = {offset + 69, offset + 44, offset + 45, offset + 46, offset + 70, offset + 47};
-		Plane Surface   (491 + k) = {491 + k};
-		Physical Surface(491 + k) = {491 + k};
+		Curve Loop      (419 + 10*k) = {offset + 69, offset + 44, offset + 45, offset + 46, offset + 70, offset + 47};
+		Plane Surface   (419 + 10*k) = {419 + 10*k};
+		Physical Surface(419 + 10*k) = {419 + 10*k};
 	EndIf
 EndFor
 
