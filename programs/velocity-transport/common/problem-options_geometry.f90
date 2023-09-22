@@ -671,9 +671,17 @@ module problem_options_geometry
                     y_offset        = circle_centre(2) - wall_heights(placentone_no)
                     temp_coord       = placenta_point
                 else if (vessel_no == 9) then
+                    rotation_centre = placentone_sides(placentone_no+1, 1, :)
+
+                    angle = pi
+                    temp_coord(1) =   (placenta_point(1) - rotation_centre(1))*sin(angle) &
+                    + (placenta_point(2) - rotation_centre(2))*cos(angle)
+                    temp_coord(2) = - (placenta_point(1) - rotation_centre(1))*cos(angle) &
+                    + (placenta_point(2) - rotation_centre(2))*sin(angle)
+                    temp_coord = temp_coord + rotation_centre
+
                     translate_angle = wall_angles(placentone_no)
                     y_offset        = circle_centre(2)
-                    temp_coord       = placenta_point
                 else 
                     print *, "Error in translate_placenta_to_placentone_point. Missed case."
                     print *, "element_region_id = ", element_region_id
