@@ -225,8 +225,8 @@ module problem_options_geometry
             !!!!!!!!!!!!!!!!!
             !! WALL ANGLES !!
             !!!!!!!!!!!!!!!!!
-            allocate(wall_angles(no_placentones))
-            do i = 1, no_placentones
+            allocate(wall_angles(no_placentones-1))
+            do i = 1, no_placentones-1
                 x = cumulative_placentone_widths(i) + placentone_widths(i) + wall_width/2.0_db
                 y = y_centre - sqrt((boundary_radius**2 - (x - x_centre)**2))
                 wall_angles(i) = -atan2(y - y_centre, x - x_centre)
@@ -616,8 +616,8 @@ module problem_options_geometry
         real(db), dimension(problem_dim), intent(in) :: placenta_point
         integer, intent(in)                          :: element_region_id
         
-        real(db), dimension(problem_dim) :: circle_centre
-        real(db)                         :: radius, translate_angle, scaling_factor, y_offset
+        real(db), dimension(problem_dim) :: circle_centre, rotation_centre, temp_coord
+        real(db)                         :: radius, translate_angle, scaling_factor, y_offset, angle
         integer                          :: placentone_no, vessel_no
         
         radius   = y_centre
@@ -629,6 +629,7 @@ module problem_options_geometry
             circle_centre(1) = placenta_height - ms_pipe_width/2.0_db
             circle_centre(2) = placenta_height - ms_pipe_width/2.0_db
             y_offset         = circle_centre(2)
+            temp_coord       = placenta_point
         else if (element_region_id == 402) then
             placentone_no    = 1
             translate_angle  = 0.0_db
@@ -636,6 +637,7 @@ module problem_options_geometry
             circle_centre(1) = placenta_width - placenta_height + ms_pipe_width/2.0_db
             circle_centre(2) =                  placenta_height - ms_pipe_width/2.0_db
             y_offset         = circle_centre(2)
+            temp_coord       = placenta_point
         else if (411 <= element_region_id .and. element_region_id <= 473) then
             placentone_no    = (element_region_id-400)/10
             vessel_no        = mod(element_region_id-400, 10)
@@ -645,19 +647,33 @@ module problem_options_geometry
                 circle_centre(1) = x_centre
                 circle_centre(2) = y_centre
                 y_offset         = circle_centre(2)
+                temp_coord       = placenta_point
             else
+                ! Note: placentone_no = wall_no here.
+                ! For septal veins, we first need to transform points to the basal plate, and then do the usual transformation.
                 scaling_factor  = 1.0_db
                 circle_centre(1) = x_centre
                 circle_centre(2) = y_centre
                 if (vessel_no == 7) then
+                    rotation_centre = placentone_sides(placentone_no, 2, :)
+
+                    angle = 0.0_db
+                    temp_coord(1) =   (placenta_point(1) - rotation_centre(1))*sin(angle) &
+                    + (placenta_point(2) - rotation_centre(2))*cos(angle)
+                    temp_coord(2) = - (placenta_point(1) - rotation_centre(1))*cos(angle) &
+                    + (placenta_point(2) - rotation_centre(2))*sin(angle)
+                    temp_coord = temp_coord + rotation_centre
+
                     translate_angle = wall_angles(placentone_no)
                     y_offset        = circle_centre(2)
                 else if (vessel_no == 8) then
                     translate_angle = wall_angles(placentone_no)
                     y_offset        = circle_centre(2) - wall_heights(placentone_no)
+                    temp_coord       = placenta_point
                 else if (vessel_no == 9) then
                     translate_angle = wall_angles(placentone_no)
                     y_offset        = circle_centre(2)
+                    temp_coord       = placenta_point
                 else 
                     print *, "Error in translate_placenta_to_placentone_point. Missed case."
                     print *, "element_region_id = ", element_region_id
@@ -672,16 +688,17 @@ module problem_options_geometry
             circle_centre(1) = x_centre
             circle_centre(2) = y_centre
             y_offset         = circle_centre(2)
+            temp_coord       = placenta_point
         else
             print *, "Error in translate_placenta_to_placentone_point. Missed case."
             print *, "element_region_id = ", element_region_id
             error stop
         end if
         
-        translate_placenta_to_placentone_point(1) =   (placenta_point(1) - circle_centre(1))*sin(translate_angle) &
-        + (placenta_point(2) - circle_centre(2))*cos(translate_angle)
-        translate_placenta_to_placentone_point(2) = - (placenta_point(1) - circle_centre(1))*cos(translate_angle) &
-        + (placenta_point(2) - circle_centre(2))*sin(translate_angle)
+        translate_placenta_to_placentone_point(1) =   (temp_coord(1) - circle_centre(1))*sin(translate_angle) &
+        + (temp_coord(2) - circle_centre(2))*cos(translate_angle)
+        translate_placenta_to_placentone_point(2) = - (temp_coord(1) - circle_centre(1))*cos(translate_angle) &
+        + (temp_coord(2) - circle_centre(2))*sin(translate_angle)
 
         !translate_placenta_to_placentone_point    = translate_placenta_to_placentone_point/scaling_factor
         ! translate_placenta_to_placentone_point(1) = translate_placenta_to_placentone_point(1)/scaling_factor + &
@@ -690,10 +707,11 @@ module problem_options_geometry
             vessel_locations(placentone_no, 2)
         translate_placenta_to_placentone_point(2) = (translate_placenta_to_placentone_point(2) + y_offset)/scaling_factor
 
-        ! if (element_region_id == 428) then
+        ! if (element_region_id == 427) then
         !     print *, "DEBUG"
         !     print *, "placenta_point = ", placenta_point
         !     print *, "translate_placenta_to_placentone_point = ", translate_placenta_to_placentone_point
+        !     print *, "wall_angles(k)", wall_angles(placentone_no)
         !     print *, ""
         ! end if
     end function
