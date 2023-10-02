@@ -174,7 +174,7 @@ module outflow_flux
         integer, dimension(2) :: neighbours,loc_face_no
         integer, dimension(no_nodes_per_face_max) :: face_nodes
         integer, dimension(:,:), allocatable :: pvec
-        real :: integral
+        real(db) :: integral
         real(db), dimension(:,:,:), allocatable :: inv_jacobi_mat,jacobi_mat
         real(db), dimension(:,:), allocatable :: local_points,global_points,face_normals
         real(db), dimension(:), allocatable :: quad_weights,face_jacobian,det_jacobi_mat, &

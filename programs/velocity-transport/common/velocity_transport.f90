@@ -438,7 +438,7 @@ program velocity_transport
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! SETUP FOR TIME-DEPENDANCE !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    if (compute_transport) then
+    if (compute_transport .and. no_time_steps > 0) then
         ! Transport routines.
         call store_subroutine_names(fe_solver_routines_transport, 'assemble_matrix_rhs_element', &
             stiffness_matrix_load_vector_transport, 1)
@@ -457,7 +457,7 @@ program velocity_transport
         scheme_data_transport%dim_real_array_2 = no_dofs_transport
     end if
 
-    if (compute_velocity) then
+    if (compute_velocity  .and. no_time_steps > 0) then
         ! Velocity routines.
         if (trim(assembly_name) == 'nsb') then
             call store_subroutine_names(fe_solver_routines_velocity,  'assemble_jac_matrix_element', &
@@ -508,8 +508,8 @@ program velocity_transport
         open(23111997, file=flux_file, status='replace')
         tsvFormat = '(*(G0.6,:,"'//achar(9)//'"))'
 
-        call setup_outflow_fluxes(243)
-        call setup_outflow_transport_fluxes(243)
+        call setup_outflow_fluxes(293)
+        call setup_outflow_transport_fluxes(293)
         call calculate_outflow_fluxes(mesh_data, solution_velocity)
         call calculate_outflow_transport_fluxes(mesh_data, solution_velocity, solution_transport)
 
@@ -661,8 +661,8 @@ program velocity_transport
         ! FLUX OUTPUT !
         !!!!!!!!!!!!!!!
         if (compute_transport .and. compute_velocity) then
-            call setup_outflow_fluxes(243)
-            call setup_outflow_transport_fluxes(243)
+            call setup_outflow_fluxes(293)
+            call setup_outflow_transport_fluxes(293)
             call calculate_outflow_fluxes(mesh_data, solution_velocity)
             call calculate_outflow_transport_fluxes(mesh_data, solution_velocity, solution_transport)
             call write_to_file(23111997, tsvFormat, mesh_data, solution_velocity, solution_transport, time_step_no, &
@@ -687,10 +687,12 @@ program velocity_transport
     end if
     if (compute_transport) then
         close(23111998)
-        deallocate(scheme_data_transport%temp_real_array)
         call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
             aptofem_stored_keys, sp_matrix_rhs_data_transport, 5, scheme_data_transport)
         call delete_solution   (solution_transport)
+        if (no_time_steps > 0) then
+            deallocate(scheme_data_transport%temp_real_array)
+        end if
     end if
     if (compute_velocity) then
         call linear_fe_solver(solution_velocity,  mesh_data, fe_solver_routines_velocity,  'solver_velocity', &

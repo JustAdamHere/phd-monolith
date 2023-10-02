@@ -17,3 +17,9 @@ def save(name = "output_run-all.txt"):
 	with open(f"./output/{name}", 'w', encoding='utf-8') as file:
 		for line in output_cache:
 			file.write(line)
+
+def end_execution(sig, frame):
+  from miscellaneous import output
+  output.output("⚠️ Termination signal received! Saving output so far...", True)
+  output.save()
+  exit(0)

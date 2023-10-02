@@ -1,6 +1,10 @@
-def generate_mesh(simulation_no, geometry, mesh_resolution, vessel_locations, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, normal_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones, vessel_fillet_radius):
+def add_option(options, option, value):
+	options += [f'-setnumber', option, str(value)]
+
+def generate_mesh(simulation_no, geometry, mesh_resolution, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, basal_plate_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones, vessel_fillet_radius, basal_plate_vessel_locations, septal_vein_locations):
 	import subprocess
 
+	# Mesh files for each geometry.
 	if (geometry == "placentone"):
 		geo_file = "box-circle.geo"
 		dim = 2
@@ -8,10 +12,10 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, vessel_locations, ce
 		geo_file = "box-circle-3d.geo"
 		dim = 3
 	elif (geometry == "placenta"):
-		#geo_file = "inverted-circle-slice-6_normal-walls.geo"
 		geo_file = "inverted-circle-slice-6-flat_normal-walls.geo"
 		dim = 2
 
+	# Set mesh resolution.
 	if (mesh_resolution == -1):
 		h_background    = 0.1
 		h_vein_top      = h_background/10
@@ -43,37 +47,15 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, vessel_locations, ce
 	else:
 		raise ValueError("mesh_resolution must be float or list of length 8")
 
-	if (no_placentones == 6):
+	# Set wall widths.
+	if (no_placentones == 6 and geometry == "placenta"):
 		wall_height_1 = wall_height_ratio*0.1725
 		wall_height_2 = wall_height_ratio*0.35175
 		wall_height_3 = wall_height_ratio*0.1725
 		wall_height_4 = wall_height_ratio*0.35175
 		wall_height_5 = wall_height_ratio*0.1725
 		wall_height_6 = 0
-
-		vein_11 = normal_vessels[0][0]
-		vein_12 = normal_vessels[0][2]
-		vein_21 = normal_vessels[1][0]
-		vein_22 = normal_vessels[1][2]
-		vein_31 = normal_vessels[2][0]
-		vein_32 = normal_vessels[2][2]
-		vein_41 = normal_vessels[3][0]
-		vein_42 = normal_vessels[3][2]
-		vein_51 = normal_vessels[4][0]
-		vein_52 = normal_vessels[4][2]
-		vein_61 = normal_vessels[5][0]
-		vein_62 = normal_vessels[5][2]
-		vein_71 = 0
-		vein_72 = 0
-
-		artery_11 = normal_vessels[0][1]
-		artery_21 = normal_vessels[1][1]
-		artery_31 = normal_vessels[2][1]
-		artery_41 = normal_vessels[3][1]
-		artery_51 = normal_vessels[4][1]
-		artery_61 = normal_vessels[5][1]
-		artery_71 = 0
-	else:
+	elif (no_placentones == 7 and geometry == "placenta"):
 		wall_height_1 = wall_height_ratio*0.1725
 		wall_height_2 = wall_height_ratio*0.1725
 		wall_height_3 = wall_height_ratio*0.1725
@@ -81,142 +63,63 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, vessel_locations, ce
 		wall_height_5 = wall_height_ratio*0.1725
 		wall_height_6 = wall_height_ratio*0.1725
 
-		vein_11 = normal_vessels[0][0]
-		vein_12 = normal_vessels[0][2]
-		vein_21 = normal_vessels[1][0]
-		vein_22 = normal_vessels[1][2]
-		vein_31 = normal_vessels[2][0]
-		vein_32 = normal_vessels[2][2]
-		vein_41 = normal_vessels[3][0]
-		vein_42 = normal_vessels[3][2]
-		vein_51 = normal_vessels[4][0]
-		vein_52 = normal_vessels[4][2]
-		vein_61 = normal_vessels[5][0]
-		vein_62 = normal_vessels[5][2]
-		vein_71 = normal_vessels[6][0]
-		vein_72 = normal_vessels[6][2]
+	# Mesh resolution.
+	options = []
+	add_option(options, 'h_background',    h_background)
+	add_option(options, 'h_vein_top',      h_vein_top)
+	add_option(options, 'h_vein_bottom',   h_vein_bottom)
+	add_option(options, 'h_artery_top',    h_artery_top)
+	add_option(options, 'h_artery_middle', h_artery_middle)
+	add_option(options, 'h_artery_bottom', h_artery_bottom)
+	add_option(options, 'h_cavity_inner',  h_cavity_inner)
+	add_option(options, 'h_cavity_outer',  h_cavity_outer)
 
-		artery_11 = normal_vessels[0][1]
-		artery_21 = normal_vessels[1][1]
-		artery_31 = normal_vessels[2][1]
-		artery_41 = normal_vessels[3][1]
-		artery_51 = normal_vessels[4][1]
-		artery_61 = normal_vessels[5][1]
-		artery_71 = normal_vessels[6][1]
-	
-	if (no_placentones == 6):
-		septal_vein_11 = septal_veins[0][0]
-		septal_vein_12 = septal_veins[0][1]
-		septal_vein_13 = septal_veins[0][2]
-		septal_vein_21 = septal_veins[1][0]
-		septal_vein_22 = septal_veins[1][1]
-		septal_vein_23 = septal_veins[1][2]
-		septal_vein_31 = septal_veins[2][0]
-		septal_vein_32 = septal_veins[2][1]
-		septal_vein_33 = septal_veins[2][2]
-		septal_vein_41 = septal_veins[3][0]
-		septal_vein_42 = septal_veins[3][1]
-		septal_vein_43 = septal_veins[3][2]
-		septal_vein_51 = septal_veins[4][0]
-		septal_vein_52 = septal_veins[4][1]
-		septal_vein_53 = septal_veins[4][2]
-		septal_vein_61 = 0
-		septal_vein_62 = 0
-		septal_vein_63 = 0
-	else:
-		septal_vein_11 = septal_veins[0][0]
-		septal_vein_12 = septal_veins[0][1]
-		septal_vein_13 = septal_veins[0][2]
-		septal_vein_21 = septal_veins[1][0]
-		septal_vein_22 = septal_veins[1][1]
-		septal_vein_23 = septal_veins[1][2]
-		septal_vein_31 = septal_veins[2][0]
-		septal_vein_32 = septal_veins[2][1]
-		septal_vein_33 = septal_veins[2][2]
-		septal_vein_41 = septal_veins[3][0]
-		septal_vein_42 = septal_veins[3][1]
-		septal_vein_43 = septal_veins[3][2]
-		septal_vein_51 = septal_veins[4][0]
-		septal_vein_52 = septal_veins[4][1]
-		septal_vein_53 = septal_veins[4][2]
-		septal_vein_61 = septal_veins[5][0]
-		septal_vein_62 = septal_veins[5][1]
-		septal_vein_63 = septal_veins[5][2]
+	# Geometry measurements.
+	add_option(options, 'central_cavity_transition', central_cavity_transition)
+	add_option(options, 'artery_width',              artery_width)
+	add_option(options, 'artery_width_sm',           artery_width_sm)
+	add_option(options, 'vessel_fillet_radius',      vessel_fillet_radius)
 
-	ms_1 = marginal_sinus[0]
-	ms_2 = marginal_sinus[1]
+	# Miscellaneous.
+	add_option(options, 'no_placentones', no_placentones)
+	add_option(options, 'ms_1', 					marginal_sinus[0])
+	add_option(options, 'ms_2', 					marginal_sinus[1])
 
-	options = ['-setnumber', 'h_background', str(h_background),\
-		'-setnumber', 'h_vein_top', str(h_vein_top),\
-		'-setnumber', 'h_vein_bottom', str(h_vein_bottom),\
-		'-setnumber', 'h_artery_top', str(h_artery_top),\
-		'-setnumber', 'h_artery_middle', str(h_artery_middle),\
-		'-setnumber', 'h_artery_bottom', str(h_artery_bottom),\
-		'-setnumber', 'h_cavity_inner', str(h_cavity_inner),\
-		'-setnumber', 'h_cavity_outer', str(h_cavity_outer),\
-		'-setnumber', 'vein_11', str(vein_11), \
-		'-setnumber', 'vein_12', str(vein_12), \
-		'-setnumber', 'vein_21', str(vein_21), \
-		'-setnumber', 'vein_22', str(vein_22), \
-		'-setnumber', 'vein_31', str(vein_31), \
-		'-setnumber', 'vein_32', str(vein_32), \
-		'-setnumber', 'vein_41', str(vein_41), \
-		'-setnumber', 'vein_42', str(vein_42), \
-		'-setnumber', 'vein_51', str(vein_51), \
-		'-setnumber', 'vein_52', str(vein_52), \
-		'-setnumber', 'vein_61', str(vein_61), \
-		'-setnumber', 'vein_62', str(vein_62), \
-		'-setnumber', 'vein_71', str(vein_71), \
-		'-setnumber', 'vein_72', str(vein_72), \
-		'-setnumber', 'artery_11', str(artery_11), \
-		'-setnumber', 'artery_21', str(artery_21), \
-		'-setnumber', 'artery_31', str(artery_31), \
-		'-setnumber', 'artery_41', str(artery_41), \
-		'-setnumber', 'artery_51', str(artery_51), \
-		'-setnumber', 'artery_61', str(artery_61), \
-		'-setnumber', 'artery_71', str(artery_71), \
-		'-setnumber', 'septal_vein_11', str(septal_vein_11),\
-		'-setnumber', 'septal_vein_12', str(septal_vein_12),\
-		'-setnumber', 'septal_vein_13', str(septal_vein_13),\
-		'-setnumber', 'septal_vein_21', str(septal_vein_21),\
-		'-setnumber', 'septal_vein_22', str(septal_vein_22),\
-		'-setnumber', 'septal_vein_23', str(septal_vein_23),\
-		'-setnumber', 'septal_vein_31', str(septal_vein_31),\
-		'-setnumber', 'septal_vein_32', str(septal_vein_32),\
-		'-setnumber', 'septal_vein_33', str(septal_vein_33),\
-		'-setnumber', 'septal_vein_41', str(septal_vein_41),\
-		'-setnumber', 'septal_vein_42', str(septal_vein_42),\
-		'-setnumber', 'septal_vein_43', str(septal_vein_43),\
-		'-setnumber', 'septal_vein_51', str(septal_vein_51),\
-		'-setnumber', 'septal_vein_52', str(septal_vein_52),\
-		'-setnumber', 'septal_vein_53', str(septal_vein_53),\
-		'-setnumber', 'septal_vein_61', str(septal_vein_61),\
-		'-setnumber', 'septal_vein_62', str(septal_vein_62),\
-		'-setnumber', 'septal_vein_63', str(septal_vein_63),\
-		'-setnumber', 'central_cavity_transition', str(central_cavity_transition),\
-		'-setnumber', 'wall_height_1', str(wall_height_1),\
-		'-setnumber', 'wall_height_2', str(wall_height_2),\
-		'-setnumber', 'wall_height_3', str(wall_height_3),\
-		'-setnumber', 'wall_height_4', str(wall_height_4),\
-		'-setnumber', 'wall_height_5', str(wall_height_5),\
-		'-setnumber', 'wall_height_6', str(wall_height_6),\
-		'-setnumber', 'artery_width',  str(artery_width),\
-		'-setnumber', 'artery_width_sm',  str(artery_width_sm),\
-		'-setnumber', 'ms_1', str(ms_1),\
-		'-setnumber', 'ms_2', str(ms_2),\
-		'-setnumber', 'no_placentones', str(no_placentones),\
-		'-setnumber', 'vessel_fillet_radius', str(vessel_fillet_radius),\
-	]
+	# Loop over placentones.
+	assert(len(basal_plate_vessels) == no_placentones)
+	assert(len(basal_plate_vessel_locations) == no_placentones)
+	for i in range(no_placentones):
+		add_option(options, f'vein_{i+1}1',   basal_plate_vessels[i][0])
+		add_option(options, f'artery_{i+1}1', basal_plate_vessels[i][1])
+		add_option(options, f'vein_{i+1}2',   basal_plate_vessels[i][2])
+
+		add_option(options, f'vessel_locations_{i+1}1', basal_plate_vessel_locations[i][0])
+		add_option(options, f'vessel_locations_{i+1}2', basal_plate_vessel_locations[i][1])
+		add_option(options, f'vessel_locations_{i+1}3', basal_plate_vessel_locations[i][2])
+
+	# Loop over walls.
+	wall_heights = [wall_height_1, wall_height_2, wall_height_3, wall_height_4, wall_height_5, wall_height_6]
+	assert(len(septal_veins) == no_placentones-1)
+	assert(len(septal_vein_locations) == no_placentones-1)
+	for i in range(no_placentones-1):
+		add_option(options, f'septal_vein_{i+1}1', septal_veins[i][0])
+		add_option(options, f'septal_vein_{i+1}2', septal_veins[i][1])
+		add_option(options, f'septal_vein_{i+1}3', septal_veins[i][2])
+
+		add_option(options, f'septal_vein_position_{i+1}1', septal_vein_locations[i][0])
+		add_option(options, f'septal_vein_position_{i+1}2', septal_vein_locations[i][1])
+		add_option(options, f'septal_vein_position_{i+1}3', septal_vein_locations[i][2])
+
+		add_option(options, f'wall_height_{i+1}', wall_heights[i])
 
 	# Cavity widths.
 	if (type(central_cavity_width) == list):
 		assert(len(central_cavity_width) == no_placentones)
 
 		for i in range(no_placentones):
-			options += ['-setnumber', f'central_cavity_width_{i+1}', str(central_cavity_width[i])]
+			add_option(options, f'central_cavity_width_{i+1}', central_cavity_width[i])
 	elif (type(central_cavity_width) == float or type(central_cavity_width) == int):
-		for i in range(no_placentones):
-			options += ['-setnumber', f'central_cavity_width', str(central_cavity_width)]
+		add_option(options, f'central_cavity_width', central_cavity_width)
 	else:
 		raise ValueError("central_cavity_width must be float or list of length [no_placentones]")
 	
@@ -225,38 +128,25 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, vessel_locations, ce
 		assert(len(central_cavity_height) == no_placentones)
 
 		for i in range(no_placentones):
-			options += ['-setnumber', f'central_cavity_height_{i+1}', str(central_cavity_height[i])]
+			add_option(options, f'central_cavity_height_{i+1}', central_cavity_height[i])
 	elif (type(central_cavity_height) == float or type(central_cavity_height) == int):
-		for i in range(no_placentones):
-			options += ['-setnumber', f'central_cavity_height', str(central_cavity_height)]
+		add_option(options, f'central_cavity_height', central_cavity_height)
 	else:
 		raise ValueError("central_cavity_width must be float or list of length [no_placentones]")
-	
-	# Vessel locations.
-	no_vessels = 3
-	if (type(vessel_locations) == list):
-		assert(len(vessel_locations)    == no_placentones)
-		assert(len(vessel_locations[0]) == no_vessels)
 
-		for i in range(no_placentones):
-			for j in range(no_vessels):
-				options += ['-setnumber', f'vessel_locations_{10*(i+1) + j+1}', str(vessel_locations[i][j])]
-
+	# Command to generate mesh.
 	command = [\
 		'/home/pmyambl/software/gmsh-4.11.1-Linux64/bin/gmsh',\
 		f'./meshes/{geo_file}',\
 		'-string', 'Mesh.MshFileVersion=2;'\
 	]
 
+  # Gmsh output options.
 	output = [\
 		f'-{dim}',\
 		'-o', f'meshes/mesh_{simulation_no}.msh'\
 	]
 
-	# if (verbose_output):
-	# 	stdout = None
-	# else:
-	# 	stdout = subprocess.DEVNULL
-
-	stdout = subprocess.DEVNULL
+	# Run gmsh.
+	stdout = subprocess.DEVNULL # None
 	subprocess.run(command + options + output, stdout=stdout)

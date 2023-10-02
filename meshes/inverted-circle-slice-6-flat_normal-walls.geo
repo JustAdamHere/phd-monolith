@@ -6,7 +6,7 @@
 //=/   Inlets:              111-116, (117)
 //=/   Outlets:             211-224, (225-227)
 //=/   Corner outlets:      230, 231
-//=/   (Septa outlet:       241, 242, 243, 251, ..., 283)
+//=/   (Septa outlet:       241, 242, 243, 251, ..., 293)
 //=/  SURFACES
 //=/   Placentones:  301, 302, 303, 304, 305, 306
 //=/   Corner pipes: 401, 402
@@ -55,7 +55,7 @@ If (!Exists(central_cavity_height))
 EndIf
 
 If (!Exists(central_cavity_transition))
-	central_cavity_transition = 0.12;//0.04; // 1.6mm
+	central_cavity_transition = 0.12; // 4.8mm
 EndIf
 
 ////////////////////////
@@ -196,6 +196,12 @@ For k In {1:no_placentones:1}
 	Printf("  placentone_width_%g = %f", k, placentone_widths[k-1]);
 EndFor
 
+cumulative_placentone_widths = {};
+cumulative_placentone_widths += {0};
+For k In {1:no_placentones-1:1}
+	cumulative_placentone_widths += {cumulative_placentone_widths[k-1] + wall_width + placentone_widths[k-1]};
+EndFor
+
 // Default locations of the 3 vessels, given as proportions along placentones.
 For k In {1:no_placentones:1}
 	If (!Exists(vessel_locations~{10*k+1}))
@@ -213,25 +219,20 @@ EndFor
 location_1_x = {};
 location_2_x = {};
 location_3_x = {};
-cumulative_width = 0;
 For k In {1:no_placentones:1}
 	If (!Exists(location~{10*k + 1}))
-		location~{10*k + 1} = cumulative_width + vessel_locations~{10*k+1}*placentone_widths[k-1];
+		location~{10*k + 1} = cumulative_placentone_widths[k-1] + vessel_locations~{10*k+1}*placentone_widths[k-1];
 	EndIf
 	If (!Exists(location~{10*k + 2}))
-		location~{10*k + 2} = cumulative_width + vessel_locations~{10*k+2}*placentone_widths[k-1];
+		location~{10*k + 2} = cumulative_placentone_widths[k-1] + vessel_locations~{10*k+2}*placentone_widths[k-1];
 	EndIf
 	If (!Exists(location~{10*k + 3}))
-		location~{10*k + 3} = cumulative_width + vessel_locations~{10*k+3}*placentone_widths[k-1];
+		location~{10*k + 3} = cumulative_placentone_widths[k-1] + vessel_locations~{10*k+3}*placentone_widths[k-1];
 	EndIf
 
 	location_1_x += {location~{10*k + 1}};
 	location_2_x += {location~{10*k + 2}};
 	location_3_x += {location~{10*k + 3}};
-
-	If (k < no_placentones)
-		cumulative_width += placentone_widths[k-1] + wall_width;
-	EndIf
 EndFor
 
 // Default fillet radius.
@@ -309,7 +310,7 @@ For k In {0:no_placentones-2:1}
 		septal_vein_position~{(k+1)*10+2} = 0.5;
 	EndIf
 	If (!Exists(septal_vein_position~{(k+1)*10+3}))
-		septal_vein_position~{(k+1)*10+3} = 0.5;
+		septal_vein_position~{(k+1)*10+3} = 0.2;
 	EndIf
 EndFor
 
@@ -337,10 +338,12 @@ Printf("  radius   = %f", radius);
 // x and y of the walls //
 //////////////////////////
 wall_low_x = {};
-offset = 0;
+// offset = 0;
 For k In {0:no_placentones-2:1}
-	wall_low_x += {offset + placentone_widths[k], offset + placentone_widths[k] + wall_width};
-	offset += placentone_widths[k] + wall_width;
+	wall_low_x += {cumulative_placentone_widths[k] + placentone_widths[k]};
+	wall_low_x += {cumulative_placentone_widths[k+1]};
+	// wall_low_x += {offset + placentone_widths[k], offset + placentone_widths[k] + wall_width};
+	// offset += placentone_widths[k] + wall_width;
 EndFor
 
 wall_low_y = {};
