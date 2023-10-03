@@ -607,23 +607,24 @@ For k In {0:no_placentones-1:1}
 		theta3 = theta3 + Pi;
 	EndIf
 
-	// Essentially, a nasty hack that works. Is it so bad if it works?
-	If (no_placentones % 2 != 0 && k == Floor(no_placentones/2))
-		Point(offset + 19) = {cavity_x_1[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_inner};
-		Point(offset + 42) = {cavity_x_1[k], cavity_y_1[k], 0, h_cavity_outer};
-		Point(offset + 43) = {cavity_x_1[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_outer};
-	Else
-		Point(offset + 19) = {cavity_x_1[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_inner};
-		Point(offset + 42) = {cavity_x_1[k], cavity_y_1[k], 0, h_cavity_outer};
-		Point(offset + 43) = {cavity_x_1[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_outer};
-	EndIf
-
-	Point(offset + 22) = {cavity_x_2[k], cavity_y_2[k], 0, h_artery_top};
-
-	Point(offset + 21) = {cavity_x_3[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta3), centre_y - (radius^2 - (cavity_x_3[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta3) - centre_x)^2)^0.5, 0, h_cavity_inner};
-	Point(offset + 44) = {cavity_x_3[k], cavity_y_3[k], 0, h_cavity_outer};
-	Point(offset + 45) = {cavity_x_3[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta3), centre_y - (radius^2 - (cavity_x_3[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta3) - centre_x)^2)^0.5, 0, h_cavity_outer};
 	If (artery[k] == 1)
+		// Essentially, a nasty hack that works. Is it so bad if it works?
+		If (no_placentones % 2 != 0 && k == Floor(no_placentones/2))
+			Point(offset + 19) = {cavity_x_1[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_inner};
+			Point(offset + 42) = {cavity_x_1[k], cavity_y_1[k], 0, h_cavity_outer};
+			Point(offset + 43) = {cavity_x_1[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_outer};
+		Else
+			Point(offset + 19) = {cavity_x_1[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_inner};
+			Point(offset + 42) = {cavity_x_1[k], cavity_y_1[k], 0, h_cavity_outer};
+			Point(offset + 43) = {cavity_x_1[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1), centre_y - (radius^2 - (cavity_x_1[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta1) - centre_x)^2)^0.5, 0, h_cavity_outer};
+		EndIf
+
+		Point(offset + 22) = {cavity_x_2[k], cavity_y_2[k], 0, h_artery_top};
+
+		Point(offset + 21) = {cavity_x_3[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta3), centre_y - (radius^2 - (cavity_x_3[k] + (placentone_widths[k]*central_cavity_transition/2)*Sin(theta3) - centre_x)^2)^0.5, 0, h_cavity_inner};
+		Point(offset + 44) = {cavity_x_3[k], cavity_y_3[k], 0, h_cavity_outer};
+		Point(offset + 45) = {cavity_x_3[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta3), centre_y - (radius^2 - (cavity_x_3[k] - (placentone_widths[k]*central_cavity_transition/2)*Sin(theta3) - centre_x)^2)^0.5, 0, h_cavity_outer};
+
 		If (no_placentones % 2 != 0 && k == Floor(no_placentones/2))
 			Point(offset + 20) = {cavity_x_2[k] + (central_cavity_heights[k]/2 + placentone_widths[k]*central_cavity_transition*central_cavity_ratios[k]/2)*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2 + placentone_widths[k]*central_cavity_transition*central_cavity_ratios[k]/2)*Sin(theta2), 0, h_cavity_outer};
 			Point(offset + 25) = {cavity_x_2[k] + (central_cavity_heights[k]/2                            )*Cos(theta2), cavity_y_2[k] - (central_cavity_heights[k]/2                            )*Sin(theta2), 0, h_cavity_inner};
@@ -782,51 +783,98 @@ For k In {0:no_placentones-1:1}
 	offset_prev = numbering_start + (k-1)*placentone_step;
 	offset      = numbering_start      + k*placentone_step;
 
+	v = {vein_1[k], artery[k], vein_2[k]};
+
+	// Set the left point of the placentone.
 	If (k == 0)
-		If (vein_1[k] == 1)
-			Circle(offset + 1) = {1001, 1000, offset + 46};
-			Circle(offset + 5) = {offset + 50,  1000, offset + 19};
-		Else
-			Circle(offset + 1) = {1001, 1000, offset + 19};
-		EndIf
-	EndIf
-	If (k != 0)
-		If (vein_1[k] == 1)
-			Circle(offset + 1) = {offset_prev + 17, 1000, offset + 46};
-			Circle(offset + 5)  = {offset + 50,  1000, offset + 19};
-		Else
-			Circle(offset + 1) = {offset_prev + 17, 1000, offset + 19};
-		EndIf
+		left_point = 1001;
+	Else
+		left_point = offset_prev + 17;
 	EndIf
 
-	If (artery[k] == 1)
+	// Set the right point of the placentone.
+	If (k == no_placentones-1)
+		right_point = 1002;
+	Else
+		right_point = offset + 13;
+	EndIf
+
+	// TODO!!
+	// Cases for each basal plate setup.
+	If     (v[0] == 1 && v[1] == 1 && v[2] == 1)
+		Circle(offset + 1)  = {left_point,  1000, offset + 46};
+		Circle(offset + 5)  = {offset + 50, 1000, offset + 19};
+		Circle(offset + 53) = {offset + 19, 1000, offset + 42};
+		Circle(offset + 54) = {offset + 42, 1000, offset + 43};
 		Circle(offset + 23) = {offset + 43, 1000, offset + 64};
 		Circle(offset + 26) = {offset + 68, 1000, offset + 45};
-	Else
-		Circle(offset + 23) = {offset + 43, 1000, offset + 22};
-		Circle(offset + 26) = {offset + 22, 1000, offset + 45};
-	EndIf
-	Circle(offset + 53) = {offset + 19, 1000, offset + 42};
-	Circle(offset + 54) = {offset + 42, 1000, offset + 43};
-	Circle(offset + 55) = {offset + 45, 1000, offset + 44};
-	Circle(offset + 56) = {offset + 44, 1000, offset + 21};
+		Circle(offset + 55) = {offset + 45, 1000, offset + 44};
+		Circle(offset + 56) = {offset + 44, 1000, offset + 21};
+		Circle(offset + 9)  = {offset + 21, 1000, offset + 52};
+		Circle(offset + 13) = {offset + 56, 1000, right_point};
+	ElseIf (v[0] == 1 && v[1] == 1 && v[2] == 0)
 
-	If (k != no_placentones-1)
-		If (vein_2[k] == 1)
-			Circle(offset + 9)  = {offset + 21, 1000, offset + 52};
-			Circle(offset + 13)  = {offset + 56, 1000, offset + 13};
-		Else
-			Circle(offset + 9)  = {offset + 21, 1000, offset + 13};
-		EndIf
+	ElseIf (v[0] == 0 && v[1] == 1 && v[2] == 1)
+
+	ElseIf (v[0] == 1 && v[1] == 0 && v[2] == 1)
+		Circle(offset + 1)  = {left_point,  1000, offset + 46};
+		Circle(offset + 5)  = {offset + 50, 1000, offset + 52};
+		Circle(offset + 13) = {offset + 56, 1000, right_point};
+	ElseIf (v[0] == 1 && v[1] == 0 && v[2] == 0)
+
+	ElseIf (v[0] == 0 && v[1] == 1 && v[2] == 0)
+
+	ElseIf (v[0] == 0 && v[1] == 0 && v[2] == 1)
+
+	ElseIf (v[0] == 0 && v[1] == 0 && v[2] == 0)
+		
 	EndIf
-	If (k == no_placentones-1)
-		If (vein_2[k] == 1)
-			Circle(offset + 9)  = {offset + 21, 1000, offset + 52};
-			Circle(offset + 13)  = {offset + 56, 1000, 1002};
-		Else
-			Circle(offset + 9)  = {offset + 21, 1000, 1002};
-		EndIf
-	EndIf
+
+	// If (k == 0)
+	// 	If (vein_1[k] == 1)
+	// 		Circle(offset + 1) = {1001, 1000, offset + 46};
+	// 		Circle(offset + 5) = {offset + 50,  1000, offset + 19};
+	// 	Else
+	// 		Circle(offset + 1) = {1001, 1000, offset + 19};
+	// 	EndIf
+	// EndIf
+	// If (k != 0)
+	// 	If (vein_1[k] == 1)
+	// 		Circle(offset + 1) = {offset_prev + 17, 1000, offset + 46};
+	// 		Circle(offset + 5)  = {offset + 50,  1000, offset + 19};
+	// 	Else
+	// 		Circle(offset + 1) = {offset_prev + 17, 1000, offset + 19};
+	// 	EndIf
+	// EndIf
+
+	// If (artery[k] == 1)
+	// 	Circle(offset + 23) = {offset + 43, 1000, offset + 64};
+	// 	Circle(offset + 26) = {offset + 68, 1000, offset + 45};
+	// Else
+	// 	Circle(offset + 23) = {offset + 43, 1000, offset + 22};
+	// 	Circle(offset + 26) = {offset + 22, 1000, offset + 45};
+	// EndIf
+	// Circle(offset + 53) = {offset + 19, 1000, offset + 42};
+	// Circle(offset + 54) = {offset + 42, 1000, offset + 43};
+	// Circle(offset + 55) = {offset + 45, 1000, offset + 44};
+	// Circle(offset + 56) = {offset + 44, 1000, offset + 21};
+
+	// If (k != no_placentones-1)
+	// 	If (vein_2[k] == 1)
+	// 		Circle(offset + 9)  = {offset + 21, 1000, offset + 52};
+	// 		Circle(offset + 13)  = {offset + 56, 1000, offset + 13};
+	// 	Else
+	// 		Circle(offset + 9)  = {offset + 21, 1000, offset + 13};
+	// 	EndIf
+	// EndIf
+	// If (k == no_placentones-1)
+	// 	If (vein_2[k] == 1)
+	// 		Circle(offset + 9)  = {offset + 21, 1000, offset + 52};
+	// 		Circle(offset + 13)  = {offset + 56, 1000, 1002};
+	// 	Else
+	// 		Circle(offset + 9)  = {offset + 21, 1000, 1002};
+	// 	EndIf
+	// EndIf
 EndFor
 
 ///////////
@@ -1078,15 +1126,36 @@ Physical Curve(101) = {};
 For k In {0:no_placentones-1:1}
 	offset = numbering_start + k*placentone_step;
 
-	Physical Curve(101) += {offset + 1};
-	If (vein_1[k] == 1)
-		Physical Curve(101) += {offset + 5};
+	v = {vein_1[k], artery[k], vein_2[k]};
+
+	// Cases for each basal plate setup.
+	If     (v[0] == 1 && v[1] == 1 && v[2] == 1)
+		Physical Curve(101) += {offset + 1, offset + 5, offset + 53, offset + 54, offset + 23, offset + 26, offset + 55, offset + 56, offset + 9, offset + 13};
+	ElseIf (v[0] == 1 && v[1] == 1 && v[2] == 0)
+
+	ElseIf (v[0] == 0 && v[1] == 1 && v[2] == 1)
+
+	ElseIf (v[0] == 1 && v[1] == 0 && v[2] == 1)
+		Physical Curve(101) += {offset + 1, offset + 5, offset + 13};
+	ElseIf (v[0] == 1 && v[1] == 0 && v[2] == 0)
+
+	ElseIf (v[0] == 0 && v[1] == 1 && v[2] == 0)
+
+	ElseIf (v[0] == 0 && v[1] == 0 && v[2] == 1)
+
+	ElseIf (v[0] == 0 && v[1] == 0 && v[2] == 0)
+		
 	EndIf
-	Physical Curve(101) += {offset + 53, offset + 54, offset + 23, offset + 26, offset + 55, offset + 56};
-	Physical Curve(101) += {offset + 9};
-	If (vein_2[k] == 1)
-		Physical Curve(101) += {offset + 13};
-	EndIf
+
+	// Physical Curve(101) += {offset + 1};
+	// If (vein_1[k] == 1)
+	// 	Physical Curve(101) += {offset + 5};
+	// EndIf
+	// Physical Curve(101) += {offset + 53, offset + 54, offset + 23, offset + 26, offset + 55, offset + 56};
+	// Physical Curve(101) += {offset + 9};
+	// If (vein_2[k] == 1)
+	// 	Physical Curve(101) += {offset + 13};
+	// EndIf
 EndFor
 
 // Inlets and outlets.
@@ -1121,56 +1190,93 @@ For k In {0:no_placentones-1:1}
 	offset_prev = numbering_start + (k-1)*placentone_step;
 	offset      = numbering_start + k    *placentone_step;
 
+	v = {vein_1[k], artery[k], vein_2[k]};
+
 	placentone_list[] = {};
-	placentone_list += {offset + 1};
-	If (vein_1[k] == 1)
-		placentone_list += {-(offset + 18), offset + 5};
-	EndIf
-	
-	If (artery[k] == 1)
-		placentone_list += {offset + 21, offset + 22};
-	Else
-		placentone_list += {offset + 53, offset + 54, offset + 23, offset + 26, offset + 55, offset + 56};
+
+	// Cases for each basal plate setup.
+	If     (v[0] == 1 && v[1] == 1 && v[2] == 1)
+		placentone_list += {offset + 1, -(offset + 18), offset + 5, offset + 21, offset + 22, offset + 9, -(offset + 20), offset + 13};
+	ElseIf (v[0] == 1 && v[1] == 1 && v[2] == 0)
+
+	ElseIf (v[0] == 0 && v[1] == 1 && v[2] == 1)
+
+	ElseIf (v[0] == 1 && v[1] == 0 && v[2] == 1)
+		placentone_list += {offset + 1, -(offset + 18), offset + 5, -(offset + 20), offset + 13};
+	ElseIf (v[0] == 1 && v[1] == 0 && v[2] == 0)
+
+	ElseIf (v[0] == 0 && v[1] == 1 && v[2] == 0)
+
+	ElseIf (v[0] == 0 && v[1] == 0 && v[2] == 1)
+
+	ElseIf (v[0] == 0 && v[1] == 0 && v[2] == 0)
+		
 	EndIf
 
-	placentone_list += {offset + 9};
-	If (vein_2[k] == 1)
-		placentone_list += {-(offset + 20), offset + 13};
-	EndIf
-	
 	If (k == no_placentones-1)
 		placentone_list += {-1006};
+	Else
+		placentone_list += {offset + 14, offset + 15, 201 + k};
 	EndIf
-	If (k != no_placentones-1)
-		If (septal_vein_1[k] == 1)
-			placentone_list += {offset + 30, -(offset + 34), offset + 35};
-		Else
-			placentone_list += {offset + 14};
-		EndIf
-		If (septal_vein_2[k] == 1)
-			placentone_list += {offset + 36, -(offset + 41)};
-		Else
-			placentone_list += {offset + 15};
-		EndIf
-		placentone_list += {201 + k};
-	EndIf
+
 	placentone_list += {300 + no_placentones - k};
+
 	If (k == 0)
 		placentone_list += {-1010};
+	Else
+		placentone_list += {-(200 + k), offset_prev + 16, offset_prev + 17};
 	EndIf
-	If (k != 0)
-		placentone_list += {-(200 + k)};
-		If (septal_vein_2[k-1] == 1)
-			placentone_list += {-(offset_prev + 40), offset_prev + 42};
-		Else
-			placentone_list += {offset_prev + 16};
-		EndIf
-		If (septal_vein_3[k-1] == 1)
-			placentone_list += {offset_prev + 43, -(offset_prev + 47), offset_prev + 48};
-		Else
-			placentone_list += {offset_prev + 17};
-		EndIf
-	EndIf
+
+
+	// placentone_list += {offset + 1};
+	// If (vein_1[k] == 1)
+	// 	placentone_list += {-(offset + 18), offset + 5};
+	// EndIf
+	
+	// If (artery[k] == 1)
+	// 	placentone_list += {offset + 21, offset + 22};
+	// Else
+	// 	placentone_list += {offset + 53, offset + 54, offset + 23, offset + 26, offset + 55, offset + 56};
+	// EndIf
+
+	// placentone_list += {offset + 9};
+	// If (vein_2[k] == 1)
+	// 	placentone_list += {-(offset + 20), offset + 13};
+	// EndIf
+	
+	// If (k == no_placentones-1)
+	// 	placentone_list += {-1006};
+	// EndIf
+	// If (k != no_placentones-1)
+	// 	If (septal_vein_1[k] == 1)
+	// 		placentone_list += {offset + 30, -(offset + 34), offset + 35};
+	// 	Else
+	// 		placentone_list += {offset + 14};
+	// 	EndIf
+	// 	If (septal_vein_2[k] == 1)
+	// 		placentone_list += {offset + 36, -(offset + 41)};
+	// 	Else
+	// 		placentone_list += {offset + 15};
+	// 	EndIf
+	// 	placentone_list += {201 + k};
+	// EndIf
+	// placentone_list += {300 + no_placentones - k};
+	// If (k == 0)
+	// 	placentone_list += {-1010};
+	// EndIf
+	// If (k != 0)
+	// 	placentone_list += {-(200 + k)};
+	// 	If (septal_vein_2[k-1] == 1)
+	// 		placentone_list += {-(offset_prev + 40), offset_prev + 42};
+	// 	Else
+	// 		placentone_list += {offset_prev + 16};
+	// 	EndIf
+	// 	If (septal_vein_3[k-1] == 1)
+	// 		placentone_list += {offset_prev + 43, -(offset_prev + 47), offset_prev + 48};
+	// 	Else
+	// 		placentone_list += {offset_prev + 17};
+	// 	EndIf
+	// EndIf
 
 	Curve Loop(k + 1) = placentone_list[];
 
