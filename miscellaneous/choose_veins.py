@@ -9,6 +9,14 @@ def calculate_max_min_no_veins(no_placentones):
 
   return min_veins, max_veins
 
+def calculate_max_min_no_arteries(no_placentones):
+  min_value = 0
+  max_value = 1
+  min_arteries = np.array((no_placentones)*[min_value])
+  max_arteries = np.array((no_placentones)*[max_value])
+
+  return min_arteries, max_arteries
+
 def calculate_placentone_widths(no_placentones):
   if (no_placentones == 6):
     r = np.sqrt(29)/4 - 0.5
@@ -54,13 +62,40 @@ def calculate_no_veins(mean, std, no_placentones):
   min_veins, max_veins = calculate_max_min_no_veins(no_placentones)
 
   # Sample centred around the mean.
-  no_veins  = np.zeros(no_placentones)
+  no_veins = np.zeros(no_placentones)
   for i in range(no_placentones):
-    # Define cut off values at 0+σ and 4-σ (or 3-σ).
+    # Define cut off values at 0 and 4 (or 3).
     a, b = (min_veins[i] - mean) / std, (max_veins[i] - mean) / std
     no_veins[i] = np.round(truncnorm.rvs(a, b, loc=mean, scale=std))
 
   return no_veins
+
+#####
+# Function to calculate the number of arteries in each placentone using a truncated normal distribution. Importantly, this function ensures that at least 1 artery is enabled.
+# Inputs:
+#  mean:           mean of the distribution
+#  std:            standard deviation of the distribution
+#  no_placentones: number of placentones
+# Returns:
+#  no_arteries: number of arteries in each placentone
+####
+def calculate_no_arteries(mean, std, no_placentones):
+  # min_arteries, max_arteries = calculate_max_min_no_arteries(no_placentones)
+
+  # # Sample centred around the mean/4.
+  # no_arteries = np.zeros(no_placentones)
+  # for i in range(no_placentones):
+  #   # Define cut off values at 0 and 1.
+  #   a, b = (min_arteries[i] - mean/4) / std, (max_arteries[i] - mean/4) / std
+  #   no_arteries[i] = np.round(truncnorm.rvs(a, b, loc=mean/4, scale=std/4))
+
+  # # Randomly turn on an artery if none are turned on.
+  # if (np.sum(no_arteries) == 0):
+  #   no_arteries[np.random.randint(0, no_placentones)] = 1
+  
+  # return no_arteries
+
+  return np.ones(no_placentones)
 
 ####
 # Function to calculate position of vessels.

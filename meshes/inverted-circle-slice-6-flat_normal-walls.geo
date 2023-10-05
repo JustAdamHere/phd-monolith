@@ -799,7 +799,6 @@ For k In {0:no_placentones-1:1}
 		right_point = offset + 13;
 	EndIf
 
-	// TODO!!
 	// Cases for each basal plate setup.
 	If     (v[0] == 1 && v[1] == 1 && v[2] == 1)
 		Circle(offset + 1)  = {left_point,  1000, offset + 46};
@@ -813,21 +812,46 @@ For k In {0:no_placentones-1:1}
 		Circle(offset + 9)  = {offset + 21, 1000, offset + 52};
 		Circle(offset + 13) = {offset + 56, 1000, right_point};
 	ElseIf (v[0] == 1 && v[1] == 1 && v[2] == 0)
-
+		Circle(offset + 1)  = {left_point,  1000, offset + 46};
+		Circle(offset + 5)  = {offset + 50, 1000, offset + 19};
+		Circle(offset + 53) = {offset + 19, 1000, offset + 42};
+		Circle(offset + 54) = {offset + 42, 1000, offset + 43};
+		Circle(offset + 23) = {offset + 43, 1000, offset + 64};
+		Circle(offset + 26) = {offset + 68, 1000, offset + 45};
+		Circle(offset + 55) = {offset + 45, 1000, offset + 44};
+		Circle(offset + 56) = {offset + 44, 1000, offset + 21};
+		Circle(offset + 13) = {offset + 21, 1000, right_point};
 	ElseIf (v[0] == 0 && v[1] == 1 && v[2] == 1)
-
+		Circle(offset + 1)  = {left_point,  1000, offset + 19};
+		Circle(offset + 53) = {offset + 19, 1000, offset + 42};
+		Circle(offset + 54) = {offset + 42, 1000, offset + 43};
+		Circle(offset + 23) = {offset + 43, 1000, offset + 64};
+		Circle(offset + 26) = {offset + 68, 1000, offset + 45};
+		Circle(offset + 55) = {offset + 45, 1000, offset + 44};
+		Circle(offset + 56) = {offset + 44, 1000, offset + 21};
+		Circle(offset + 9)  = {offset + 21, 1000, offset + 52};
+		Circle(offset + 13) = {offset + 56, 1000, right_point};
 	ElseIf (v[0] == 1 && v[1] == 0 && v[2] == 1)
 		Circle(offset + 1)  = {left_point,  1000, offset + 46};
 		Circle(offset + 5)  = {offset + 50, 1000, offset + 52};
 		Circle(offset + 13) = {offset + 56, 1000, right_point};
 	ElseIf (v[0] == 1 && v[1] == 0 && v[2] == 0)
-
+		Circle(offset + 1)  = {left_point,  1000, offset + 46};
+		Circle(offset + 5)  = {offset + 50, 1000, offset + 13};
 	ElseIf (v[0] == 0 && v[1] == 1 && v[2] == 0)
-
+		Circle(offset + 1)  = {left_point,  1000, offset + 19};
+		Circle(offset + 53) = {offset + 19, 1000, offset + 42};
+		Circle(offset + 54) = {offset + 42, 1000, offset + 43};
+		Circle(offset + 23) = {offset + 43, 1000, offset + 64};
+		Circle(offset + 26) = {offset + 68, 1000, offset + 45};
+		Circle(offset + 55) = {offset + 45, 1000, offset + 44};
+		Circle(offset + 56) = {offset + 44, 1000, offset + 21};
+		Circle(offset + 13) = {offset + 21, 1000, right_point};
 	ElseIf (v[0] == 0 && v[1] == 0 && v[2] == 1)
-
+		Circle(offset + 1)  = {left_point,  1000, offset + 52};
+		Circle(offset + 9)  = {offset + 56, 1000, offset + 13};
 	ElseIf (v[0] == 0 && v[1] == 0 && v[2] == 0)
-		
+		Circle(offset + 1) = {left_point, 1000, right_point};
 	EndIf
 
 	// If (k == 0)
@@ -1132,19 +1156,19 @@ For k In {0:no_placentones-1:1}
 	If     (v[0] == 1 && v[1] == 1 && v[2] == 1)
 		Physical Curve(101) += {offset + 1, offset + 5, offset + 53, offset + 54, offset + 23, offset + 26, offset + 55, offset + 56, offset + 9, offset + 13};
 	ElseIf (v[0] == 1 && v[1] == 1 && v[2] == 0)
-
+		Physical Curve(101) += {offset + 1, offset + 5, offset + 53, offset + 54, offset + 23, offset + 26, offset + 55, offset + 56, offset + 13};
 	ElseIf (v[0] == 0 && v[1] == 1 && v[2] == 1)
-
+		Physical Curve(101) += {offset + 1, offset + 53, offset + 54, offset + 23, offset + 26, offset + 55, offset + 56, offset + 9, offset + 13};
 	ElseIf (v[0] == 1 && v[1] == 0 && v[2] == 1)
 		Physical Curve(101) += {offset + 1, offset + 5, offset + 13};
 	ElseIf (v[0] == 1 && v[1] == 0 && v[2] == 0)
-
+		Physical Curve(101) += {offset + 1, offset + 5};
 	ElseIf (v[0] == 0 && v[1] == 1 && v[2] == 0)
-
+		Physical Curve(101) += {offset + 1, offset + 53, offset + 54, offset + 23, offset + 26, offset + 55, offset + 56, offset + 13};
 	ElseIf (v[0] == 0 && v[1] == 0 && v[2] == 1)
-
+		Physical Curve(101) += {offset + 1, offset + 9};
 	ElseIf (v[0] == 0 && v[1] == 0 && v[2] == 0)
-		
+		Physical Curve(101) += {offset + 1};
 	EndIf
 
 	// Physical Curve(101) += {offset + 1};
@@ -1198,25 +1222,36 @@ For k In {0:no_placentones-1:1}
 	If     (v[0] == 1 && v[1] == 1 && v[2] == 1)
 		placentone_list += {offset + 1, -(offset + 18), offset + 5, offset + 21, offset + 22, offset + 9, -(offset + 20), offset + 13};
 	ElseIf (v[0] == 1 && v[1] == 1 && v[2] == 0)
-
+		placentone_list += {offset + 1, -(offset + 18), offset + 5, offset + 21, offset + 22, offset + 13};
 	ElseIf (v[0] == 0 && v[1] == 1 && v[2] == 1)
-
+		placentone_list += {offset + 1, offset + 21, offset + 22, offset + 9, -(offset + 20), offset + 13};
 	ElseIf (v[0] == 1 && v[1] == 0 && v[2] == 1)
 		placentone_list += {offset + 1, -(offset + 18), offset + 5, -(offset + 20), offset + 13};
 	ElseIf (v[0] == 1 && v[1] == 0 && v[2] == 0)
-
+		placentone_list += {offset + 1, -(offset + 18), offset + 5};
 	ElseIf (v[0] == 0 && v[1] == 1 && v[2] == 0)
-
+		placentone_list += {offset + 1, offset + 21, offset + 22, offset + 13};
 	ElseIf (v[0] == 0 && v[1] == 0 && v[2] == 1)
-
+		placentone_list += {offset + 1, -(offset + 20), offset + 9};
 	ElseIf (v[0] == 0 && v[1] == 0 && v[2] == 0)
-		
+		placentone_list += {offset + 1};
 	EndIf
 
 	If (k == no_placentones-1)
 		placentone_list += {-1006};
 	Else
-		placentone_list += {offset + 14, offset + 15, 201 + k};
+		If (septal_vein_1[k] == 1)
+			placentone_list += {offset + 30, -(offset + 34), offset + 35};
+		Else
+			placentone_list += {offset + 14};
+		EndIf
+
+		If (septal_vein_2[k] == 1)
+			placentone_list += {offset + 36, -(offset + 41)};
+		Else
+			placentone_list += {offset + 15};	
+		EndIf
+		placentone_list += {201 + k};
 	EndIf
 
 	placentone_list += {300 + no_placentones - k};
@@ -1224,7 +1259,19 @@ For k In {0:no_placentones-1:1}
 	If (k == 0)
 		placentone_list += {-1010};
 	Else
-		placentone_list += {-(200 + k), offset_prev + 16, offset_prev + 17};
+		placentone_list += {-(200 + k)};
+
+		If (septal_vein_2[k-1] == 1)
+			placentone_list += {-(offset_prev + 40), offset_prev + 42};
+		Else
+			placentone_list += {offset_prev + 16};
+		EndIf
+
+		If (septal_vein_3[k-1] == 1)
+			placentone_list += {offset_prev + 43, -(offset_prev + 47), offset_prev + 48};
+		Else
+			placentone_list += {offset_prev + 17};
+		EndIf
 	EndIf
 
 
