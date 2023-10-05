@@ -837,7 +837,7 @@ For k In {0:no_placentones-1:1}
 		Circle(offset + 13) = {offset + 56, 1000, right_point};
 	ElseIf (v[0] == 1 && v[1] == 0 && v[2] == 0)
 		Circle(offset + 1)  = {left_point,  1000, offset + 46};
-		Circle(offset + 5)  = {offset + 50, 1000, offset + 13};
+		Circle(offset + 5)  = {offset + 50, 1000, right_point};
 	ElseIf (v[0] == 0 && v[1] == 1 && v[2] == 0)
 		Circle(offset + 1)  = {left_point,  1000, offset + 19};
 		Circle(offset + 53) = {offset + 19, 1000, offset + 42};

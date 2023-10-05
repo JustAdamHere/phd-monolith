@@ -70,26 +70,24 @@ from programs import velocity_transport
 velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=run_type, verbose_output=True)
 
 # Sampling parameters.
-min_value     = 0
-max_value     = 4
-range_value   = max_value - min_value
-no_samples    = 10
-no_subsamples = 1000
-std           = range_value/(2*(no_samples-1))
-parameter_nominal = 2
-parameter_name = "veins"
+min_value      = 1
+max_value      = 6
+range_value    = max_value - min_value
+no_samples     = 6
+no_subsamples  = 1000
+parameter_name = "number of arteries"
 
 ##################
 # SIMULATION RUN #
 ##################
 from miscellaneous import output
 from miscellaneous import get_transport_reaction_integral
-from miscellaneous import choose_veins
+from miscellaneous import choose_vessels
 import matplotlib.pyplot as plt
 
 # Generate parameter means.
-parameter_means = np.linspace(min_value + std, max_value - std, no_samples)
-output.output(f"Varying {parameter_name} mean between {min_value}+σ and {max_value}-σ, σ={std}", True)
+parameter_values = np.linspace(min_value, max_value, no_samples)
+output.output(f"Varying {parameter_name} mean between {min_value} and {max_value}", True)
 
 # Storage for all simulations.
 all_basal_plate_vessels          = []
@@ -101,28 +99,28 @@ all_transport_reaction_integrals = []
 all_no_veins                     = []
 
 # Set artery and vein padding.
-vein_width     = 0.0375
-fillet_radius  = 0.01
-artery_padding = central_cavity_width_nominal/2 + central_cavity_transition_nominal/2 + fillet_radius
-vein_padding   = vein_width/2 + fillet_radius
+vein_width      = 0.0375
+fillet_radius   = 0.01
+artery_padding  = central_cavity_width_nominal/2 + central_cavity_transition_nominal/2 + fillet_radius
+vein_padding    = vein_width/2 + fillet_radius
+epsilon_padding = 0.001
 
 # Incrementally run simulations and generate output.
 run_no = 0
 for i in range(0, no_subsamples):
   for j in range(0, no_samples):
-    mean = parameter_means[j]
+    no_arteries = int(parameter_values[j])
 
     # Calculate number of veins in each placentone and which to turn on.
-    no_veins       = choose_veins.calculate_no_veins(mean, std, no_placentones)
-    no_arteries    = [1]*no_placentones # TODO: investigate turning/off arteries
-    vein_locations = choose_veins.calculate_vessel_enabled(no_veins, no_arteries, no_placentones)
+    no_veins       = choose_vessels.calculate_no_veins      (no_placentones)
+    vein_locations = choose_vessels.calculate_vessel_enabled(no_veins, no_arteries, no_placentones)
 
     basal_plate_vessels  = vein_locations[0]
     marginal_sinus_veins = vein_locations[1]
     septal_wall_veins    = vein_locations[2]
 
     # Calculate positions of vessels.
-    basal_plate_vessel_positions, septal_wall_vein_positions = choose_veins.calculate_vein_positions(basal_plate_vessels, septal_wall_veins, no_placentones, artery_padding, vein_padding)
+    basal_plate_vessel_positions, septal_wall_vein_positions = choose_vessels.calculate_vessel_positions(basal_plate_vessels, septal_wall_veins, no_placentones, artery_padding, vein_padding, epsilon_padding)
 
     # Run the simulation.
     velocity_transport.run(run_no, "nsb", "placenta", central_cavity_width_nominal, central_cavity_height_nominal, central_cavity_transition_nominal, pipe_transition_nominal, artery_length_nominal, mesh_resolution, log_cavity_transition, L, U, mu, rho, k, D, R, terminal_output=True, verbose_output=False, velocity_oscillation_tolerance=1e-4, transport_oscillation_tolerance=1e-1, plot=False, rerun_on_oscillation=False, no_time_steps=0, final_time=1.0, no_threads=no_threads, no_placentones=no_placentones, run_type=run_type, no_reynold_ramp_steps=1, reynold_ramp_start_ratio=0.2, reynold_ramp_step_base=2, artery_width=artery_width, artery_width_sm=artery_width_sm, linear_solver=linear_solver, moving_mesh=False, compute_velocity=True, compute_transport=True, compute_permeability=True, compute_uptake=True, vessel_fillet_radius=vessel_fillet_radius, wall_height_ratio=1.0, oscillation_detection=False, basal_plate_vessels=basal_plate_vessels, marginal_sinus=marginal_sinus_veins, septal_veins=septal_wall_veins, basal_plate_vessel_positions=basal_plate_vessel_positions, septal_wall_vein_positions=septal_wall_vein_positions)
@@ -150,14 +148,14 @@ for i in range(0, no_subsamples):
     integral_average[j] /= i+1
 
   # Update plots.
-  plt.plot(parameter_means, integral_average, '--', color='k')
+  plt.plot(parameter_values, integral_average, '--', color='k')
   for j in range(0, no_samples):
     box_plot_integrals = []
     for l in range(0, i+1):
       box_plot_integrals.append(all_transport_reaction_integrals[l*no_samples + j])
-    plt.boxplot(box_plot_integrals, positions=[parameter_means[j]], widths=0.75*std, labels=[f'{parameter_means[j]:.2f}'])
-  plt.title(f"Uptake vs {parameter_name} mean, after {i+1} subsamples")
-  plt.xlabel(f"{parameter_name} mean")
+    plt.boxplot(box_plot_integrals, positions=[parameter_values[j]], widths=0.75, labels=[f'{parameter_values[j]:.2f}'])
+  plt.title(f"Uptake vs {parameter_name}, after {i+1} subsamples")
+  plt.xlabel(f"{parameter_name}")
   plt.ylabel("Uptake")
   plt.xlim([min_value, max_value])
   plt.savefig(f"./images/vary_{parameter_name}_{i+1}.png", dpi=300)
