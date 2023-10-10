@@ -1,7 +1,7 @@
 def add_option(options, option, value):
 	options += [f'-setnumber', option, str(value)]
 
-def generate_mesh(simulation_no, geometry, mesh_resolution, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, basal_plate_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones, vessel_fillet_radius, basal_plate_vessel_locations, septal_vein_locations):
+def generate_mesh(simulation_no, geometry, mesh_resolution, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, basal_plate_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones, vessel_fillet_radius, basal_plate_vessel_locations, septal_vein_locations, equal_wall_heights):
 	import subprocess
 
 	# Mesh files for each geometry.
@@ -48,7 +48,14 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, central_cavity_width
 		raise ValueError("mesh_resolution must be float or list of length 8")
 
 	# Set wall widths.
-	if (no_placentones == 6 and geometry == "placenta"):
+	if (no_placentones == 6 and geometry == "placenta" and equal_wall_heights):
+		wall_height_1 = wall_height_ratio*0.35175
+		wall_height_2 = wall_height_ratio*0.35175
+		wall_height_3 = wall_height_ratio*0.35175
+		wall_height_4 = wall_height_ratio*0.35175
+		wall_height_5 = wall_height_ratio*0.35175
+		wall_height_6 = 0
+	elif (no_placentones == 6 and geometry == "placenta" and not equal_wall_heights):
 		wall_height_1 = wall_height_ratio*0.1725
 		wall_height_2 = wall_height_ratio*0.35175
 		wall_height_3 = wall_height_ratio*0.1725

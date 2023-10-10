@@ -6,7 +6,7 @@ function velocity = importdata_fem(dim, x_sample, filename_no_ext, aptofem_run_n
 
   if (recompute_v_sample)
     % Output the points we want.
-    fileID = fopen(strcat('../output/mri-points_', filename_no_ext,'.dat'), 'w');
+    fileID = fopen(strcat('../output/mri-points_', filename_no_ext,'_',int2str(aptofem_run_no),'.dat'), 'w');
 
     if (dim == 2)
       x = reshape(x_sample{1}, x_size(1)*x_size(2), 1)./L;
@@ -29,15 +29,17 @@ function velocity = importdata_fem(dim, x_sample, filename_no_ext, aptofem_run_n
 
     fclose(fileID);
 
+    fprintf('Running: ./evaluate-solution_bb.out %s %s %s %d > NUL\n', 'nsb', type, filename_no_ext, aptofem_run_no);
+
     % Call to program to evaluate the velocity field.
-    system(sprintf('make evaluate-solution_%s -C ../programs/evaluate-solution > NUL', type));
+    system(sprintf('make -C ../programs/evaluate-solution > NUL'));
     cd    ('../programs/evaluate-solution/')
-    system(sprintf('./evaluate-solution_%s.out %s %d > NUL', type, filename_no_ext, aptofem_run_no));
+    system(sprintf('./evaluate-solution_bb.out %s %s %s %d > NUL', 'nsb', type, filename_no_ext, aptofem_run_no));
     cd    ('../../mri_code/')
   end
 
   % Import the solution data.
-  data = readtable(strcat('../output/mri-solution_', filename_no_ext,'.dat'), "NumHeaderLines", 1, "ReadVariableNames", false);
+  data = readtable(strcat('../output/mri-solution_', filename_no_ext,'_',int2str(aptofem_run_no),'.dat'), "NumHeaderLines", 1, "ReadVariableNames", false);
 
   % Output
   velocity = cell(dim, 1);

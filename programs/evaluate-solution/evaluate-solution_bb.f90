@@ -2,11 +2,11 @@ program evaluate_solution
   use aptofem_kernel
   use fe_solution_restart_io
   use point_searching
-  use bcs_velocity
+  use velocity_bc_interface
   use refine_region
-  use program_name_module
   use problem_options
   use problem_options_velocity
+  use problem_options_geometry
 
   implicit none
 
@@ -20,26 +20,25 @@ program evaluate_solution
 
   type(bounding_box_tree) :: mesh_bounding_box_tree
 
-  character(len=20) :: control_file
   character(len=50) :: program_dir, filename_no_ext, problem, run_no_string
   integer           :: problem_dim, run_no
 
   real(db), dimension(:, :), allocatable :: global_points
-  integer                                :: no_points, i
+  integer                                :: no_points
 
   interface
-    subroutine read_global_points(problem_dim, filename_no_ext, global_points, no_points)
+    subroutine read_global_points(problem_dim, filename_no_ext, run_no, global_points, no_points)
       use aptofem_kernel
 
       implicit none
 
       integer, intent(in)                                   :: problem_dim
-      character(len=*), intent(in)                          :: filename_no_ext
+      character(len=*), intent(in)                          :: filename_no_ext, run_no
       real(db), dimension(:, :), allocatable, intent(inout) :: global_points
       integer, intent(out)                                  :: no_points
     end subroutine
 
-    subroutine output_solution(dim, filename_no_ext, global_points, no_points, &
+    subroutine output_solution(dim, filename_no_ext, run_no, global_points, no_points, &
         mesh_bounding_box_tree, mesh_data, solution_data)
       use aptofem_kernel
       use point_searching
@@ -47,7 +46,7 @@ program evaluate_solution
       implicit none
 
       integer, intent(in)                    :: dim
-      character(len=*), intent(in)           :: filename_no_ext
+      character(len=*), intent(in)           :: filename_no_ext, run_no
       real(db), dimension(:, :), intent(out) :: global_points
       integer, intent(in)                    :: no_points
       type(bounding_box_tree), intent(in)    :: mesh_bounding_box_tree
@@ -59,18 +58,28 @@ program evaluate_solution
   !!!!!!!!!!!!!!!!!!!!!!!!!
   !! CHECK #ARGS MATCHES !!
   !!!!!!!!!!!!!!!!!!!!!!!!!
-  if (command_argument_count() /= 2) then
-    write(*, *) 'ERROR: Incorrect number of arguments'
-    stop
+  if (command_argument_count() /= 4) then
+    print *, "ERROR: Incorrect number of command line arguments."
+    print *, " Usage: ./evaluate-solution_bb.out <nsb|ns-b|ns-nsb|s-b> <placentone|placenta|placentone-3d>"
+    print *, "    dg_velocity-transport <run_no>"
+    error stop
   end if
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! SET CONTROL FILE AND I/O VARIABLES !!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  call program_name(control_file)
-  call get_command_argument(1, filename_no_ext)
-  call get_command_argument(2, run_no_string)
-
+  call get_command_argument(1, assembly_name)
+  if (assembly_name /= 'nsb' .and. assembly_name /= 'ns-b' .and. assembly_name /= 'ns-nsb' .and. assembly_name /= 's-b') then
+      call write_message(io_err, 'Error: assembly_name should be nsb or ns-b or ns-nsb or s-b.')
+      error stop
+  end if
+  call get_command_argument(2, geometry_name)
+  if (geometry_name /= 'placentone' .and. geometry_name /= 'placenta' .and. geometry_name /= 'placentone-3d') then
+      call write_message(io_err, 'Error: geometry_name should be placentone or placenta or placentone-3d.')
+      error stop
+  end if
+  call get_command_argument(3, filename_no_ext)
+  call get_command_argument(4, run_no_string)
   read(run_no_string, '(i10)') run_no
 
   problem         = 'dg_velocity-transport'
@@ -79,10 +88,18 @@ program evaluate_solution
   !!!!!!!!!!!!!!!!!!!
   !! APTOFEM SETUP !!
   !!!!!!!!!!!!!!!!!!!
-  call AptoFEM_initialize(aptofem_stored_keys, 'acf_' // trim(control_file) // '.dat', trim(program_dir))
-  call get_user_data     ('user_data', aptofem_stored_keys)
-  call create_mesh       (mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
+  ! call AptoFEM_initialize(aptofem_stored_keys, 'acf_' // trim(geometry_name) // '.dat', trim(program_dir))
+  ! call get_user_data     ('user_data', aptofem_stored_keys)
+  ! call create_mesh       (mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
+  ! call set_space_type_velocity(aptofem_stored_keys)
+
+  call AptoFEM_initialize     (aptofem_stored_keys, 'acf_' // trim(geometry_name) // '.dat', trim(program_dir))
+  call setup_velocity_bcs     (geometry_name)
+  call create_mesh            (mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
+  call get_user_data          ('user_data', aptofem_stored_keys)
+  call get_user_data_velocity ('user_data', aptofem_stored_keys)
   call set_space_type_velocity(aptofem_stored_keys)
+  call initialise_geometry    (geometry_name, no_placentones)
 
   problem_dim = get_problem_dim(mesh_data)
 
@@ -163,14 +180,15 @@ program evaluate_solution
   !!!!!!!!!!!!!!!!!!!!!!
   !! READ IN SOLUTION !!
   !!!!!!!!!!!!!!!!!!!!!!
-  call read_solution_for_restart(mesh_data, solution_data, 0, trim(problem) // '_velocity_' // trim(control_file), run_no, &
+  call read_solution_for_restart(mesh_data, solution_data, 0, trim(problem) // '_velocity_' // trim(geometry_name), run_no, &
     '../../output/')
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! OUTPUT SOLUTION AT POINTS !!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  call read_global_points(problem_dim, filename_no_ext, global_points, no_points)
-  call output_solution   (problem_dim, filename_no_ext, global_points, no_points, mesh_bounding_box_tree, mesh_data, solution_data)
+  call read_global_points(problem_dim, filename_no_ext, run_no_string, global_points, no_points)
+  call output_solution   (problem_dim, filename_no_ext, run_no_string, global_points, no_points, mesh_bounding_box_tree, &
+    mesh_data, solution_data)
 
   !!!!!!!!!!!!!!
   !! CLEAN UP !!
@@ -184,19 +202,20 @@ program evaluate_solution
 
 end program
 
-subroutine read_global_points(problem_dim, filename_no_ext, global_points, no_points)
+subroutine read_global_points(problem_dim, filename_no_ext, run_no, global_points, no_points)
   use aptofem_kernel
 
   implicit none
 
   integer, intent(in)                                   :: problem_dim
-  character(len=*), intent(in)                          :: filename_no_ext
+  character(len=*), intent(in)                          :: filename_no_ext, run_no
   real(db), dimension(:, :), allocatable, intent(inout) :: global_points
   integer, intent(out)                                  :: no_points
 
   integer :: i
 
-  open(23111998, file='../../output/mri-points_' // trim(filename_no_ext) // '.dat', status='old', action='read')
+  open(23111998, file='../../output/mri-points_' // trim(filename_no_ext) // '_' // trim(run_no) // '.dat', status='old', &
+    action='read')
 
   read(23111998, *) no_points
   allocate(global_points(problem_dim, no_points))
@@ -214,7 +233,7 @@ subroutine read_global_points(problem_dim, filename_no_ext, global_points, no_po
   close(23111998)
 end subroutine
 
-subroutine output_solution(problem_dim, filename_no_ext, global_points, no_points, &
+subroutine output_solution(problem_dim, filename_no_ext, run_no, global_points, no_points, &
     mesh_bounding_box_tree, mesh_data, solution_data)
   use aptofem_kernel
   use point_searching
@@ -222,7 +241,7 @@ subroutine output_solution(problem_dim, filename_no_ext, global_points, no_point
   implicit none
 
   integer, intent(in)                    :: problem_dim
-  character(len=*), intent(in)           :: filename_no_ext
+  character(len=*), intent(in)           :: filename_no_ext, run_no
   real(db), dimension(:, :), intent(out) :: global_points
   integer, intent(in)                    :: no_points
   type(bounding_box_tree), intent(in)    :: mesh_bounding_box_tree
@@ -232,7 +251,8 @@ subroutine output_solution(problem_dim, filename_no_ext, global_points, no_point
   integer                          :: i, element_no
   real(db), dimension(problem_dim) :: uh
 
-  open(23111999, file='../../output/mri-solution_' // trim(filename_no_ext) // '.dat', status='replace', action='write')
+  open(23111999, file='../../output/mri-solution_' // trim(filename_no_ext) // '_' // trim(run_no) // '.dat', status='replace', &
+    action='write')
 
   write(23111999, *) no_points
 

@@ -3,11 +3,13 @@ clearvars -except total_tic
 clf
 
 % Filename of solution file.
-% filename_no_ext = '2D_placentone';
-filename_no_ext = 'dg_velocity_placentone';
+filename_no_ext = 'dg_velocity-transport';
 
 % Aptofem run number (if from FEM solution).
 aptofem_run_no = 1;
+
+% Number of threads to use.
+no_threads = 1;
 
 % Recompute velocity sample.
 recompute_v_sample = true;
@@ -48,6 +50,10 @@ U = 0.4; % Has previously been errored as 1.
 % Setup useful variables from options set above.
 setup_quantities
 
+% Start parallel pool.
+delete(gcp('nocreate'))
+parpool(no_threads);
+
 % Import FE solution data.
 tic
 v_sample = importdata_fem(dim, x_sample, filename_no_ext, aptofem_run_no, L, U, recompute_v_sample, 'placentone');
@@ -78,3 +84,8 @@ toc
 tic
 plot_s
 toc
+
+% End parallel pool.
+delete(gcp('nocreate'))
+
+exit

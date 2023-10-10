@@ -16,6 +16,96 @@
 //=/
 //=/=/=/=/=/=/=/=/=/=//
 
+// h_background = 0.02;
+
+// vein_11   = 1;
+// artery_11 = 1;
+// vein_12   = 1;
+
+// vein_21   = 1;
+// artery_21 = 1;
+// vein_22   = 1;
+
+// vein_31   = 1;
+// artery_31 = 1;
+// vein_32   = 1;
+
+// vein_41   = 1;
+// artery_41 = 0;
+// vein_42   = 1;
+
+// vein_51   = 1;
+// artery_51 = 1;
+// vein_52   = 1;
+
+// vein_61   = 1;
+// artery_61 = 1;
+// vein_62   = 1;
+
+// septal_vein_11 = 1;
+// septal_vein_12 = 1;
+// septal_vein_13 = 1;
+
+// septal_vein_21 = 1;
+// septal_vein_22 = 1;
+// septal_vein_23 = 1;
+
+// septal_vein_31 = 1;
+// septal_vein_32 = 1;
+// septal_vein_33 = 1;
+
+// septal_vein_41 = 1;
+// septal_vein_42 = 1;
+// septal_vein_43 = 1;
+
+// septal_vein_51 = 1;
+// septal_vein_52 = 1;
+// septal_vein_53 = 1;
+
+// vessel_locations_11 = 0.21343746159139604;
+// vessel_locations_12 = 0.6020074404509883;
+// vessel_locations_13 = 0.9567991492673122;
+
+// vessel_locations_21 = 0.17448221197871613;
+// vessel_locations_22 = 0.6536746817746055;
+// vessel_locations_23 = 0.9546204490534203;
+
+// vessel_locations_31 = 0.34800637474020035;
+// vessel_locations_32 = 0.6326937805350936;
+// vessel_locations_33 = 0.8892293993516255;
+
+// vessel_locations_41 = 0.9554122903756095;
+// vessel_locations_42 = 0.0;
+// vessel_locations_43 = 0.9791893004571387;
+
+// vessel_locations_51 = 0.08967634395890106;
+// vessel_locations_52 = 0.4112853170305949;
+// vessel_locations_53 = 0.8791615263532324;
+
+// vessel_locations_61 = 0.06444397647957278;
+// vessel_locations_62 = 0.47154403138276846;
+// vessel_locations_63 = 0.894910343677797;
+
+// septal_vein_position_11 = 0.5041158339168071;
+// septal_vein_position_12 = 0.5496711754685291;
+// septal_vein_position_13 = 0.7535148480173146;
+
+// septal_vein_position_21 = 0.6652476338509453;
+// septal_vein_position_22 = 0.46534885508134216;
+// septal_vein_position_23 = 0.5091375792081124;
+
+// septal_vein_position_31 = 0.5821704278541457;
+// septal_vein_position_32 = 0.5304161279372998;
+// septal_vein_position_33 = 0.5575280036745925;
+
+// septal_vein_position_41 = 0.14429246324473247;
+// septal_vein_position_42 = 0.5892055686737393;
+// septal_vein_position_43 = 0.5918455778069189;
+
+// septal_vein_position_51 = 0.29296975871743347;
+// septal_vein_position_52 = 0.5123501985360074;
+// septal_vein_position_53 = 0.5894975591437748;
+
 //////////////////////
 // Other parameters //
 //////////////////////
@@ -849,7 +939,7 @@ For k In {0:no_placentones-1:1}
 		Circle(offset + 13) = {offset + 21, 1000, right_point};
 	ElseIf (v[0] == 0 && v[1] == 0 && v[2] == 1)
 		Circle(offset + 1)  = {left_point,  1000, offset + 52};
-		Circle(offset + 9)  = {offset + 56, 1000, offset + 13};
+		Circle(offset + 9)  = {offset + 56, 1000, right_point};
 	ElseIf (v[0] == 0 && v[1] == 0 && v[2] == 0)
 		Circle(offset + 1) = {left_point, 1000, right_point};
 	EndIf

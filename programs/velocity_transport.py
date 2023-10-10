@@ -1,7 +1,7 @@
 flux_cache = []
 integral_cache = []
 
-def run(simulation_no, velocity_model, geometry, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, basal_plate_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], septal_veins=[[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1.0, artery_width=0.06, no_time_steps=0, final_time=0.0, no_placentones=6, no_threads=20, run_type='openmp', no_reynold_ramp_steps = 1, reynold_ramp_start_ratio = 0.1, reynold_ramp_step_base = 2, linear_solver='mumps', velocity_ic_from_ss=True, transport_ic_from_ss=True, moving_mesh=False, artery_width_sm=0.0125, compute_velocity=True, compute_transport=True, compute_permeability=True, compute_uptake=True, vessel_fillet_radius=0.01, oscillation_detection=True, basal_plate_vessel_positions=[[0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8]], septal_wall_vein_positions=[[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]]):
+def run(simulation_no, velocity_model, geometry, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, basal_plate_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], septal_veins=[[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1.0, artery_width=0.06, no_time_steps=0, final_time=0.0, no_placentones=6, no_threads=20, run_type='openmp', no_reynold_ramp_steps = 1, reynold_ramp_start_ratio = 0.1, reynold_ramp_step_base = 2, linear_solver='mumps', velocity_ic_from_ss=True, transport_ic_from_ss=True, moving_mesh=False, artery_width_sm=0.0125, compute_velocity=True, compute_transport=True, compute_permeability=True, compute_uptake=True, vessel_fillet_radius=0.01, oscillation_detection=True, basal_plate_vessel_positions=[[0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8]], septal_wall_vein_positions=[[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]], compute_mri=False, equal_wall_heights=False):
 
 	assert(velocity_model in ['nsb', 'ns-nsb', 'ns-b', 's-b'])
 	assert(run_type in ['serial', 'openmp', 'mpi'])
@@ -32,7 +32,7 @@ def run(simulation_no, velocity_model, geometry, central_cavity_width, central_c
 		# GENERATE MESH #
 		#################
 		output_timer.time(simulation_no, "mesh generation", terminal_output, clear_existing=True)
-		generate_mesh.generate_mesh(simulation_no, geometry, mesh_resolution, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, basal_plate_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones, vessel_fillet_radius, basal_plate_vessel_positions, septal_wall_vein_positions)
+		generate_mesh.generate_mesh(simulation_no, geometry, mesh_resolution, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, basal_plate_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones, vessel_fillet_radius, basal_plate_vessel_positions, septal_wall_vein_positions, equal_wall_heights)
 		output_timer.time(simulation_no, "mesh generation", terminal_output)
 
 		##################
@@ -101,14 +101,26 @@ def run(simulation_no, velocity_model, geometry, central_cavity_width, central_c
 		flux_uptake = calculate_flux.calculate_transport_flux(aptofem_run_no, geometry)
 		flux_cache.append(flux_uptake)
 
-	from miscellaneous import get_transport_reaction_integral
-
 	###############################
 	# CALCULATE REACTION INTEGRAL #
 	###############################
 	if (compute_transport):
+		from miscellaneous import get_transport_reaction_integral
+
 		reaction_integral = get_transport_reaction_integral.get_transport_reaction_integral(program, geometry, aptofem_run_no)
 		integral_cache.append(reaction_integral)
+
+	#################
+	# CALCULATE MRI #
+	#################
+	if (compute_mri):
+		output_timer.time(simulation_no, "MRI calculations", terminal_output)
+
+		from mri_code import calculate_mri
+
+		calculate_mri.calculate_mri(aptofem_run_no, geometry, no_threads)
+
+		output_timer.time(simulation_no, "MRI calculations", terminal_output)
 
 	return True
 

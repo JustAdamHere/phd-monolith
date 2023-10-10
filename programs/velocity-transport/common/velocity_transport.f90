@@ -392,7 +392,9 @@ program velocity_transport
             aptofem_stored_keys, sp_matrix_rhs_data_transport, 2, scheme_data_transport)
 
         ! FGMRES preconditioner for transport.
-        call set_petsc_options_fgmres()
+        if (linear_solver == 'petsc') then
+            call set_petsc_options_fgmres()
+        end if
 
         if (transport_ic_from_ss .and. compute_transport) then
             call store_subroutine_names(fe_solver_routines_transport, 'assemble_matrix_rhs_element', &
@@ -595,7 +597,9 @@ program velocity_transport
             call Carson_velocity_amplitude(current_time)
 
             ! Reset preconditioner to one specified in file.
-            call pop_petsc_options()
+            if (linear_solver == 'petsc') then
+                call pop_petsc_options()
+            end if
 
             call dirk_single_time_step(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
                 aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, dirk_scheme_velocity, &
@@ -608,7 +612,9 @@ program velocity_transport
 
         if (compute_transport) then
             ! FGMRES preconditioner for transport.
-            call set_petsc_options_fgmres()
+            if (linear_solver == 'petsc') then
+                call set_petsc_options_fgmres()
+            end if
 
             call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
                 aptofem_stored_keys, sp_matrix_rhs_data_transport, 3, scheme_data_transport)

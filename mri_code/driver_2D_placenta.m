@@ -3,11 +3,13 @@ clearvars -except total_tic
 clf
 
 % Filename of solution file.
-%filename_no_ext = '2D_placenta';
-filename_no_ext = 'dg_velocity_placenta';
+filename_no_ext = 'dg_velocity-transport';
 
 % Aptofem run number (if from FEM solution).
 aptofem_run_no = 1;
+
+% Number of threads to use.
+no_threads = 1;
 
 % Recompute velocity sample (if from FEM solution).
 recompute_v_sample = true;
@@ -43,10 +45,14 @@ b = [0 1 3 9 18 32 54 88 110 147 180 200 230 270 300 350 400 450 500];
 L = 0.04;
 
 % Velocity scaling (1 if problem solved in dimensional units).
-U = 0.4;
+U = 0.35;
 
 % Setup useful variables from options set above.
 setup_quantities
+
+% Start parallel pool.
+delete(gcp('nocreate'))
+parpool(no_threads);
 
 % Import FE solution data.
 tic
@@ -72,3 +78,8 @@ toc
 tic
 plot_s
 toc
+
+% End parallel pool.
+delete(gcp('nocreate'))
+
+exit
