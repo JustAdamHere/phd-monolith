@@ -1,7 +1,7 @@
 flux_cache = []
 integral_cache = []
 
-def run(simulation_no, velocity_model, geometry, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, mesh_resolution, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, basal_plate_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], septal_veins=[[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1.0, artery_width=0.06, no_time_steps=0, final_time=0.0, no_placentones=6, no_threads=20, run_type='openmp', no_reynold_ramp_steps = 1, reynold_ramp_start_ratio = 0.1, reynold_ramp_step_base = 2, linear_solver='mumps', velocity_ic_from_ss=True, transport_ic_from_ss=True, moving_mesh=False, artery_width_sm=0.0125, compute_velocity=True, compute_transport=True, compute_permeability=True, compute_uptake=True, vessel_fillet_radius=0.01, oscillation_detection=True, basal_plate_vessel_positions=[[0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8]], septal_wall_vein_positions=[[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]], compute_mri=False, equal_wall_heights=False):
+def run(simulation_no=0, velocity_model='nsb', geometry='placenta', central_cavity_width=0.25, central_cavity_height=0.50, central_cavity_transition=0.12, pipe_transition=0.03, artery_length=0.25, mesh_resolution=0.1, log_cavity_transition=False, scaling_L=0.04, scaling_U=0.35, scaling_mu=4e-3, scaling_rho=1e3, scaling_k=1e-8, scaling_D=1.667e-9, scaling_R=1.667e-2, velocity_space = 'DG', terminal_output = True, verbose_output = False, velocity_oscillation_tolerance = 1e-2, transport_oscillation_tolerance = 1e-1, plot = True, rerun_on_oscillation = False, basal_plate_vessels=[[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]], septal_veins=[[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]], marginal_sinus = [1, 1], error_on_fail=True, extra_text='', wall_height_ratio=1.0, artery_width=0.06, no_time_steps=0, final_time=0.0, no_placentones=6, no_threads=20, run_type='openmp', no_reynold_ramp_steps = 1, reynold_ramp_start_ratio = 0.1, reynold_ramp_step_base = 2, linear_solver='mumps', velocity_ic_from_ss=True, transport_ic_from_ss=True, moving_mesh=False, artery_width_sm=0.0125, compute_velocity=True, compute_transport=True, compute_permeability=True, compute_uptake=True, vessel_fillet_radius=0.01, oscillation_detection=True, basal_plate_vessel_positions=[[0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8]], septal_wall_vein_positions=[[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]], compute_mri=False, equal_wall_heights=False):
 
 	assert(velocity_model in ['nsb', 'ns-nsb', 'ns-b', 's-b'])
 	assert(run_type in ['serial', 'openmp', 'mpi'])
@@ -17,7 +17,12 @@ def run(simulation_no, velocity_model, geometry, central_cavity_width, central_c
 		transport_ss                = False
 	large_boundary_v_penalisation = False
 
+	local_variables = locals().copy()
+
 	from miscellaneous import output
+	from miscellaneous import save_local_variables
+
+	save_local_variables.save_local_variables(local_variables, program, geometry, simulation_no)
 
 	output.output( "##########################", terminal_output)
 	output.output(f"Running simulation # {simulation_no}... {extra_text}", terminal_output, flush=True)
