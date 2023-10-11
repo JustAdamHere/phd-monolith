@@ -326,7 +326,7 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_w
 	run_process = subprocess.Popen(run_commands, cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 	# Display last line of output to screen, and write lines to file.
-	line_truncation = 120
+	line_truncation = 123
 	if (verbose_output):
 		end = '\r\n'
 	else:
@@ -351,17 +351,10 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_w
 		else:
 			return False
 
-	# TODO: only true for steady-state 0 time-steps with DG.
-	velocity_dofs   = -1
-	transport_dofs  = -1
-	newton_residual = -1
-	newton_iteration= -1
-	# if (velocity_space == 'DG' and (velocity_model == 'nsb' or velocity_model == 'ns-b')):
-	# 	velocity_dofs   = get_dofs.get_velocity_dofs (program, geometry, run_no)
-	# 	transport_dofs  = get_dofs.get_transport_dofs(program, geometry, run_no)
-	# 	newton_residual = get_newton_residual.get_newton_residual(program, geometry, run_no)
-	# 	newton_iteration= get_newton_iterations.get_newton_iterations(program, geometry, run_no)
-
+	# Get simulation DoFs and Newton results.
+	from miscellaneous import get_run_data
+	velocity_dofs, transport_dofs, newton_residual, newton_iteration = get_run_data.get_run_data(program, geometry, run_no, 0)
+	
 	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration
 
 # def convergence():

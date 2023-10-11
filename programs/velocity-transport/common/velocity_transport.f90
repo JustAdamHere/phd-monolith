@@ -52,7 +52,7 @@ program velocity_transport
 
     logical, dimension(20) :: mesh_smoother
 
-    character(len=100) :: flux_file
+    character(len=100) :: flux_file, data_file
     character(len=100) :: aptofem_run_number_string
     character(len=100) :: tsvFormat
 
@@ -220,6 +220,8 @@ program velocity_transport
 
         call set_current_time(solution_velocity, current_time)
 
+        no_dofs_velocity = get_no_dofs(solution_velocity)
+
         if (velocity_ic_from_ss) then
             if (trim(assembly_name) == 'nsb') then
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
@@ -351,6 +353,8 @@ program velocity_transport
 
             call project_dirichlet_boundary_values(solution_velocity, mesh_data)
         end if
+    else
+        no_dofs_velocity = -1
     end if
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -457,6 +461,8 @@ program velocity_transport
         scheme_data_transport%temp_real_array  = 0.0_db
         scheme_data_transport%dim_real_array_1 = 1
         scheme_data_transport%dim_real_array_2 = no_dofs_transport
+    else
+        no_dofs_transport = -1
     end if
 
     if (compute_velocity  .and. no_time_steps > 0) then
@@ -532,6 +538,20 @@ program velocity_transport
         open(23111998, file=flux_file, status='replace')
         write(23111998, tsvFormat) 'Time step', 'Integral'
         write(23111998, tsvFormat) 0, calculate_integral_transport_reaction(mesh_data, solution_transport)
+    end if
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!
+    !! SAVE SIMULATION DATA !!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!
+    write(aptofem_run_number_string, '(i10)') aptofem_run_number
+    data_file = '../../output/simulation-data' // '_' // 'velocity-transport' // '_' // &
+        trim(adjustl(aptofem_run_number_string)) // '.dat'
+    open(23111999, file=data_file, status='replace')
+    write(23111999, tsvFormat) 'Velocity DoFs', 'Transport DoFs', 'Newton residiual', 'Newton iterations'
+    if (compute_velocity) then
+        write(23111999, tsvFormat) no_dofs_velocity, no_dofs_transport, scheme_data_velocity%newton_norm_residual, -1
+    else
+        write(23111999, tsvFormat) -1, -1, -1.0_db, -1
     end if
 
     !!!!!!!!!!!!!!!!!!
@@ -683,11 +703,17 @@ program velocity_transport
         if (compute_transport) then
             write(23111998, tsvFormat) time_step_no, calculate_integral_transport_reaction(mesh_data, solution_transport)
         end if
+
+        !!!!!!!!!!!!!!!!!!!
+        ! SIMULATION DATA !
+        !!!!!!!!!!!!!!!!!!!
+        write(23111999, tsvFormat) no_dofs_velocity, no_dofs_transport, scheme_data_velocity%newton_norm_residual, -1
     end do
 
     !!!!!!!!!!!!!!
     !! CLEAN UP !!
     !!!!!!!!!!!!!!
+    close(23111999)
     if (compute_velocity .and. compute_transport) then
         close(23111997)
     end if
