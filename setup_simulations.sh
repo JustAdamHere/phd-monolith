@@ -1,7 +1,7 @@
 #! /bin/sh
 # Clone repo.
 # if [ ! -d ".git" ]; then
-#   git clone git@gitlab.com:adam.blakey/phd-monolith.git
+#   git clone git@gitlab.com:adam.blakey/phd-monolith.git .
 # fi
 
 # Make output and image directories if they don't exist.
