@@ -11,6 +11,7 @@ def get_default_run_parameters():
 		'central_cavity_height'          : 0.5,
 		'central_cavity_transition'      : 0.12,
 		'central_cavity_width'           : 0.25,
+		'clean_files'                    : [False, False, False, False, False, False, False],
 		'compute_mri'                    : False,
 		'compute_permeability'           : True,
 		'compute_transport'              : True,
@@ -183,6 +184,29 @@ def run(simulation_no, p):
 
 		output_timer.time(simulation_no, "MRI calculations", p["terminal_output"])
 
+	########################
+	# CLEAN UP LARGE FILES #
+	########################
+	from miscellaneous import clean_directory
+
+	if (p["clean_files"][0]):
+		clean_directory.clean_directory('./output/', file_extension='vtk',      mode='delete')
+	if (p["clean_files"][1]):
+		clean_directory.clean_directory('./output/', file_extension='internal', mode='delete')
+	if (p["clean_files"][2]):
+		clean_directory.clean_directory('./output/', file_extension='dat',      mode='delete')
+	if (p["clean_files"][3]):
+		clean_directory.clean_directory('./output/', file_extension='txt',      mode='delete')
+	if (p["clean_files"][4]):
+		clean_directory.clean_directory('./meshes/', file_extension='msh',      mode='delete')
+	if (p["clean_files"][5]):
+		clean_directory.clean_directory('./meshes/', file_extension='vtk',      mode='delete')
+	if (p["clean_files"][6]):
+		clean_directory.clean_directory('./images/', file_extension='png',      mode='delete')
+
+	#######
+	# END #
+	#######
 	return True
 
 def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, artery_width_sm, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, compute_permeability, compute_uptake, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver, wall_height_ratio, basal_plate_vessel_positions):
