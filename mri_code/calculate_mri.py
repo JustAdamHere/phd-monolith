@@ -22,7 +22,7 @@ def calculate_mri(aptofem_run_no, geometry, no_threads):
   try:
     run_output = subprocess.run(['matlab', '-nodisplay', '-r', f"run('driver_2D_{geometry}.m')"], cwd='./mri_code/', stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
     # run_output = subprocess.run(['matlab', '-nodisplay', '-r', f"run('driver_2D_{geometry}.m'); exit;"], cwd='./mri_code/', stdout=None, stderr=None, check=True)
-    save_output.save_output(run_output, "mri", "placenta", 0)
+    save_output.save_output(run_output, "mri", geometry, aptofem_run_no)
   except subprocess.CalledProcessError as e:
-    save_output.save_output(e, "mri", "placenta", 0)
+    save_output.save_output(e, "mri", geometry, aptofem_run_no)
     raise_error.raise_error(f"Error running MRI code: {e}")

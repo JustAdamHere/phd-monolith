@@ -17,6 +17,7 @@ def get_default_run_parameters():
 		'compute_transport'              : True,
 		'compute_uptake'                 : True,
 		'compute_velocity'               : True,
+		'compute_velocity_average'       : False,
 		'equal_wall_heights'             : False,
 		'error_on_fail'                  : True,
 		'extra_text'                     : '',
@@ -183,6 +184,16 @@ def run(simulation_no, p):
 		calculate_mri.calculate_mri(aptofem_run_no, p["geometry"], p["no_threads"])
 
 		output_timer.time(simulation_no, "MRI calculations", p["terminal_output"])
+
+	############################
+	# COMPUTE VELOCITY AVERAGE #
+	############################
+	if (p["compute_velocity_average"]):
+		from miscellaneous import get_velocity_magnitude
+
+		output_timer.time(simulation_no, "average velocity computation", p["terminal_output"])
+		get_velocity_magnitude.calculate_average_velocity(aptofem_run_no, p["geometry"])
+		output_timer.time(simulation_no, "average velocity computation", p["terminal_output"])
 
 	########################
 	# CLEAN UP LARGE FILES #
