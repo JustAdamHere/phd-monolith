@@ -34,7 +34,7 @@ function velocity = importdata_fem(dim, x_sample, filename_no_ext, aptofem_run_n
     % Call to program to evaluate the velocity field.
     system(sprintf('make -C ../programs/evaluate-solution > NUL'));
     cd    ('../programs/evaluate-solution/')
-    system(sprintf('./evaluate-solution_bb.out %s %s %s %d > NUL', 'nsb', type, filename_no_ext, aptofem_run_no));
+    system(sprintf('./evaluate-solution_bb.out %s %s %s %d y n > NUL', 'nsb', type, filename_no_ext, aptofem_run_no));
     cd    ('../../mri_code/')
   end
 

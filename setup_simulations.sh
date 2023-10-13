@@ -9,6 +9,10 @@ mkdir -p output
 mkdir -p images
 mkdir -p images/subplots
 
+# Make build directories.
+mkdir -p programs/velocity-transport/.mod
+mkdir -p programs/velocity-transport/.obj
+
 # Create the Python virtual environment.
 python3.11 -m venv .python3-venv
 

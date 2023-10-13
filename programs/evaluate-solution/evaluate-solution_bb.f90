@@ -20,11 +20,13 @@ program evaluate_solution
 
   type(bounding_box_tree) :: mesh_bounding_box_tree
 
-  character(len=50) :: program_dir, filename_no_ext, problem, run_no_string
+  character(len=50) :: program_dir, filename_no_ext, problem, run_no_string, compute_solution, compute_average, &
+    no_points_x_string, no_points_y_string
   integer           :: problem_dim, run_no
 
   real(db), dimension(:, :), allocatable :: global_points
-  integer                                :: no_points
+  integer                                :: no_points, no_points_x, no_points_y, i, j
+  real(db)                               :: min_x, max_x, min_y, max_y
 
   interface
     subroutine read_global_points(problem_dim, filename_no_ext, run_no, global_points, no_points)
@@ -53,15 +55,31 @@ program evaluate_solution
       type(mesh), intent(in)                 :: mesh_data
       type(solution), intent(in)             :: solution_data
     end subroutine
+
+    subroutine output_average(dim, filename_no_ext, run_no, global_points, no_points, &
+        mesh_bounding_box_tree, mesh_data, solution_data)
+      use aptofem_kernel
+      use point_searching
+
+      implicit none
+
+      integer, intent(in)                    :: dim
+      character(len=*), intent(in)           :: filename_no_ext, run_no
+      real(db), dimension(:, :), intent(out) :: global_points
+      integer, intent(in)                    :: no_points
+      type(bounding_box_tree), intent(in)    :: mesh_bounding_box_tree
+      type(mesh), intent(in)                 :: mesh_data
+      type(solution), intent(in)             :: solution_data
+    end subroutine
   end interface
 
   !!!!!!!!!!!!!!!!!!!!!!!!!
   !! CHECK #ARGS MATCHES !!
   !!!!!!!!!!!!!!!!!!!!!!!!!
-  if (command_argument_count() /= 4) then
+  if (.not. (command_argument_count() == 6 .or. command_argument_count() == 8)) then
     print *, "ERROR: Incorrect number of command line arguments."
     print *, " Usage: ./evaluate-solution_bb.out <nsb|ns-b|ns-nsb|s-b> <placentone|placenta|placentone-3d>"
-    print *, "    dg_velocity-transport <run_no>"
+    print *, "    dg_velocity-transport <run_no> <compute_solution> <compute_average> (<no_points_x> <no_points_y>)"
     error stop
   end if
 
@@ -80,7 +98,18 @@ program evaluate_solution
   end if
   call get_command_argument(3, filename_no_ext)
   call get_command_argument(4, run_no_string)
+  call get_command_argument(5, compute_solution)
+  call get_command_argument(6, compute_average)
   read(run_no_string, '(i10)') run_no
+  if (command_argument_count() == 8) then
+    call get_command_argument(7, no_points_x_string)
+    call get_command_argument(8, no_points_y_string)
+    read(no_points_x_string, '(i10)') no_points_x
+    read(no_points_y_string, '(i10)') no_points_y
+  else
+    no_points_x = -1
+    no_points_y = -1
+  end if
 
   problem         = 'dg_velocity-transport'
   program_dir     = '../velocity-transport/common/'
@@ -88,11 +117,6 @@ program evaluate_solution
   !!!!!!!!!!!!!!!!!!!
   !! APTOFEM SETUP !!
   !!!!!!!!!!!!!!!!!!!
-  ! call AptoFEM_initialize(aptofem_stored_keys, 'acf_' // trim(geometry_name) // '.dat', trim(program_dir))
-  ! call get_user_data     ('user_data', aptofem_stored_keys)
-  ! call create_mesh       (mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
-  ! call set_space_type_velocity(aptofem_stored_keys)
-
   call AptoFEM_initialize     (aptofem_stored_keys, 'acf_' // trim(geometry_name) // '.dat', trim(program_dir))
   call setup_velocity_bcs     (geometry_name)
   call create_mesh            (mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
@@ -186,9 +210,33 @@ program evaluate_solution
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! OUTPUT SOLUTION AT POINTS !!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  call read_global_points(problem_dim, filename_no_ext, run_no_string, global_points, no_points)
-  call output_solution   (problem_dim, filename_no_ext, run_no_string, global_points, no_points, mesh_bounding_box_tree, &
-    mesh_data, solution_data)
+  if (no_points_x == -1 .and. no_points_y == -1) then
+    call read_global_points(problem_dim, filename_no_ext, run_no_string, global_points, no_points)
+  else
+    no_points = no_points_x * no_points_y
+    allocate(global_points(2, no_points))
+
+    min_x = minval(mesh_data%coords(1, :))
+    max_x = maxval(mesh_data%coords(1, :))
+    min_y = minval(mesh_data%coords(2, :))
+    max_y = maxval(mesh_data%coords(2, :))
+
+    do i = 1, no_points_x
+      do j = 1, no_points_y
+        global_points(1, (i-1)*no_points_y + j) = min_x + (max_x - min_x) * (i - 1) / (no_points_x - 1)
+        global_points(2, (i-1)*no_points_y + j) = min_y + (max_y - min_y) * (j - 1) / (no_points_y - 1)
+      end do
+    end do
+  end if
+
+  if (compute_solution == 'y') then
+    call output_solution(problem_dim, filename_no_ext, run_no_string, global_points, no_points, mesh_bounding_box_tree, &
+      mesh_data, solution_data)
+  end if
+  if (compute_average == 'y') then
+    call output_average (problem_dim, filename_no_ext, run_no_string, global_points, no_points, mesh_bounding_box_tree, &
+      mesh_data, solution_data)
+  end if
 
   !!!!!!!!!!!!!!
   !! CLEAN UP !!
@@ -272,4 +320,57 @@ subroutine output_solution(problem_dim, filename_no_ext, run_no, global_points, 
       write(23111999, *) uh(1), uh(2), uh(3)
     end if
   end do
+end subroutine
+
+subroutine output_average(problem_dim, filename_no_ext, run_no, global_points, no_points, &
+  mesh_bounding_box_tree, mesh_data, solution_data)
+  use aptofem_kernel
+  use point_searching
+
+  implicit none
+
+  integer, intent(in)                    :: problem_dim
+  character(len=*), intent(in)           :: filename_no_ext, run_no
+  real(db), dimension(:, :), intent(out) :: global_points
+  integer, intent(in)                    :: no_points
+  type(bounding_box_tree), intent(in)    :: mesh_bounding_box_tree
+  type(mesh), intent(in)                 :: mesh_data
+  type(solution), intent(in)             :: solution_data
+
+  integer                          :: i, element_no, element_region_id
+  real(db), dimension(problem_dim) :: uh
+
+  integer  :: N
+  real(db) :: u, u_mag
+
+  open(23111997, file='../../output/average-velocity_' // trim(filename_no_ext) // '_' // trim(run_no) // '.dat', status='replace',&
+    action='write')
+
+  u = 0.0_db
+  N = 0
+  do i = 1, no_points
+    element_no = find_point_in_element_bb_method(global_points(:, i), problem_dim, &
+        mesh_bounding_box_tree, mesh_data)
+
+    if (element_no > 0) then
+      element_region_id = get_element_region_id(mesh_data, element_no)
+
+      if ((300 <= element_region_id .and. element_region_id <= 399) .or. &
+          (500 <= element_region_id .and. element_region_id <= 599)) then
+        call compute_uh_glob_pt(uh, problem_dim+1, element_no, global_points(:, i), problem_dim, mesh_data, solution_data)
+
+        if (problem_dim == 2) then
+          u_mag = sqrt(uh(1)**2 + uh(2)**2)
+        else if (problem_dim == 3) then
+          u_mag = sqrt(uh(1)**2 + uh(2)**2 + uh(3)**2)
+        end if
+
+        u = u + u_mag
+        N = N + 1
+      end if
+    end if    
+  end do
+
+  write(23111997, *) u / N
+  close(23111997)
 end subroutine

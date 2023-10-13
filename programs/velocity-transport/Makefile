@@ -13,7 +13,7 @@ transport_assembly = matrix_rhs_transport.f90 matrix_rhs_transport-ss.f90
 storage         = solution-storage_velocity.f90
 fluxes          = crossflow_flux.f90 outflow_flux.f90 outflow_transport_flux.f90
 problem_options = problem-options.f90 problem-options_geometry.f90 problem-options_velocity.f90 problem-options_transport.f90
-miscellaneous   = refine_region.f90 integrate_transport-reaction.f90 projections.f90
+miscellaneous   = refine_region.f90 integrate_transport-reaction.f90 integrate_velocity-magnitude.f90 projections.f90
 
 bcs = bcs_transport.f90 2d-bcs_velocity_placenta.f90 2d-bcs_velocity_placentone.f90 3d-bcs_velocity_placentone.f90 velocity_bc_interface.f90
 

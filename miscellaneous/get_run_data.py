@@ -18,7 +18,8 @@ def get_run_data(program, geometry, run_no, time_step):
       transport_dofs    = int(data[1])
       newton_residual   = float(data[2])
       newton_iterations = int(data[3])
+      no_elements       = int(data[4])
   
-    return velocity_dofs, transport_dofs, newton_residual, newton_iterations
+    return velocity_dofs, transport_dofs, newton_residual, newton_iterations, no_elements
 
   return 0, 0, 0.0, 0

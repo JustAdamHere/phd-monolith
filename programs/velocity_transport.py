@@ -105,8 +105,8 @@ def run(simulation_no, p):
 		if (result == False):
 			return False
 		else:
-			aptofem_run_no, velocity_dofs, transport_dofs, newton_residual, newton_iterations = result
-		output_timer.time(simulation_no, "AptoFEM simulation", p["terminal_output"], f".\n  aptofem_run_no = {aptofem_run_no}, velocity_dofs = {velocity_dofs:,}, transport_dofs = {transport_dofs:,}, newton_iterations = {newton_iterations}, newton_residual = {newton_residual:.4e}")
+			aptofem_run_no, velocity_dofs, transport_dofs, newton_residual, newton_iterations, no_elements = result
+		output_timer.time(simulation_no, "AptoFEM simulation", p["terminal_output"], f".\n  aptofem_run_no = {aptofem_run_no}, no_elements = {no_elements:,}, velocity_dofs = {velocity_dofs:,}, newton_residual = {newton_residual:.4e}, transport_dofs = {transport_dofs:,}, newton_iterations = {newton_iterations}")
 
 		from plotting import calculate_velocity_limits
 		from plotting import calculate_transport_limits
@@ -347,15 +347,15 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_w
 	# Possibly return an error.
 	if (run_process.returncode != 0):
 		if (error_on_fail):
-			raise_error.raise_error(run_process.stderr.read().decode('utf-8'))
+			raise_error.raise_error(run_process.stderr.read())
 		else:
 			return False
 
 	# Get simulation DoFs and Newton results.
 	from miscellaneous import get_run_data
-	velocity_dofs, transport_dofs, newton_residual, newton_iteration = get_run_data.get_run_data(program, geometry, run_no, 0)
+	velocity_dofs, transport_dofs, newton_residual, newton_iteration, no_elements = get_run_data.get_run_data(program, geometry, run_no, 0)
 	
-	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration
+	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration, no_elements
 
 # def convergence():
 # 	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration

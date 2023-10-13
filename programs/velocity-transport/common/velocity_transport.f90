@@ -13,6 +13,7 @@ program velocity_transport
     use outflow_flux
     use outflow_transport_flux
     use integrate_transport_reaction
+    use integrate_velocity_magnitude
     use projections
 
     use matrix_rhs_transport
@@ -52,7 +53,7 @@ program velocity_transport
 
     logical, dimension(20) :: mesh_smoother
 
-    character(len=100) :: flux_file, data_file
+    character(len=100) :: flux_file, data_file, velocity_magnitude_file
     character(len=100) :: aptofem_run_number_string
     character(len=100) :: tsvFormat
 
@@ -506,6 +507,19 @@ program velocity_transport
         compute_ss_flag = .false.
     end if
 
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    !! SAVE INTEGRAL VELOCITY MAGNITUDE !!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if (compute_velocity) then
+        write(aptofem_run_number_string, '(i10)') aptofem_run_number
+        velocity_magnitude_file = '../../output/velocity-magnitude-integral' // '_' // 'velocity-transport' // '_' // &
+            trim(geometry_name) // '_' // trim(adjustl(aptofem_run_number_string)) // '.dat'
+        open(23111996, file=velocity_magnitude_file, status='replace')
+        tsvFormat = '(*(G0.6,:,"'//achar(9)//'"))'
+        write(23111996, tsvFormat) 'Time step', 'Integral velocity magnitude'
+        write(23111996, tsvFormat) 0, calculate_integral_velocity_magnitude(mesh_data, solution_velocity)
+    end if
+
     !!!!!!!!!!!!!!!!!
     !! SAVE FLUXES !!
     !!!!!!!!!!!!!!!!!
@@ -547,11 +561,12 @@ program velocity_transport
     data_file = '../../output/simulation-data' // '_' // 'velocity-transport' // '_' // &
         trim(adjustl(aptofem_run_number_string)) // '.dat'
     open(23111999, file=data_file, status='replace')
-    write(23111999, tsvFormat) 'Velocity DoFs', 'Transport DoFs', 'Newton residiual', 'Newton iterations'
+    tsvFormat = '(*(G0.6,:,"'//achar(9)//'"))'
+    write(23111999, tsvFormat) 'Velocity DoFs', 'Transport DoFs', 'Newton residiual', 'Newton iterations', 'Number of elements'
     if (compute_velocity) then
-        write(23111999, tsvFormat) no_dofs_velocity, no_dofs_transport, scheme_data_velocity%newton_norm_residual, -1
+        write(23111999, tsvFormat) no_dofs_velocity, no_dofs_transport, scheme_data_velocity%newton_norm_residual, -1, no_eles
     else
-        write(23111999, tsvFormat) -1, -1, -1.0_db, -1
+        write(23111999, tsvFormat) -1, -1, -1.0_db, -1, no_eles
     end if
 
     !!!!!!!!!!!!!!!!!!
@@ -683,6 +698,13 @@ program velocity_transport
             end if
         end if
 
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ! SAVE INTEGRAL VELOCITY MAGNITUDE !
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (compute_velocity) then
+            write(23111996, tsvFormat) time_step_no, calculate_integral_velocity_magnitude(mesh_data, solution_velocity)
+        end if
+
         !!!!!!!!!!!!!!!
         ! FLUX OUTPUT !
         !!!!!!!!!!!!!!!
@@ -707,13 +729,16 @@ program velocity_transport
         !!!!!!!!!!!!!!!!!!!
         ! SIMULATION DATA !
         !!!!!!!!!!!!!!!!!!!
-        write(23111999, tsvFormat) no_dofs_velocity, no_dofs_transport, scheme_data_velocity%newton_norm_residual, -1
+        write(23111999, tsvFormat) no_dofs_velocity, no_dofs_transport, scheme_data_velocity%newton_norm_residual, -1, no_eles
     end do
 
     !!!!!!!!!!!!!!
     !! CLEAN UP !!
     !!!!!!!!!!!!!!
     close(23111999)
+    if (compute_velocity) then
+        close(23111996)
+    end if
     if (compute_velocity .and. compute_transport) then
         close(23111997)
     end if

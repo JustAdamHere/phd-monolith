@@ -7,6 +7,8 @@ parameters = velocity_transport.get_default_run_parameters()
 
 # Nominal values of parameters.
 parameters["normal_vessel_locations_nominal"] = [[0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8]]
+parameters["basal_plate_vessels"]             = [[1, 1, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]]
+parameters["marginal_sinus"]                  = [0, 0]
 
 # Geometry measurements.
 parameters["central_cavity_width_nominal"]      = 0.25
@@ -19,7 +21,10 @@ parameters["artery_width_sm"]                   = 0.0125
 parameters["no_placentones"]                    = 6
 
 # Mesh resolution.
-parameters["mesh_resolution"] = 1#0.02
+parameters["mesh_resolution"] = 0.1#0.02
+# parameters["mesh_resolution"] = [0.1]*8
+# parameters["mesh_resolution"][1] = 0.001
+# parameters["mesh_resolution"][2] = 0.001
 
 # Unused.
 parameters["log_cavity_transition"] = False
@@ -35,12 +40,19 @@ parameters["D"]   = 1.667e-9 # m^2/s
 parameters["R"]   = 1.667e-2 # m^2/s
 
 # Run type.
-parameters["run_type"]      = 'openmp'
+parameters["run_type"]      = 'serial'
 parameters["linear_solver"] = 'mumps'
-parameters["no_threads"]    = 20
+parameters["no_threads"]    = 1
 
 # File handling.
-parameters["clean_files"] = [True, True, False, False, True, True, False]
+#parameters["clean_files"] = [True, True, False, False, True, True, False]
+parameters["clean_files"] = [False]*7
+
+# What to compute.
+parameters["compute_velocity"]     = True
+parameters["compute_transport"]    = False
+parameters["compute_permeability"] = True
+parameters["compute_uptake"]       = False
 
 ##################
 # SIMULATION RUN #
@@ -48,7 +60,7 @@ parameters["clean_files"] = [True, True, False, False, True, True, False]
 import numpy as np
 
 # Clean and compile.
-velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True)
+velocity_transport.setup(clean=False, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True)
 
 # Sampling parameters.
 min_value      = 0

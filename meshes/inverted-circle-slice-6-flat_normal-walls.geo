@@ -18,29 +18,29 @@
 
 // h_background = 0.02;
 
-// vein_11   = 1;
-// artery_11 = 1;
-// vein_12   = 1;
+// vein_11   = 0;
+// artery_11 = 0;
+// vein_12   = 0;
 
-// vein_21   = 1;
-// artery_21 = 1;
-// vein_22   = 1;
+// vein_21   = 0;
+// artery_21 = 0;
+// vein_22   = 0;
 
-// vein_31   = 1;
-// artery_31 = 1;
-// vein_32   = 1;
+// vein_31   = 0;
+// artery_31 = 0;
+// vein_32   = 0;
 
-// vein_41   = 1;
+// vein_41   = 0;
 // artery_41 = 0;
-// vein_42   = 1;
+// vein_42   = 0;
 
-// vein_51   = 1;
-// artery_51 = 1;
-// vein_52   = 1;
+// vein_51   = 0;
+// artery_51 = 0;
+// vein_52   = 0;
 
-// vein_61   = 1;
-// artery_61 = 1;
-// vein_62   = 1;
+// vein_61   = 0;
+// artery_61 = 0;
+// vein_62   = 0;
 
 // septal_vein_11 = 1;
 // septal_vein_12 = 1;
