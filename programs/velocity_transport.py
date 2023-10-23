@@ -325,7 +325,7 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_w
 	set_parameter.set_parameter("velocity-transport", geometry, 169, f"linear_solver {linear_solver}")
 	set_parameter.set_parameter("velocity-transport", geometry, 188, f"linear_solver {linear_solver}")
 
-	from miscellaneous import get_current_run_no, save_output, output, raise_error, get_dofs, get_newton_residual, get_newton_iterations
+	from miscellaneous import get_current_run_no, save_output, output, raise_error
 	import subprocess
 	import sys
 
