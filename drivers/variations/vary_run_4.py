@@ -40,9 +40,9 @@ parameters["D"]   = 1.667e-9 # m^2/s
 parameters["R"]   = 1.667e-2 # m^2/s
 
 # Run type.
-parameters["run_type"]      = 'openmp'
+parameters["run_type"]      = 'serial'
 parameters["linear_solver"] = 'mumps'
-parameters["no_threads"]    = 20
+parameters["no_threads"]    = 1
 
 # File handling.
 parameters["clean_files"][0] = True  # Output VTKs.
@@ -82,7 +82,7 @@ velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile
 # Storage for all simulations.
 all_basal_plate_vessels          = []
 all_marginal_sinus_veins         = []
-all_septal_wall_veins            = []
+all_septal_veins            = []
 all_basal_plate_vessel_positions = []
 all_septal_wall_vein_positions   = []
 all_transport_reaction_integrals = []
@@ -96,7 +96,7 @@ max_value      = 27
 range_value    = max_value - min_value
 no_samples     = 28
 no_subsamples  = 1000
-parameter_name = "number_of_veins"
+parameter_name = "number_of_arteries"
 
 # Set artery and vein padding.
 vein_width      = 0.0375
@@ -129,11 +129,11 @@ for i in range(0, no_subsamples):
     vein_locations = choose_vessels.calculate_vessel_enabled(no_veins, no_arteries, parameters["no_placentones"])
 
     parameters["basal_plate_vessels"]  = vein_locations[0]
-    parameters["marginal_sinus_veins"] = [1, 1]#vein_locations[1]
-    parameters["septal_wall_veins"]    = vein_locations[2]
+    parameters["marginal_sinus_veins"] = [0, 0]#vein_locations[1]
+    parameters["septal_veins"]    = vein_locations[2]
 
     # Calculate positions of vessels.
-    parameters["basal_plate_vessel_positions"], parameters["septal_wall_vein_positions"] = choose_vessels.calculate_vessel_positions(parameters["basal_plate_vessels"], parameters["septal_wall_veins"], parameters["no_placentones"], artery_padding, vein_padding, epsilon_padding)
+    parameters["basal_plate_vessel_positions"], parameters["septal_wall_vein_positions"] = choose_vessels.calculate_vessel_positions(parameters["basal_plate_vessels"], parameters["septal_veins"], parameters["no_placentones"], artery_padding, vein_padding, epsilon_padding)
 
     # Run the simulation.
     velocity_transport.run(run_no, parameters)
@@ -146,7 +146,7 @@ for i in range(0, no_subsamples):
     # Store used parameters.
     all_basal_plate_vessels         .append(parameters["basal_plate_vessels"])
     all_marginal_sinus_veins        .append(parameters["marginal_sinus_veins"])
-    all_septal_wall_veins           .append(parameters["septal_wall_veins"])
+    all_septal_veins           .append(parameters["septal_veins"])
     all_basal_plate_vessel_positions.append(parameters["basal_plate_vessel_positions"])
     all_septal_wall_vein_positions  .append(parameters["septal_wall_vein_positions"])
     all_transport_reaction_integrals.append(transport_reaction_integral)
@@ -183,9 +183,9 @@ for i in range(0, no_subsamples):
       box_plot_velocity_magnitude_integrals.append(all_velocity_magnitude_integrals[l*no_samples + j])
       box_plot_average_velocities          .append(all_average_velocities          [l*no_samples + j])
 
-    transport_reaction_integral_plot.boxplot(box_plot_transport_reaction_integrals, positions=[parameter_values[j]], widths=0.75*np.diff(parameter_values)[0], labels=[f'{parameter_values[j]:.2f}'])
-    velocity_magnitude_integral_plot.boxplot(box_plot_velocity_magnitude_integrals, positions=[parameter_values[j]], widths=0.75*np.diff(parameter_values)[0], labels=[f'{parameter_values[j]:.2f}'])
-    average_velocity_plot           .boxplot(box_plot_average_velocities,           positions=[parameter_values[j]], widths=0.75*np.diff(parameter_values)[0], labels=[f'{parameter_values[j]:.2f}'])
+    transport_reaction_integral_plot.boxplot(box_plot_transport_reaction_integrals, positions=[parameter_values[j]], widths=0.75, labels=[f'{parameter_values[j]:.2f}'])
+    velocity_magnitude_integral_plot.boxplot(box_plot_velocity_magnitude_integrals, positions=[parameter_values[j]], widths=0.75, labels=[f'{parameter_values[j]:.2f}'])
+    average_velocity_plot           .boxplot(box_plot_average_velocities,           positions=[parameter_values[j]], widths=0.75, labels=[f'{parameter_values[j]:.2f}'])
   
   transport_reaction_integral_plot.set_title(f"Uptake vs {parameter_name}, after {i+1} subsamples")
   velocity_magnitude_integral_plot.set_title(f"Velocity magnitude integral vs {parameter_name}, after {i+1} subsamples")
