@@ -31,13 +31,13 @@ parameters["log_cavity_transition"] = False
 parameters["artery_length_nominal"] = 0.25
 
 # Problem parameters.
-parameters["L"]   = 0.04     # m
-parameters["U"]   = 0.35     # m/s
-parameters["k"]   = 1e-8     # m^2
-parameters["mu"]  = 4e-3     # Pa s
-parameters["rho"] = 1e3      # kg/m^3
-parameters["D"]   = 1.667e-9 # m^2/s
-parameters["R"]   = 1.667e-2 # m^2/s
+parameters["scaling_L"]   = 0.04     # m
+parameters["scaling_U"]   = 0.35     # m/s
+parameters["scaling_k"]   = 1e-8     # m^2
+parameters["scaling_mu"]  = 4e-3     # Pa s
+parameters["scaling_rho"] = 1e3      # kg/m^3
+parameters["scaling_D"]   = 1.667e-9 # m^2/s
+parameters["scaling_R"]   = 1.667e-2 # m^2/s
 
 # Run type.
 parameters["run_type"]      = 'openmp'
