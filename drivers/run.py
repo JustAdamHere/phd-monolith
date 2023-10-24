@@ -27,6 +27,8 @@ parameters["clean_files"][4] = True  # Mesh mshs.
 parameters["clean_files"][5] = True  # Mesh VTKs.
 parameters["clean_files"][6] = True # Images.
 
+parameters["septal_veins"] = [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]]
+
 ##################
 # SIMULATION RUN #
 ##################
