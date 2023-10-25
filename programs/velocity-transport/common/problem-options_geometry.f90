@@ -9,7 +9,7 @@ module problem_options_geometry
     real(db), dimension(:), allocatable    :: placentone_widths, cumulative_placentone_widths, central_cavity_ratios, wall_angles, &
         wall_heights, placenta_bottom, placenta_top, move_mesh_centre
     real(db), dimension(:, :, :), allocatable :: vessel_tops, cavity_tops, cavity_sides, placentone_sides, wall_tops
-    real(db), dimension(:, :), allocatable    :: vessel_angles
+    real(db), dimension(:, :), allocatable    :: vessel_angles, left_marginal_sinus_tops, right_marginal_sinus_tops
     !real(db), dimension(:), allocatable       :: central_cavity_widths, central_cavity_heights
     
     contains
@@ -169,6 +169,18 @@ module problem_options_geometry
             allocate(move_mesh_centre(problem_dim))
             move_mesh_centre(1) = x_centre
             move_mesh_centre(2) = placenta_height/2.0_db
+
+            allocate(left_marginal_sinus_tops (2, problem_dim))            
+            left_marginal_sinus_tops(1, 1) = -ms_pipe_width
+            left_marginal_sinus_tops(1, 2) = placenta_height
+            left_marginal_sinus_tops(2, 1) = 0.0_db
+            left_marginal_sinus_tops(2, 2) = placenta_height
+
+            allocate(right_marginal_sinus_tops(2, problem_dim))
+            right_marginal_sinus_tops(1, 1) = placenta_width
+            right_marginal_sinus_tops(1, 2) = placenta_height
+            right_marginal_sinus_tops(2, 1) = placenta_width + ms_pipe_width
+            right_marginal_sinus_tops(2, 2) = placenta_height
             
             !!!!!!!!!!!!!!!!!!!!!!!
             !! PLACENTONE WIDTHS !!
@@ -366,7 +378,7 @@ module problem_options_geometry
         
         if (trim(control_file) == 'placenta') then
             deallocate(placentone_widths, cumulative_placentone_widths, placentone_sides, wall_angles, wall_heights, &
-                placenta_bottom, placenta_top, wall_tops)
+                placenta_bottom, placenta_top, wall_tops, left_marginal_sinus_tops, right_marginal_sinus_tops)
         end if
         deallocate(vessel_tops, vessel_angles, cavity_tops, cavity_sides, central_cavity_ratios, move_mesh_centre)
     end subroutine
@@ -450,13 +462,16 @@ module problem_options_geometry
             !!!!!!!!!!!!!!!!!!!!!!!!!
             !! PLACENTA DIMENSIONS !!
             !!!!!!!!!!!!!!!!!!!!!!!!!
+            ! Circle centre.
             coord           = [x_centre, y_centre]
             update_velocity = calculate_mesh_velocity(coord, 2, mesh_time)
             x_centre        = x_centre + update_velocity(1)*time_step
             y_centre        = y_centre + update_velocity(2)*time_step
 
+            ! Boundary radius.
             boundary_radius = sqrt((placentone_sides(1, 1, 1) - x_centre)**2 + (placentone_sides(1, 1, 2) - y_centre)**2)
 
+            ! Placenta height and width.
             update_velocity = calculate_mesh_velocity(placenta_bottom, 2, mesh_time)
             placenta_bottom = placenta_bottom + update_velocity*time_step
 
@@ -465,6 +480,22 @@ module problem_options_geometry
 
             placenta_height = placenta_top(2) - placenta_bottom(2)
             placenta_width  = placentone_sides(6, 2, 1) - placentone_sides(1, 1, 1)
+
+            ! Marginal sinus size.
+            update_velocity                = calculate_mesh_velocity(left_marginal_sinus_tops(1, :), 2, mesh_time)
+            left_marginal_sinus_tops(1, :) = left_marginal_sinus_tops(1, :) + update_velocity*time_step
+
+            update_velocity                = calculate_mesh_velocity(left_marginal_sinus_tops(2, :), 2, mesh_time)
+            left_marginal_sinus_tops(2, :) = left_marginal_sinus_tops(2, :) + update_velocity*time_step
+
+            ms_pipe_width = sqrt((left_marginal_sinus_tops(1, 1) - left_marginal_sinus_tops(2, 1))**2 + &
+                (left_marginal_sinus_tops(1, 2) - left_marginal_sinus_tops(2, 2))**2)
+
+            update_velocity                 = calculate_mesh_velocity(right_marginal_sinus_tops(1, :), 2, mesh_time)
+            right_marginal_sinus_tops(1, :) = right_marginal_sinus_tops(1, :) + update_velocity*time_step
+
+            update_velocity                 = calculate_mesh_velocity(right_marginal_sinus_tops(2, :), 2, mesh_time)
+            right_marginal_sinus_tops(2, :) = right_marginal_sinus_tops(2, :) + update_velocity*time_step
 
             !!!!!!!!!!!!!!!!!
             !! WALL ANGLES !!
@@ -783,17 +814,19 @@ module problem_options_geometry
         if (element_region_id == 401) then
             placentone_no    = 1
             translate_angle  = pi
-            scaling_factor   = 2.0_db
-            circle_centre(1) = placenta_height - ms_pipe_width/2.0_db
-            circle_centre(2) = placenta_height - ms_pipe_width/2.0_db
+            scaling_factor   = 2.0_db * ms_pipe_width/0.075_db
+            circle_centre(1) = (left_marginal_sinus_tops(1, 2) + left_marginal_sinus_tops(2, 2))/2.0_db + &
+                placentone_sides(1, 1, 1)
+            circle_centre(2) = (left_marginal_sinus_tops(1, 2) + left_marginal_sinus_tops(2, 2))/2.0_db
             y_offset         = circle_centre(2)
             temp_coord       = placenta_point
         else if (element_region_id == 402) then
             placentone_no    = 1
             translate_angle  = 0.0_db
-            scaling_factor   = 2.0_db
-            circle_centre(1) = placenta_width - placenta_height + ms_pipe_width/2.0_db
-            circle_centre(2) =                  placenta_height - ms_pipe_width/2.0_db
+            scaling_factor   = 2.0_db * ms_pipe_width/0.075_db
+            circle_centre(1) = -(right_marginal_sinus_tops(1, 2) + right_marginal_sinus_tops(2, 2))/2.0_db + &
+                placentone_sides(no_placentones, 2, 1)
+            circle_centre(2) = (left_marginal_sinus_tops(1, 2) + left_marginal_sinus_tops(2, 2))/2.0_db
             y_offset         = circle_centre(2)
             temp_coord       = placenta_point
         else if (411 <= element_region_id .and. element_region_id <= 473) then
