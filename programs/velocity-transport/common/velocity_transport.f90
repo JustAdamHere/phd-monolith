@@ -594,7 +594,7 @@ program velocity_transport
             ! Plus dt since t has not yet been updated.
             ! TODO: Is this right?! ^^
             call move_mesh(mesh_data, problem_dim, current_time + time_step, time_step)
-            call update_geometry(current_time + time_step, time_step)
+            call update_geometry(current_time + time_step, time_step, geometry_name)
         end if
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
