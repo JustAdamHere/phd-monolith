@@ -104,9 +104,11 @@ module placenta_2d_bcs_velocity
       radius    = boundary_radius
       centre_bc(1) = x_centre + radius*cos(theta_bc) + artery_length*cos(theta_bc)
       centre_bc(2) = y_centre - ((radius+artery_length)**2 - (centre_bc(1) - x_centre)**2)**0.5
+      ! centre_bc(1) = (artery_sides(placentone_no, 1, 1) + artery_sides(placentone_no, 2, 1))/2.0_db
+      ! centre_bc(2) = (artery_sides(placentone_no, 1, 2) + artery_sides(placentone_no, 2, 2))/2.0_db
 
       r    = sqrt((global_point(1) - centre_bc(1))**2 + (global_point(2) - centre_bc(2))**2)
-      u    = current_velocity_amplitude * calculate_poiseuille_flow(r, artery_width_sm/2)
+      u    = current_velocity_amplitude * calculate_poiseuille_flow(r, artery_width_sm/2.0_db)
       u(1) = -u(1) * cos(theta_bc)
       u(2) =  u(2) * sin(theta_bc)
     end if

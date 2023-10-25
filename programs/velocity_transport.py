@@ -104,7 +104,7 @@ def run(simulation_no, p):
 		##################
 		output_timer.time(simulation_no, "AptoFEM simulation", p["terminal_output"], clear_existing=True)
 		result = aptofem_simulation(simulation_no, p["velocity_model"], p["geometry"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["pipe_transition"], p["artery_length"], p["artery_width_sm"], p["log_cavity_transition"], p["scaling_L"], p["scaling_U"], p["scaling_mu"], p["scaling_rho"], p["scaling_k"], p["scaling_D"], p["scaling_R"], p["velocity_space"], velocity_ss, p["velocity_ic_from_ss"], p["transport_ic_from_ss"], p["compute_velocity"], p["compute_transport"], p["compute_permeability"], p["compute_uptake"], p["large_boundary_v_penalisation"], p["moving_mesh"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_time_steps"], p["final_time"], p["no_placentones"], p["no_threads"], p["run_type"], p["no_reynold_ramp_steps"], p["reynold_ramp_start_ratio"], p["reynold_ramp_step_base"], p["linear_solver"], p["wall_height_ratio"], p["basal_plate_vessel_positions"], p["rerun_with_reynold_steps"])
-		if (result == False):
+		if (result == False and p["rerun_with_reynold_steps"]):
 			output.output(f"!! Rerunning with more Reynold steps due to failure !!", p["terminal_output"])
 			p["no_reynold_ramp_steps"] *= 2
 			output.output(f"!! New number of Reynold ramp steps: {p['no_reynold_ramp_steps']} !!", p["terminal_output"])
@@ -324,6 +324,7 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_w
 	# Setup time dependence.
 	set_parameter.set_parameter("velocity-transport", geometry, 151, f"dirk_final_time {final_time:.4e}")
 	set_parameter.set_parameter("velocity-transport", geometry, 152, f"dirk_number_of_timesteps {no_time_steps}")
+	set_parameter.set_parameter("velocity-transport", geometry, 164, f"newton_terminate_on_fail .{str(error_on_fail).lower()}.")
 
 	# Linear solver.
 	set_parameter.set_parameter("velocity-transport", geometry, 169, f"linear_solver {linear_solver}")

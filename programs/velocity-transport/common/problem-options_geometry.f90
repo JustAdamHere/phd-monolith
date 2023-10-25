@@ -8,7 +8,7 @@ module problem_options_geometry
         artery_length, ms_pipe_width, x_centre, y_centre, boundary_radius, inflation_ratio
     real(db), dimension(:), allocatable    :: placentone_widths, cumulative_placentone_widths, central_cavity_ratios, wall_angles, &
         wall_heights, placenta_bottom, placenta_top, move_mesh_centre
-    real(db), dimension(:, :, :), allocatable :: vessel_tops, cavity_tops, cavity_sides, placentone_sides, wall_tops
+    real(db), dimension(:, :, :), allocatable :: vessel_tops, cavity_tops, cavity_sides, placentone_sides, wall_tops, artery_sides
     real(db), dimension(:, :), allocatable    :: vessel_angles, left_marginal_sinus_tops, right_marginal_sinus_tops
     !real(db), dimension(:), allocatable       :: central_cavity_widths, central_cavity_heights
     
@@ -138,7 +138,7 @@ module problem_options_geometry
         integer, intent(in)           :: no_placentones
         
         integer  :: i, j, problem_dim, no_vessels
-        real(db) :: x, y
+        real(db) :: x, y, r
         
         ! TODO: THIS NEEDS TO CHANGE BASED ON USER INPUT.
         placentone_width = 1.0_db                        ! 40 mm
@@ -280,6 +280,20 @@ module problem_options_geometry
                 end do
             end do
 
+            !!!!!!!!!!!!!!!!!!
+            !! ARTERY SIDES !!
+            !!!!!!!!!!!!!!!!!!
+            allocate(artery_sides(no_placentones, 2, 2))
+            do i = 1, no_placentones
+                r = boundary_radius + artery_length
+
+                artery_sides(i, 1, 1) = x_centre + r*cos(vessel_angles(i, 2) - artery_width_sm/r)
+                artery_sides(i, 1, 2) = y_centre - (r**2 - (x - x_centre)**2)**0.5
+
+                artery_sides(i, 2, 1) = x_centre + r*cos(vessel_angles(i, 2) + artery_width_sm/r)
+                artery_sides(i, 2, 2) = y_centre - (r**2 - (x - x_centre)**2)**0.5
+            end do
+
         else if (trim(control_file) == 'placentone') then
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!
             !! VESSEL TOPS AND ANGLES !!
@@ -378,7 +392,7 @@ module problem_options_geometry
         
         if (trim(control_file) == 'placenta') then
             deallocate(placentone_widths, cumulative_placentone_widths, placentone_sides, wall_angles, wall_heights, &
-                placenta_bottom, placenta_top, wall_tops, left_marginal_sinus_tops, right_marginal_sinus_tops)
+                placenta_bottom, placenta_top, wall_tops, left_marginal_sinus_tops, right_marginal_sinus_tops, artery_sides)
         end if
         deallocate(vessel_tops, vessel_angles, cavity_tops, cavity_sides, central_cavity_ratios, move_mesh_centre)
     end subroutine
@@ -432,6 +446,7 @@ module problem_options_geometry
 
         real(db), dimension(2) :: update_velocity, coord
         integer                :: i, j
+        real(db)               :: x, y
 
         call write_message(io_msg, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         call write_message(io_msg, "!! WARNING: update_geometry is still in development. !!")
@@ -496,6 +511,23 @@ module problem_options_geometry
 
             update_velocity                 = calculate_mesh_velocity(right_marginal_sinus_tops(2, :), 2, mesh_time)
             right_marginal_sinus_tops(2, :) = right_marginal_sinus_tops(2, :) + update_velocity*time_step
+
+            !!!!!!!!!!!!!!!!!!
+            !! ARTERY SIDES !!
+            !!!!!!!!!!!!!!!!!!
+            do i = 1, no_placentones
+                do j = 1, 2
+                    update_velocity       = calculate_mesh_velocity(artery_sides(i, j, :), 2, mesh_time)
+                    artery_sides(i, j, :) = artery_sides(i, j, :) + update_velocity(:)*time_step
+                end do
+            end do
+
+            artery_width_sm = sqrt((artery_sides(1, 1, 1) - artery_sides(1, 2, 1))**2 + &
+                (artery_sides(1, 1, 2) - artery_sides(1, 2, 2))**2)
+            
+            x = (artery_sides(1, 1, 1) + artery_sides(1, 2, 1))/2.0_db
+            y = (artery_sides(1, 1, 2) + artery_sides(1, 2, 2))/2.0_db
+            artery_length = sqrt((x - vessel_tops(1, 2, 1))**2 + (y - vessel_tops(1, 2, 2))**2)
 
             !!!!!!!!!!!!!!!!!
             !! WALL ANGLES !!
