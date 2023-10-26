@@ -16,8 +16,6 @@
 //=/
 //=/=/=/=/=/=/=/=/=/=//
 
-// h_background = 0.02;
-
 // vein_11   = 0;
 // artery_11 = 0;
 // vein_12   = 0;
@@ -849,20 +847,33 @@ For k In {0:no_placentones-1:1}
 
 		Point(numbering_start + k*placentone_step + 64) = {centre_x - radius*Cos(theta21t - fillet_radius/radius), centre_y - radius*Sin(theta21t - fillet_radius/radius), 0, h_artery_top};
 		Point(numbering_start + k*placentone_step + 65) = {location_2_x_1[k] - fillet_radius*Cos(phi + theta21t), location_2_y_1[k] - fillet_radius*Sin(phi + theta21t), 0, h_artery_top};
-		If (artery_width > artery_width_sm)
-			Point(numbering_start + k*placentone_step + 66) = {location_2_x_1[k] - Tan(Pi/4 + phi)*fillet_radius*Sin((Pi/2 + phi)/2 + theta21t - (1-weighting_guess)*fillet_radius/radius), location_2_y_1[k] + Tan(Pi/4 + phi)*fillet_radius*Cos((Pi/2 + phi)/2 + theta21t - (1-weighting_guess)*fillet_radius/radius), 0, 1};
-		Else
-			// Another nasty hack.
-			Point(numbering_start + k*placentone_step + 66) = {centre_x - (radius+fillet_radius+0.0000201)*Cos(theta21t - fillet_radius/radius), centre_y - (radius+fillet_radius+0.0000201)*Sin(theta21t - fillet_radius/radius), 0, 1};
-		EndIf
+
 		Point(numbering_start + k*placentone_step + 67) = {location_2_x_2[k] - fillet_radius*Cos(-phi + theta22t), location_2_y_2[k] - fillet_radius*Sin(-phi + theta22t), 0, h_artery_top};
 		Point(numbering_start + k*placentone_step + 68) = {centre_x - radius*Cos(theta22t + fillet_radius/radius), centre_y - radius*Sin(theta22t + fillet_radius/radius), 0, h_artery_top};
-		If (artery_width > artery_width_sm)
-			Point(numbering_start + k*placentone_step + 69) = {location_2_x_2[k] + Tan(Pi/4 + phi)*fillet_radius*Sin(-Pi/4 - phi/2 + theta22t + (1-weighting_guess)*fillet_radius/radius), location_2_y_2[k] - Tan(Pi/4 + phi)*fillet_radius*Cos(-Pi/4 - phi/2 + theta22t + (1-weighting_guess)*fillet_radius/radius), 0, 1};
-		Else
-			// Another nasty hack.
-			Point(numbering_start + k*placentone_step + 69) = {centre_x - (radius+fillet_radius+0.0000201)*Cos(theta22t + fillet_radius/radius), centre_y - (radius+fillet_radius+0.0000201)*Sin(theta22t + fillet_radius/radius), 0, 1};
-		EndIf
+
+		//////////////
+		// POINT 66 //
+		//////////////
+		// Mid-point between points 64 and 65
+		mid_point = {(location_2_x_1[k] - fillet_radius*Cos(phi + theta21t) + centre_x - radius*Cos(theta21t - fillet_radius/radius))/2, (location_2_y_1[k] - fillet_radius*Sin(phi + theta21t) + centre_y - radius*Sin(theta21t - fillet_radius/radius))/2};
+
+		// Find angle between mid-point and point at which artery would touch cavity if it weren't fillted.
+		mid_angle = Atan2(mid_point[1] - location_2_y_1[k], mid_point[0] - location_2_x_1[k]);
+
+		// Point 66.
+		Point(numbering_start + k*placentone_step + 66) = {mid_point[0] + fillet_radius/Sqrt(2)*Cos(mid_angle), mid_point[1] + fillet_radius/Sqrt(2)*Sin(mid_angle), 0, h_artery_top};
+
+		//////////////
+		// POINT 69 //
+		//////////////
+		// Mid-point between points 67 and 68
+		mid_point = {(location_2_x_2[k] - fillet_radius*Cos(-phi + theta22t) + centre_x - radius*Cos(theta22t + fillet_radius/radius))/2, (location_2_y_2[k] - fillet_radius*Sin(-phi + theta22t) + centre_y - radius*Sin(theta22t + fillet_radius/radius))/2};
+
+		// Find angle between mid-point and point at which artery would touch cavity if it weren't fillted.
+		mid_angle = Atan2(mid_point[1] - location_2_y_2[k], mid_point[0] - location_2_x_2[k]);
+
+		// Point 69.
+		Point(numbering_start + k*placentone_step + 69) = {mid_point[0] + fillet_radius/Sqrt(2)*Cos(mid_angle), mid_point[1] + fillet_radius/Sqrt(2)*Sin(mid_angle), 0, h_artery_top};
 	EndIf
 EndFor
 
