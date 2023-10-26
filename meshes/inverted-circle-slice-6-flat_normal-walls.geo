@@ -860,8 +860,11 @@ For k In {0:no_placentones-1:1}
 		// Find angle between mid-point and point at which artery would touch cavity if it weren't fillted.
 		mid_angle = Atan2(mid_point[1] - location_2_y_1[k], mid_point[0] - location_2_x_1[k]);
 
+		// Scales the point distance between 1 and 2 for artery width between 0.0125 and 0.1 (this is a bit of a hack).
+		scaling = 2 - (0.1 - artery_width)/(0.1 - 0.0125);
+
 		// Point 66.
-		Point(numbering_start + k*placentone_step + 66) = {mid_point[0] + fillet_radius/Sqrt(2)*Cos(mid_angle), mid_point[1] + fillet_radius/Sqrt(2)*Sin(mid_angle), 0, h_artery_top};
+		Point(numbering_start + k*placentone_step + 66) = {mid_point[0] + scaling*fillet_radius*Cos(mid_angle), mid_point[1] + scaling*fillet_radius*Sin(mid_angle), 0, h_artery_top};
 
 		//////////////
 		// POINT 69 //
@@ -872,8 +875,11 @@ For k In {0:no_placentones-1:1}
 		// Find angle between mid-point and point at which artery would touch cavity if it weren't fillted.
 		mid_angle = Atan2(mid_point[1] - location_2_y_2[k], mid_point[0] - location_2_x_2[k]);
 
+		// Scales the point distance between 1 and 2 for artery width between 0.0125 and 0.1 (this is a bit of a hack).
+		scaling = 2 - (0.1 - artery_width)/(0.1 - 0.0125);
+
 		// Point 69.
-		Point(numbering_start + k*placentone_step + 69) = {mid_point[0] + fillet_radius/Sqrt(2)*Cos(mid_angle), mid_point[1] + fillet_radius/Sqrt(2)*Sin(mid_angle), 0, h_artery_top};
+		Point(numbering_start + k*placentone_step + 69) = {mid_point[0] + scaling*fillet_radius*Cos(mid_angle), mid_point[1] + scaling*fillet_radius*Sin(mid_angle), 0, h_artery_top};
 	EndIf
 EndFor
 
