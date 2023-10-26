@@ -2,7 +2,7 @@ flux_cache = []
 integral_cache = []
 
 def get_default_run_parameters():
-	return {
+	parameters_dictionary =  {
 		'artery_length'                  : 0.25,
 		'artery_width'                   : 0.06,
 		'artery_width_sm'                : 0.0125,
@@ -63,7 +63,14 @@ def get_default_run_parameters():
 		'wall_height_ratio'              : 1.0
 	}
 
+	return parameters_dictionary
+
 def run(simulation_no, p):
+	if (set(p.keys()) != set(get_default_run_parameters().keys())):
+		unexpected_keys = set(p.keys()) - set(get_default_run_parameters().keys())
+		error_string = f"Incorrect parameters in velocity_transport.run(). Unexpected keys found: {unexpected_keys}"
+		raise ValueError(error_string)
+
 	assert(p["velocity_model"] in ['nsb'       , 'ns-nsb'       , 'ns-b'    , 's-b'])
 	assert(p["run_type"      ] in ['serial'    , 'openmp'       , 'mpi'            ])
 	assert(p["geometry"      ] in ['placentone', 'placentone-3d', 'placenta'       ])
@@ -222,6 +229,9 @@ def run(simulation_no, p):
 	#######
 	# END #
 	#######
+	from miscellaneous import run_no
+	run_no.set_completed_run_no(simulation_no)
+
 	return True
 
 def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, artery_width_sm, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, compute_permeability, compute_uptake, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver, wall_height_ratio, basal_plate_vessel_positions, rerun_with_reynold_steps):
