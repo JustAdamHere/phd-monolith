@@ -130,15 +130,11 @@ def calculate_vessel_positions(basal_plate_vessels, septal_wall_veins, no_placen
   basal_plate_vessel_positions = np.array([[0, 0, 0]]*no_placentones, dtype=float)
   septal_wall_vein_positions   = np.array([[0, 0, 0]]*(no_placentones-1), dtype=float)
 
-  print(f"Wall height ratio: {wall_height_ratio}")
-
   # Loop over all walls.
   for k in range(no_placentones-1):
     for j in range(3):
       if (septal_wall_veins[k][j] == 1):
         septal_wall_vein_positions[k, j] = calculate_vessel_position(0 + vein_padding/(septal_wall_lengths[k, j]), 1 - vein_padding/(septal_wall_lengths[k, j]), epsilon_padding)
-
-        print(f"Between {0 + vein_padding/(septal_wall_lengths[k, j])} and {1 - vein_padding/(septal_wall_lengths[k, j])}; selected {septal_wall_vein_positions[k, j]}")
   
   # Loop over all placentones.
   for k in range(no_placentones):
