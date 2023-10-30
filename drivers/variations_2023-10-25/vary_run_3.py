@@ -25,7 +25,6 @@ parameters["no_placentones"]                    = 6
 
 # Mesh resolution.
 parameters["mesh_resolution"] = 0.02
-parameters["generate_outline_mesh"] = True
 
 # Unused.
 parameters["log_cavity_transition"] = False
@@ -41,17 +40,17 @@ parameters["scaling_D"]   = 1.667e-9 # m^2/s
 parameters["scaling_R"]   = 1.667e-2 # m^2/s
 
 # Run type.
-parameters["run_type"]      = 'openmp'
+parameters["run_type"]      = 'serial'
 parameters["linear_solver"] = 'mumps'
-parameters["no_threads"]    = 10
+parameters["no_threads"]    = 1
 
 # File handling.
 parameters["clean_files"][0] = True  # Output VTKs.
 parameters["clean_files"][1] = True  # Output restarts.
 parameters["clean_files"][2] = False # Output data files.
 parameters["clean_files"][3] = False # Output log files.
-parameters["clean_files"][4] = False  # Mesh mshs.
-parameters["clean_files"][5] = False  # Mesh VTKs.
+parameters["clean_files"][4] = True  # Mesh mshs.
+parameters["clean_files"][5] = True  # Mesh VTKs.
 parameters["clean_files"][6] = False # Images.
 
 # Output.
@@ -74,7 +73,6 @@ from miscellaneous import output
 from miscellaneous import get_transport_reaction_integral, get_velocity_magnitude
 from miscellaneous import choose_vessels
 import matplotlib.pyplot as plt
-import matplotlib.ticker as tick
 import numpy as np
 import time
 
@@ -84,7 +82,7 @@ velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile
 # Storage for all simulations.
 all_basal_plate_vessels          = []
 all_marginal_sinus_veins         = []
-all_septal_wall_veins            = []
+all_septal_veins            = []
 all_basal_plate_vessel_positions = []
 all_septal_wall_vein_positions   = []
 all_transport_reaction_integrals = []
@@ -93,12 +91,12 @@ all_average_velocities           = []
 all_no_veins                     = []
 
 # Sampling parameters.
-min_value      = 0.0125
-max_value      = 0.07
+min_value      = 0
+max_value      = 27
 range_value    = max_value - min_value
-no_samples     = 10
+no_samples     = 28
 no_subsamples  = 1000
-parameter_name = "artery_width"
+parameter_name = "number_of_veins"
 
 # Set artery and vein padding.
 vein_width      = 0.0375
@@ -109,8 +107,7 @@ epsilon_padding = 0.001
 
 # Generate parameter means.
 parameter_values = np.linspace(min_value, max_value, no_samples)
-parameter_diff = np.diff(parameter_values)[0]
-output.output(f"Varying {parameter_name} mean between {min_value} and {max_value}, δp = {parameter_diff}", True)
+output.output(f"Varying {parameter_name} mean between {min_value} and {max_value}", True)
 
 # Initially create the plots.
 fig1 = plt.figure(1)
@@ -125,12 +122,15 @@ average_velocity_plot            = fig3.add_subplot(111)
 run_no = 1
 for i in range(0, no_subsamples):
   for j in range(0, no_samples):
-    parameters["artery_width"] = parameter_values[j]
+    no_veins = int(parameter_values[j])
 
-    # MS selection.
-    parameters["marginal_sinus_veins"] = [1, 1]
+    # Calculate number of veins in each placentone and which to turn on.
+    no_arteries    = 6#choose_vessels.calculate_no_arteries(parameters["no_placentones"])
+    vein_locations = choose_vessels.calculate_vessel_enabled(no_veins, no_arteries, parameters["no_placentones"])
 
-    no_veins = 6*3
+    parameters["basal_plate_vessels"]  = vein_locations[0]
+    parameters["marginal_sinus_veins"] = [1, 1]#vein_locations[1]
+    parameters["septal_veins"]    = vein_locations[2]
 
     # Calculate positions of vessels.
     parameters["basal_plate_vessel_positions"], parameters["septal_wall_vein_positions"] = choose_vessels.calculate_vessel_positions(parameters["basal_plate_vessels"], parameters["septal_veins"], parameters["no_placentones"], artery_padding, vein_padding, epsilon_padding)
@@ -146,7 +146,7 @@ for i in range(0, no_subsamples):
     # Store used parameters.
     all_basal_plate_vessels         .append(parameters["basal_plate_vessels"])
     all_marginal_sinus_veins        .append(parameters["marginal_sinus_veins"])
-    all_septal_wall_veins           .append(parameters["septal_veins"])
+    all_septal_veins                .append(parameters["septal_veins"])
     all_basal_plate_vessel_positions.append(parameters["basal_plate_vessel_positions"])
     all_septal_wall_vein_positions  .append(parameters["septal_wall_vein_positions"])
     all_transport_reaction_integrals.append(transport_reaction_integral)
@@ -183,9 +183,9 @@ for i in range(0, no_subsamples):
       box_plot_velocity_magnitude_integrals.append(all_velocity_magnitude_integrals[l*no_samples + j])
       box_plot_average_velocities          .append(all_average_velocities          [l*no_samples + j])
 
-    transport_reaction_integral_plot.boxplot(box_plot_transport_reaction_integrals, positions=[parameter_values[j]], widths=0.75*parameter_diff, labels=[f'{parameter_values[j]:.2f}'])
-    velocity_magnitude_integral_plot.boxplot(box_plot_velocity_magnitude_integrals, positions=[parameter_values[j]], widths=0.75*parameter_diff, labels=[f'{parameter_values[j]:.2f}'])
-    average_velocity_plot           .boxplot(box_plot_average_velocities,           positions=[parameter_values[j]], widths=0.75*parameter_diff, labels=[f'{parameter_values[j]:.2f}'])
+    transport_reaction_integral_plot.boxplot(box_plot_transport_reaction_integrals, positions=[parameter_values[j]], widths=0.75, labels=[f'{parameter_values[j]:.2f}'])
+    velocity_magnitude_integral_plot.boxplot(box_plot_velocity_magnitude_integrals, positions=[parameter_values[j]], widths=0.75, labels=[f'{parameter_values[j]:.2f}'])
+    average_velocity_plot           .boxplot(box_plot_average_velocities,           positions=[parameter_values[j]], widths=0.75, labels=[f'{parameter_values[j]:.2f}'])
   
   transport_reaction_integral_plot.set_title(f"Uptake vs {parameter_name}, after {i+1} subsamples")
   velocity_magnitude_integral_plot.set_title(f"Velocity magnitude integral vs {parameter_name}, after {i+1} subsamples")
@@ -195,16 +195,12 @@ for i in range(0, no_subsamples):
   velocity_magnitude_integral_plot.ticklabel_format(style="sci", axis='y', scilimits=(-3, -3))
   average_velocity_plot           .ticklabel_format(style="sci", axis='y', scilimits=(-3, -3))
 
-  transport_reaction_integral_plot.set_xlim(xmin=min_value-0.5*parameter_diff, xmax=max_value+0.5*parameter_diff)
-  velocity_magnitude_integral_plot.set_xlim(xmin=min_value-0.5*parameter_diff, xmax=max_value+0.5*parameter_diff)
-  average_velocity_plot           .set_xlim(xmin=min_value-0.5*parameter_diff, xmax=max_value+0.5*parameter_diff)
-
-  # transport_reaction_integral_plot.xaxis.set_major_locator  (tick.MaxNLocator(10, integer=False, prune='both'))
-  transport_reaction_integral_plot.xaxis.set_major_formatter(tick.StrMethodFormatter('{x:.3f}'))
-  # velocity_magnitude_integral_plot.xaxis.set_major_locator  (tick.MaxNLocator(10, integer=False, prune='both'))
-  velocity_magnitude_integral_plot.xaxis.set_major_formatter(tick.StrMethodFormatter('{x:.3f}'))
-  # average_velocity_plot           .xaxis.set_major_locator  (tick.MaxNLocator(10, integer=False, prune='both'))
-  average_velocity_plot           .xaxis.set_major_formatter(tick.StrMethodFormatter('{x:.3f}'))
+  transport_reaction_integral_plot.xaxis.set_major_locator  (plt.MaxNLocator(10, integer=True, prune='both'))
+  transport_reaction_integral_plot.xaxis.set_major_formatter(plt.FormatStrFormatter('%d'))
+  velocity_magnitude_integral_plot.xaxis.set_major_locator  (plt.MaxNLocator(10, integer=True, prune='both'))
+  velocity_magnitude_integral_plot.xaxis.set_major_formatter(plt.FormatStrFormatter('%d'))
+  average_velocity_plot           .xaxis.set_major_locator  (plt.MaxNLocator(10, integer=True, prune='both'))
+  average_velocity_plot           .xaxis.set_major_formatter(plt.FormatStrFormatter('%d'))
   
   transport_reaction_integral_plot.set_xlabel(f"{parameter_name}")
   velocity_magnitude_integral_plot.set_xlabel(f"{parameter_name}")
@@ -213,6 +209,10 @@ for i in range(0, no_subsamples):
   transport_reaction_integral_plot.set_ylabel("Uptake")
   velocity_magnitude_integral_plot.set_ylabel("Velocity magnitude integral")
   average_velocity_plot           .set_ylabel("Average velocity")
+
+  # transport_reaction_integral_plot.set_xlim([min_value-0.5, max_value+0.5])
+  # velocity_magnitude_integral_plot.set_xlim([min_value-0.5, max_value+0.5])
+  # average_velocity_plot           .set_xlim([min_value-0.5, max_value+0.5])
 
   fig1.savefig(f"./images/transport-reaction-integral_{parameter_name}_{i+1}.png", dpi=300)
   fig2.savefig(f"./images/velocity-magnitude-integral_{parameter_name}_{i+1}.png", dpi=300)
