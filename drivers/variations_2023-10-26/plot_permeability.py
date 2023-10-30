@@ -13,7 +13,7 @@ parameter_name      = "permeability"
 parameter_safe_name = "permeability"
 min_value           = -10
 max_value           = -6
-no_bins             = 9
+no_bins             = 8
 parameter_values    = np.linspace(min_value, max_value, no_bins)
 
 # Populate the bins.
@@ -23,7 +23,8 @@ for i in range(0, max_run_no):
 
   permeability = np.log10(simulations[i].parameters["scaling_k"])
 
-  bin_no = -int(np.floor((permeability - max_value) * no_bins / (max_value - min_value + 1)))
+  #bin_no = -int(np.floor((permeability - max_value) * no_bins / (max_value - min_value + 1)))
+  bin_no = int(np.floor(no_bins*(permeability - min_value)/(max_value - min_value)))
   simulation_bins[bin_no].append(run_no)
 
 # Setup plots.
@@ -86,3 +87,9 @@ print(f"Sandard deviation: {np.std(no_per_bin):.2f}")
 print(f"Minimum:           {np.min(no_per_bin)}")
 print(f"Maximum:           {np.max(no_per_bin)}")
 print(f"{no_per_bin}")
+for i in range(0, no_bins):
+  perms = []
+  for j in range(len(simulation_bins[i])):
+    perms.append(np.log10(simulations[simulation_bins[i][j]-1].parameters["scaling_k"]))
+  print(f"{i} ({no_per_bin[i]}) : {perms}")
+print(f"** **")
