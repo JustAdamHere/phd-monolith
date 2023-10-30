@@ -13,6 +13,12 @@ def calculate_max_min_no_arteries(no_placentones):
 
   return min_value, max_value
 
+def calculate_max_min_no_ms():
+  min_value = 0
+  max_value = 2
+
+  return min_value, max_value
+
 def calculate_placentone_widths(no_placentones):
   if (no_placentones == 6):
     r = np.sqrt(29)/4 - 0.5
@@ -54,21 +60,29 @@ def calculate_no_veins(no_placentones):
 
   return int(randint(min_veins, max_veins))
 
+def calculate_no_ms():
+  min_ms, max_ms = calculate_max_min_no_ms()
+
+  return int(randint(min_ms, max_ms))
+
 def calculate_vessel_position(a, b, ε):
   x = np.random.uniform(a + ε, b - ε)
   return x
 
-def calculate_vessel_enabled(no_veins, no_arteries, no_placentones):
+def calculate_vessel_enabled(no_veins, no_arteries, no_ms, no_placentones):
   # Initialise vein locations, with marginal sinuses turned on.
   basal_plate_vessels  = np.array([[0, 0, 0]]*no_placentones)
-  marginal_sinus_veins = np.array([1, 1])
+  marginal_sinus_veins = np.array([0, 0])
   septal_wall_veins    = np.array([[0, 0, 0]]*(no_placentones-1))
 
   # Decide where the arteries will be located in each placentone.
   min_arteries, max_arteries = calculate_max_min_no_arteries(no_placentones)
   min_veins, max_veins       = calculate_max_min_no_veins   (no_placentones)
-  artery_locations           = sample(range(max_arteries),  no_arteries)
-  vein_locations             = sample(range(max_veins),     no_veins)
+  min_ms, max_ms             = calculate_max_min_no_ms      ()
+
+  artery_locations = sample(range(max_arteries),  no_arteries)
+  vein_locations   = sample(range(max_veins),     no_veins)
+  ms_locations     = sample(range(max_ms),        no_ms)
 
   for artery in artery_locations:
     basal_plate_vessels[artery, 1] = 1
@@ -100,20 +114,31 @@ def calculate_vessel_enabled(no_veins, no_arteries, no_placentones):
 
       septal_wall_veins[wall_no, pos_no] = 1
 
+  for ms in ms_locations:
+    marginal_sinus_veins[ms] = 1
+
   return basal_plate_vessels.tolist(), marginal_sinus_veins.tolist(), septal_wall_veins.tolist()
 
-def calculate_vessel_positions(basal_plate_vessels, septal_wall_veins, no_placentones, artery_padding, vein_padding, epsilon_padding):
+def calculate_vessel_positions(basal_plate_vessels, septal_wall_veins, no_placentones, artery_padding, vein_padding, epsilon_padding, wall_height_ratio=1.0):
   placentone_widths   = calculate_placentone_widths(no_placentones)
   septal_wall_lengths = calculate_septal_wall_lengths(no_placentones)
+  
+  # Modify the septal wall heights based upon the wall height ratio.
+  septal_wall_lengths[:, 0] = septal_wall_lengths[:, 0]*wall_height_ratio
+  septal_wall_lengths[:, 2] = septal_wall_lengths[:, 2]*wall_height_ratio
 
   basal_plate_vessel_positions = np.array([[0, 0, 0]]*no_placentones, dtype=float)
   septal_wall_vein_positions   = np.array([[0, 0, 0]]*(no_placentones-1), dtype=float)
+
+  print(f"Wall height ratio: {wall_height_ratio}")
 
   # Loop over all walls.
   for k in range(no_placentones-1):
     for j in range(3):
       if (septal_wall_veins[k][j] == 1):
-        septal_wall_vein_positions[k, j] = calculate_vessel_position(0 + vein_padding/septal_wall_lengths[k, j], 1 - vein_padding/septal_wall_lengths[k, j], epsilon_padding)
+        septal_wall_vein_positions[k, j] = calculate_vessel_position(0 + vein_padding/(septal_wall_lengths[k, j]), 1 - vein_padding/(septal_wall_lengths[k, j]), epsilon_padding)
+
+        print(f"Between {0 + vein_padding/(septal_wall_lengths[k, j])} and {1 - vein_padding/(septal_wall_lengths[k, j])}; selected {septal_wall_vein_positions[k, j]}")
   
   # Loop over all placentones.
   for k in range(no_placentones):

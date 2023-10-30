@@ -7,16 +7,16 @@ parameters = velocity_transport.get_default_run_parameters()
 
 parameters["moving_mesh"]   = True
 parameters["no_time_steps"] = 1
-parameters["final_time"]    = 0.5
+parameters["final_time"]    = 0.1
 
 parameters["verbose_output"] = True
 
-parameters["mesh_resolution"] = 0.05
+parameters["mesh_resolution"] = 0.3
 
 parameters["compute_permeability"] = True
 parameters["compute_transport"] = False
 parameters["compute_uptake"] = False
-parameters["compute_velocity"] = False
+parameters["compute_velocity"] = True
 
 # File handling.
 parameters["clean_files"][0] = False  # Output VTKs.
@@ -28,6 +28,9 @@ parameters["clean_files"][5] = True  # Mesh VTKs.
 parameters["clean_files"][6] = True # Images.
 
 parameters["septal_veins"] = [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]]
+
+parameters["error_on_fail"] = False
+parameters["rerun_with_reynold_steps"] = False
 
 ##################
 # SIMULATION RUN #

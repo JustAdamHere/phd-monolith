@@ -53,10 +53,10 @@ def calculate_limits(problem, name, run_no, oscillation_tolerance, terminal_outp
 
 	# Terminal output if requested.
 	if ((min_velocity < -oscillation_tolerance) or (max_velocity > 1.0+oscillation_tolerance)):
-		output.output(f"⚠ Warning: velocity limits = ({min_velocity}, {max_velocity})", terminal_output)
+		output.output(f"⚠ Warning: velocity limits = ({min_velocity:.5f}, {max_velocity:.5f})", terminal_output)
 		return True
 	else:
-		output.output(f"😁 Within tolerance: velocity limits = ({min_velocity}, {max_velocity})", terminal_output)
+		output.output(f"😁 Within tolerance: velocity limits = ({min_velocity:.5f}, {max_velocity:.5f})", terminal_output)
 		return False
 
 def raise_error(e):

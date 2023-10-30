@@ -46,8 +46,8 @@ def calculate_limits(problem, name, run_no, oscillation_tolerance, terminal_outp
 
 	# Terminal output if requested.
 	if ((min_transport < -oscillation_tolerance) or (max_transport > 1.0+oscillation_tolerance)):
-		output.output(f"⚠ Warning: transport limits = ({min_transport}, {max_transport})", terminal_output)
+		output.output(f"⚠ Warning: transport limits = ({min_transport:.5f}, {max_transport:.5f})", terminal_output)
 		return True
 	else:
-		output.output(f"😁 Within tolerance: transport limits = ({min_transport}, {max_transport})", terminal_output)
+		output.output(f"😁 Within tolerance: transport limits = ({min_transport:.5f}, {max_transport:.5f})", terminal_output)
 		return False
