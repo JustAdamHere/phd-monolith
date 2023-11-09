@@ -18,6 +18,7 @@ def get_default_run_parameters():
 		'compute_uptake'                 : True,
 		'compute_velocity'               : True,
 		'compute_velocity_average'       : False,
+		'compute_velocity_sample'        : False,
 		'equal_wall_heights'             : False,
 		'error_on_fail'                  : True,
 		'extra_text'                     : '',
@@ -205,6 +206,16 @@ def run(simulation_no, p):
 		output_timer.time(simulation_no, "average velocity computation", p["terminal_output"])
 		get_velocity_magnitude.calculate_average_velocity(aptofem_run_no, p["geometry"])
 		output_timer.time(simulation_no, "average velocity computation", p["terminal_output"])
+
+	###########################
+	# COMPUTE VELOCITY SAMPLE #
+	###########################
+	if (p["compute_velocity_sample"]):
+		from miscellaneous import get_velocity_magnitude
+
+		output_timer.time(simulation_no, "velocity sample computation", p["terminal_output"])
+		get_velocity_magnitude.output_solution(aptofem_run_no, p["geometry"])
+		output_timer.time(simulation_no, "velocity sample computation", p["terminal_output"])
 
 	########################
 	# CLEAN UP LARGE FILES #

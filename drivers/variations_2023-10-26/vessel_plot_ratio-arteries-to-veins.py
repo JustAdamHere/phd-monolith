@@ -11,11 +11,11 @@ for run_no in range(1, max_run_no+1):
 print(f"\rImporting simulation {max_run_no}/{max_run_no}... Done.", end="\r\n")
   
 # Varying parameters.
-parameter_name      = "number of veins"
-parameter_safe_name = "no-veins"
+parameter_name      = "ratio of arteries to veins"
+parameter_safe_name = "ratio-of-arteries-to-veins"
 min_value           = 0
-max_value           = 27
-no_bins             = 28
+max_value           = 6.0
+no_bins             = 7
 parameter_values    = np.linspace(min_value, max_value, no_bins)
 
 # Populate the bins.
@@ -26,10 +26,13 @@ for i in range(0, max_run_no):
   no_veins    = simulations[i].get_no_veins()
   no_arteries = simulations[i].get_no_arteries()
 
-  # Check the number of arteries.
-  if (no_arteries == 1):
-    bin_no = int(np.floor(no_veins * no_bins / (max_value - min_value + 1)))
-    simulation_bins[bin_no].append(run_no)
+  if (no_veins == 0):
+    continue
+
+  ratio = float(no_arteries)/float(no_veins)
+
+  bin_no = int(np.floor((no_bins-1)*(ratio - min_value)/(max_value - min_value)))
+  simulation_bins[bin_no].append(run_no)
 
 # Setup plots.
 import matplotlib.pyplot as plt
@@ -66,12 +69,12 @@ for i in range(0, no_bins):
 # Plot the data.
 transport_reaction_integral_plot.boxplot(transport_reaction_integrals, positions=parameter_values, widths=0.75)
 velocity_magnitude_integral_plot.boxplot(velocity_magnitude_integrals, positions=parameter_values, widths=0.75)
-slow_velocity_percentage_plot   .boxplot(slow_velocity_percentages   , positions=parameter_values, widths=0.75)
+slow_velocity_percentage_plot   .boxplot(slow_velocity_percentages,    positions=parameter_values, widths=0.75)
 
 # Plot the average.
 transport_reaction_integral_plot.plot(parameter_values, average_transport_reaction_integral, 'k--')
 velocity_magnitude_integral_plot.plot(parameter_values, average_velocity_magnitude_integral, 'k--')
-slow_velocity_percentage_plot   .plot(parameter_values, average_slow_velocity_percentage   , 'k--')
+slow_velocity_percentage_plot   .plot(parameter_values, average_slow_velocity_percentage,    'k--')
 
 # Style the transport reaction integral plot.
 transport_reaction_integral_plot.xaxis.set_major_formatter(plt.FormatStrFormatter('%d'))

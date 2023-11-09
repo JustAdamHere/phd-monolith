@@ -516,8 +516,9 @@ program velocity_transport
             trim(geometry_name) // '_' // trim(adjustl(aptofem_run_number_string)) // '.dat'
         open(23111996, file=velocity_magnitude_file, status='replace')
         tsvFormat = '(*(G0.6,:,"'//achar(9)//'"))'
-        write(23111996, tsvFormat) 'Time step', 'Integral velocity magnitude'
-        write(23111996, tsvFormat) 0, calculate_integral_velocity_magnitude(mesh_data, solution_velocity)
+        write(23111996, tsvFormat) 'Time step', 'Integral velocity magnitude (IVS)', 'Integral velocity magnitude (everywhere)'
+        write(23111996, tsvFormat) 0, calculate_integral_velocity_magnitude(mesh_data, solution_velocity, .true.), &
+            calculate_integral_velocity_magnitude(mesh_data, solution_velocity, .false.)
     end if
 
     !!!!!!!!!!!!!!!!!
@@ -702,7 +703,8 @@ program velocity_transport
         ! SAVE INTEGRAL VELOCITY MAGNITUDE !
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if (compute_velocity) then
-            write(23111996, tsvFormat) time_step_no, calculate_integral_velocity_magnitude(mesh_data, solution_velocity)
+            write(23111996, tsvFormat) time_step_no, calculate_integral_velocity_magnitude(mesh_data, solution_velocity, .true.), &
+                calculate_integral_velocity_magnitude(mesh_data, solution_velocity, .false.)
         end if
 
         !!!!!!!!!!!!!!!

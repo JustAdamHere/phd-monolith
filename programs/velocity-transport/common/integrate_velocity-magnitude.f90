@@ -6,7 +6,7 @@ module integrate_velocity_magnitude
 
   contains
 
-  function calculate_integral_velocity_magnitude(mesh_data, velocity_solution)
+  function calculate_integral_velocity_magnitude(mesh_data, velocity_solution, IVS_only)
     use fe_mesh
     use fe_solution
     use basis_fns_storage_type
@@ -17,12 +17,13 @@ module integrate_velocity_magnitude
     real(db) :: calculate_integral_velocity_magnitude
     type(mesh), intent(inout)  :: mesh_data
     type(solution), intent(in) :: velocity_solution
+    logical, intent(in)        :: IVS_only
 
     ! Local variables.
     type(basis_storage)                    :: fe_basis_info
     character(len=aptofem_length_key_def)  :: control_parameter
     integer                                :: no_eles, no_nodes, no_faces, problem_dim, npinc, no_quad_points_volume_max, &
-      no_quad_points_face_max, i, k, dim_soln_coeff, no_pdes, no_quad_points, element_region_id, qk
+      no_quad_points_face_max, i, k, dim_soln_coeff, no_pdes, no_quad_points, element_region_id, qk, min_region
     real(db), dimension(:), allocatable    :: uh, quad_weights_ele, jacobian
     integer, dimension(:), allocatable     :: no_dofs_per_variable
     real(db), dimension(:, :), allocatable :: quad_points_ele
@@ -66,8 +67,14 @@ module integrate_velocity_magnitude
 
       element_region_id = get_element_region_id(mesh_data, k)
 
+      if (IVS_only) then
+        min_region = 520
+      else
+        min_region = 500
+      end if
+
       if ((300 <= element_region_id .and. element_region_id <= 399) .or. &
-          (500 <= element_region_id .and. element_region_id <= 599)) then
+          (min_region <= element_region_id .and. element_region_id <= 529)) then 
         do qk = 1, no_quad_points
           uh = uh_element(fe_basis_info, no_pdes, qk)
 

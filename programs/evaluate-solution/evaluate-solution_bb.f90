@@ -296,7 +296,7 @@ subroutine output_solution(problem_dim, filename_no_ext, run_no, global_points, 
   type(mesh), intent(in)                 :: mesh_data
   type(solution), intent(in)             :: solution_data
 
-  integer                          :: i, element_no
+  integer                          :: i, element_no, region_id
   real(db), dimension(problem_dim) :: uh
 
   open(23111999, file='../../output/mri-solution_' // trim(filename_no_ext) // '_' // trim(run_no) // '.dat', status='replace', &
@@ -314,10 +314,12 @@ subroutine output_solution(problem_dim, filename_no_ext, run_no, global_points, 
       uh = 0.0_db
     end if
 
+    region_id = get_element_region_id(mesh_data, element_no)
+
     if (problem_dim == 2) then
-      write(23111999, *) uh(1), uh(2)
+      write(23111999, *) uh(1), uh(2), global_points(1, i), global_points(2, i), region_id
     else if (problem_dim == 3) then
-      write(23111999, *) uh(1), uh(2), uh(3)
+      write(23111999, *) uh(1), uh(2), uh(3), global_points(1, i), global_points(2, i), global_points(3, i), region_id
     end if
   end do
 end subroutine
@@ -340,20 +342,36 @@ subroutine output_average(problem_dim, filename_no_ext, run_no, global_points, n
   integer                          :: i, element_no, element_region_id
   real(db), dimension(problem_dim) :: uh
 
-  integer  :: N
-  real(db) :: u, u_mag
+  integer  :: N_IVS, N_everywhere
+  real(db) :: u_IVS, u_everywhere, u_mag
 
   open(23111997, file='../../output/average-velocity_' // trim(filename_no_ext) // '_' // trim(run_no) // '.dat', status='replace',&
     action='write')
 
-  u = 0.0_db
-  N = 0
+  u_IVS        = 0.0_db
+  u_everywhere = 0.0_db
+  N_IVS        = 0
+  N_everywhere = 0
   do i = 1, no_points
     element_no = find_point_in_element_bb_method(global_points(:, i), problem_dim, &
         mesh_bounding_box_tree, mesh_data)
 
     if (element_no > 0) then
       element_region_id = get_element_region_id(mesh_data, element_no)
+
+      if ((300 <= element_region_id .and. element_region_id <= 399) .or. &
+          (520 <= element_region_id .and. element_region_id <= 529)) then
+        call compute_uh_glob_pt(uh, problem_dim+1, element_no, global_points(:, i), problem_dim, mesh_data, solution_data)
+
+        if (problem_dim == 2) then
+          u_mag = sqrt(uh(1)**2 + uh(2)**2)
+        else if (problem_dim == 3) then
+          u_mag = sqrt(uh(1)**2 + uh(2)**2 + uh(3)**2)
+        end if
+
+        u_IVS = u_IVS + u_mag
+        N_IVS = N_IVS + 1
+      end if
 
       if ((300 <= element_region_id .and. element_region_id <= 399) .or. &
           (500 <= element_region_id .and. element_region_id <= 599)) then
@@ -365,12 +383,13 @@ subroutine output_average(problem_dim, filename_no_ext, run_no, global_points, n
           u_mag = sqrt(uh(1)**2 + uh(2)**2 + uh(3)**2)
         end if
 
-        u = u + u_mag
-        N = N + 1
+        u_everywhere = u_everywhere + u_mag
+        N_everywhere = N_everywhere + 1
       end if
     end if    
   end do
 
-  write(23111997, *) u / N
+  write(23111997, *) u_IVS / N_IVS
+  write(23111997, *) u_everywhere / N_everywhere 
   close(23111997)
 end subroutine

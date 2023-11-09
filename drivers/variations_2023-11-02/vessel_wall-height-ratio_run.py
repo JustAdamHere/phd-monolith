@@ -64,6 +64,9 @@ parameters["compute_velocity"]         = True
 parameters["compute_velocity_average"] = True
 parameters["compute_velocity_sample"]  = True
 
+# Reruns.
+parameters["rerun_with_reynold_steps"] = True
+
 ##################
 # SIMULATION RUN #
 ##################
@@ -99,16 +102,16 @@ while(run_simulations):
   # Select which of these vessels are turned on.
   parameters["basal_plate_vessels"], parameters["marginal_sinus"], parameters["septal_veins"] = choose_vessels.calculate_vessel_enabled(no_veins, no_arteries, no_marginal_sinus_veins, parameters["no_placentones"])
 
-  # Select positions of vessels (note marginal sinus is fixed).
-  parameters["basal_plate_vessel_positions"], parameters["septal_wall_vein_positions"] = choose_vessels.calculate_vessel_positions(parameters["basal_plate_vessels"], parameters["septal_veins"], parameters["no_placentones"], artery_padding, vein_padding, epsilon_padding)
-
-  # Read in number of threads.
-  parameters["no_threads"] = select_no_threads.read_no_threads(4)
-
   #######################
   # THING WE'RE VARYING #
   #######################
-  parameters["artery_width"] = uniform(0.0125, 0.075)
+  parameters["wall_height_ratio"] = (vein_width+2*fillet_radius)/0.1725 + epsilon_padding
+
+  # Select positions of vessels (note marginal sinus is fixed).
+  parameters["basal_plate_vessel_positions"], parameters["septal_wall_vein_positions"] = choose_vessels.calculate_vessel_positions(parameters["basal_plate_vessels"], parameters["septal_veins"], parameters["no_placentones"], artery_padding, vein_padding, epsilon_padding, parameters["wall_height_ratio"])
+
+  # Read in number of threads.
+  parameters["no_threads"] = select_no_threads.read_no_threads(4)
 
   # Run the simulation.
   velocity_transport.run(sim_no, parameters)

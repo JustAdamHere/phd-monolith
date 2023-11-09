@@ -61,7 +61,8 @@ parameters["compute_permeability"]     = False
 parameters["compute_transport"]        = True
 parameters["compute_uptake"]           = False
 parameters["compute_velocity"]         = True
-parameters["compute_velocity_average"] = False
+parameters["compute_velocity_average"] = True
+parameters["compute_velocity_sample"]  = True
 
 ##################
 # SIMULATION RUN #
@@ -101,7 +102,7 @@ while(run_simulations):
   parameters["basal_plate_vessel_positions"], parameters["septal_wall_vein_positions"] = choose_vessels.calculate_vessel_positions(parameters["basal_plate_vessels"], parameters["septal_veins"], parameters["no_placentones"], artery_padding, vein_padding, epsilon_padding)
 
   # Read in number of threads.
-  parameters["no_threads"] = select_no_threads.read_no_threads(4)
+  parameters["no_threads"] = select_no_threads.read_no_threads(24)
 
   # Run the simulation.
   velocity_transport.run(sim_no, parameters)

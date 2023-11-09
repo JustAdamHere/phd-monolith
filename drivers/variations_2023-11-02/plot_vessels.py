@@ -1,0 +1,16 @@
+print("Running plot_arteries_1_veins.py...")
+import plot_arteries_1_veins
+print("Running plot_arteries_27_veins.py...")
+import plot_arteries_27_veins
+print("Running plot_arteries_all_veins.py...")
+import plot_arteries_all_veins
+print("Running plot_ratio_arteries_to_veins.py...")
+import plot_ratio_arteries_to_veins
+print("Running plot_ratio_veins_to_arteries.py...")
+import plot_ratio_veins_to_arteries
+print("Running plot_veins_1_arteries.py...")
+import plot_veins_1_arteries
+print("Running plot_veins_6_arteries.py...")
+import plot_veins_6_arteries
+print("Running plot_veins_all_arteries.py...")
+import plot_veins_all_arteries

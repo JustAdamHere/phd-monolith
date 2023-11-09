@@ -64,6 +64,9 @@ parameters["compute_velocity"]         = True
 parameters["compute_velocity_average"] = True
 parameters["compute_velocity_sample"]  = True
 
+# Reruns.
+parameters["rerun_with_reynold_steps"] = True
+
 ##################
 # SIMULATION RUN #
 ##################

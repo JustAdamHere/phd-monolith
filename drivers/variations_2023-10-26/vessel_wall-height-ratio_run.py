@@ -61,7 +61,8 @@ parameters["compute_permeability"]     = False
 parameters["compute_transport"]        = True
 parameters["compute_uptake"]           = False
 parameters["compute_velocity"]         = True
-parameters["compute_velocity_average"] = False
+parameters["compute_velocity_average"] = True
+parameters["compute_velocity_sample"]  = True
 
 ##################
 # SIMULATION RUN #

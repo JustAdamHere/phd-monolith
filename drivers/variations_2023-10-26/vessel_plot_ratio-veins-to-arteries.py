@@ -6,16 +6,14 @@ import copy
 max_run_no  = run_no.get_completed_run_no()
 simulations = []
 for run_no in range(1, max_run_no+1):
-  print(f"\rImporting simulation {run_no}/{max_run_no}...", end="")
   simulations.append(run_data.class_run_data(run_no))
-print(f"\rImporting simulation {max_run_no}/{max_run_no}... Done.", end="\r\n")
   
 # Varying parameters.
-parameter_name      = "number of veins"
-parameter_safe_name = "no-veins"
+parameter_name      = "ratio of veins to afteries"
+parameter_safe_name = "ratio-of-veins-to-arteries"
 min_value           = 0
-max_value           = 27
-no_bins             = 28
+max_value           = 27.0
+no_bins             = 10
 parameter_values    = np.linspace(min_value, max_value, no_bins)
 
 # Populate the bins.
@@ -26,10 +24,10 @@ for i in range(0, max_run_no):
   no_veins    = simulations[i].get_no_veins()
   no_arteries = simulations[i].get_no_arteries()
 
-  # Check the number of arteries.
-  if (no_arteries == 1):
-    bin_no = int(np.floor(no_veins * no_bins / (max_value - min_value + 1)))
-    simulation_bins[bin_no].append(run_no)
+  ratio = float(no_veins)/float(no_arteries)
+
+  bin_no = int(np.floor((no_bins-1)*(ratio - min_value)/(max_value - min_value)))
+  simulation_bins[bin_no].append(run_no)
 
 # Setup plots.
 import matplotlib.pyplot as plt
@@ -54,14 +52,9 @@ for i in range(0, no_bins):
     transport_reaction_integrals[i].append(simulations[run_no-1].transport_reaction_integral)
     velocity_magnitude_integrals[i].append(simulations[run_no-1].velocity_magnitude_integral)
     slow_velocity_percentages   [i].append(simulations[run_no-1].slow_velocity_percentage)
-  if (len(simulation_bins[i]) > 0):
-    average_transport_reaction_integral.append(np.mean(transport_reaction_integrals[i]))
-    average_velocity_magnitude_integral.append(np.mean(velocity_magnitude_integrals[i]))
-    average_slow_velocity_percentage   .append(np.mean(slow_velocity_percentages   [i]))
-  else:
-    average_transport_reaction_integral.append(float('nan'))
-    average_velocity_magnitude_integral.append(float('nan'))
-    average_slow_velocity_percentage   .append(float('nan'))
+  average_transport_reaction_integral.append(np.mean(transport_reaction_integrals[i]))
+  average_velocity_magnitude_integral.append(np.mean(velocity_magnitude_integrals[i]))
+  average_slow_velocity_percentage   .append(np.mean(slow_velocity_percentages   [i]))
 
 # Plot the data.
 transport_reaction_integral_plot.boxplot(transport_reaction_integrals, positions=parameter_values, widths=0.75)
@@ -102,7 +95,7 @@ slow_velocity_percentage_plot.set_title(f"Slow velocity percentage\nagainst {par
 # Save plots.
 fig1.savefig(f"images/transport-reaction-integral_{parameter_safe_name}.png", dpi=300)
 fig2.savefig(f"images/velocity-magnitude-integral_{parameter_safe_name}.png", dpi=300)
-fig3.savefig(f"images/slow-velocity-percentage_{parameter_safe_name}.png",    dpi=300)
+fig3.savefig(f"images/slow-velocity-percentage_{parameter_safe_name}.png", dpi=300)
 
 # Print the number of subsamples in each bin.
 no_per_bin = [len(simulation_bins[i]) for i in range(0, no_bins)]
