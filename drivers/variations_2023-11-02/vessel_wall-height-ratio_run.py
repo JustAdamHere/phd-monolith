@@ -85,7 +85,7 @@ epsilon_padding = 0.001
 
 # Resume simulation numbers.
 from miscellaneous import run_no, select_no_threads, set_run_numbers
-from random import uniform
+import numpy as np
 sim_no = run_no.get_completed_run_no()
 set_run_numbers.set_run_numbers(sim_no, program="velocity-transport")
 
@@ -105,13 +105,13 @@ while(run_simulations):
   #######################
   # THING WE'RE VARYING #
   #######################
-  parameters["wall_height_ratio"] = (vein_width+2*fillet_radius)/0.1725 + epsilon_padding
+  parameters["wall_height_ratio"] = np.random.uniform((vein_width+2*fillet_radius)/0.1725 + epsilon_padding, 2.0)
 
   # Select positions of vessels (note marginal sinus is fixed).
   parameters["basal_plate_vessel_positions"], parameters["septal_wall_vein_positions"] = choose_vessels.calculate_vessel_positions(parameters["basal_plate_vessels"], parameters["septal_veins"], parameters["no_placentones"], artery_padding, vein_padding, epsilon_padding, parameters["wall_height_ratio"])
 
   # Read in number of threads.
-  parameters["no_threads"] = select_no_threads.read_no_threads(4)
+  parameters["no_threads"] = select_no_threads.read_no_threads(12)
 
   # Run the simulation.
   velocity_transport.run(sim_no, parameters)

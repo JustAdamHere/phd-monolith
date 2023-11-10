@@ -106,7 +106,7 @@ while(run_simulations):
   parameters["basal_plate_vessel_positions"], parameters["septal_wall_vein_positions"] = choose_vessels.calculate_vessel_positions(parameters["basal_plate_vessels"], parameters["septal_veins"], parameters["no_placentones"], artery_padding, vein_padding, epsilon_padding)
 
   # Read in number of threads.
-  parameters["no_threads"] = select_no_threads.read_no_threads(4)
+  parameters["no_threads"] = select_no_threads.read_no_threads(12)
 
   #######################
   # THING WE'RE VARYING #

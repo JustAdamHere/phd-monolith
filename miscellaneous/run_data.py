@@ -18,14 +18,13 @@ class class_run_data:
     self.velocity_magnitude_integral_ivs        = vmi[0]
     self.velocity_magnitude_integral_everywhere = vmi[1]
     self.transport_reaction_integral            = get_transport_reaction_integral.get_transport_reaction_integral("velocity-transport", "placenta", self.sim_no)
-    svp                                         = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no)
-    self.slow_velocity_percentage_ivs           = svp[0]
-    self.slow_velocity_percentage_everywhere    = svp[1]
-    # self.slow_velocity_percentage_dellschaft    = get_velocity_magnitude.get_slow_velocity_percentage   ("dg_velocity-transport", self.sim_no, U, 0.0005**2)[1]
-    # self.fast_velocity_percentage_dellschaft    = get_velocity_magnitude.get_slow_velocity_percentage   ("dg_velocity-transport", self.sim_no, U, 0.001**2,  False)[1]
     av                                          = get_velocity_magnitude.get_average_velocity("dg_velocity-transport", self.sim_no)
     self.average_velocity_ivs                   = av[0]
     self.average_velocity_everywhere            = av[1]
+    self.slow_velocity_percentage_ivs           = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, self.average_velocity_ivs       , 520          )
+    self.slow_velocity_percentage_everywhere    = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, self.average_velocity_everywhere, 500          )
+    self.slow_velocity_percentage_dellschaft    = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, 0.0005                          , 500, U       )
+    self.fast_velocity_percentage_dellschaft    = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, 0.001                           , 500, U, False)
     self.run_data                               = get_run_data.get_run_data("velocity-transport", "placenta", self.sim_no, 0)
 
     self.flux                                   = self.get_file_contents("flux_velocity-transport_placenta")

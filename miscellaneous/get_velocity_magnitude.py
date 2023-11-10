@@ -112,16 +112,11 @@ def get_solution(program, run_no):
 
 #   return slow_velocity_percentage_ivs, slow_velocity_percentage_everywhere
 
-def get_slow_velocity_percentage(program, run_no, U=1.0, less_than=True, fraction=1.0):
-  avg                = get_average_velocity(program, run_no)
-  average_ivs        = U*avg[0]
-  average_everywhere = U*avg[1]
-
+def get_slow_velocity_percentage(program, run_no, average, minimum_region_id, U=1.0, less_than=True, fraction=1.0):
   no_points, u, v, x, y, element_nos = get_solution(program, run_no)
 
-  slow_velocity_counter_ivs        = 0
-  slow_velocity_counter_everywhere = 0
-  placenta_points_counter          = 0
+  slow_velocity_counter   = 0
+  placenta_points_counter = 0
   for i in range(no_points):
     if (element_nos[i] > 0):
       velocity_magnitude = U*(u[i]**2 + v[i]**2)**0.5
@@ -129,28 +124,18 @@ def get_slow_velocity_percentage(program, run_no, U=1.0, less_than=True, fractio
       placenta_points_counter += 1
 
       if ((300 <= element_nos[i] and element_nos[i] <= 399) or
-          (520 <= element_nos[i] and element_nos[i] <= 529)):
+          (minimum_region_id <= element_nos[i] and element_nos[i] <= 529)):
         if (less_than):
-          if (velocity_magnitude < fraction*average_ivs):
-            slow_velocity_counter_ivs += 1
+          if (velocity_magnitude < fraction*average):
+            slow_velocity_counter += 1
         else:
-          if (velocity_magnitude > fraction*average_ivs):
-            slow_velocity_counter_ivs += 1
-
-      if ((300 <= element_nos[i] and element_nos[i] <= 399) or
-          (500 <= element_nos[i] and element_nos[i] <= 529)):
-        if (less_than):
-          if (velocity_magnitude < fraction*average_everywhere):
-            slow_velocity_counter_everywhere += 1
-        else:
-          if (velocity_magnitude > fraction*average_everywhere):
-            slow_velocity_counter_everywhere += 1
+          if (velocity_magnitude > fraction*average):
+            slow_velocity_counter += 1
 
 
   del u, v, x, y, element_nos
   
-  slow_velocity_percentage_ivs        = 100*slow_velocity_counter_ivs       /placenta_points_counter
-  slow_velocity_percentage_everywhere = 100*slow_velocity_counter_everywhere/placenta_points_counter
+  slow_velocity_percentage = 100*slow_velocity_counter/placenta_points_counter
 
-  return slow_velocity_percentage_ivs, slow_velocity_percentage_everywhere
+  return slow_velocity_percentage
 

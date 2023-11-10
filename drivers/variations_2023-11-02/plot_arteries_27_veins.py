@@ -33,27 +33,40 @@ from plotting import setup_plots
 # TRI: Transport Reaction Integral
 # VMI: Velocity Magnitude Integral
 # SVP: Slow Velocity Percentage
-fig_tri, ax_tri = setup_plots.setup(1)
-fig_vmi, ax_vmi = setup_plots.setup(2)
-fig_svp, ax_svp = setup_plots.setup(3)
+# FVP: Fast Velocity Percentage
+fig_tri           , ax_tri            = setup_plots.setup(1)
+fig_vmi           , ax_vmi            = setup_plots.setup(2)
+fig_svp_ivs       , ax_svp_ivs        = setup_plots.setup(3)
+fig_svp_everywhere, ax_svp_everywhere = setup_plots.setup(4)
+fig_svp_dellschaft, ax_svp_dellschaft = setup_plots.setup(5)
+fig_fvp_dellschaft, ax_fvp_dellschaft = setup_plots.setup(6)
 
 # Get data to plot.
-data_tri, data_vmi, data_svp, avg_tri, avg_vmi, avg_svp = setup_plots.get_data(no_bins, simulation_bins, simulations)
+data_tri, data_vmi, data_svp_ivs, data_svp_everywhere, data_svp_dellschaft, data_fvp_dellschaft, avg_tri, avg_vmi, avg_svp_ivs, avg_svp_everywhere, avg_svp_dellschaft, avg_fvp_dellschaft = setup_plots.get_data(no_bins, simulation_bins, simulations)
 
 # Plot data.
-setup_plots.plot(ax_tri, parameter_values, data_tri, avg_tri)
-setup_plots.plot(ax_vmi, parameter_values, data_vmi, avg_vmi)
-setup_plots.plot(ax_svp, parameter_values, data_svp, avg_svp)
+setup_plots.plot(ax_tri           , parameter_values, data_tri           , avg_tri           )
+setup_plots.plot(ax_vmi           , parameter_values, data_vmi           , avg_vmi           )
+setup_plots.plot(ax_svp_ivs       , parameter_values, data_svp_ivs       , avg_svp_ivs       )
+setup_plots.plot(ax_svp_everywhere, parameter_values, data_svp_everywhere, avg_svp_everywhere)
+setup_plots.plot(ax_svp_dellschaft, parameter_values, data_svp_dellschaft, avg_svp_dellschaft)
+setup_plots.plot(ax_fvp_dellschaft, parameter_values, data_fvp_dellschaft, avg_fvp_dellschaft)
 
 # Style plots.
-setup_plots.style(ax_tri, parameter_name, "Transport Reaction Integral", y_scilimits=[-3, -3])
-setup_plots.style(ax_vmi, parameter_name, "Velocity Magnitude Integral", y_scilimits=[-2, -2])
-setup_plots.style(ax_svp, parameter_name, "Slow Velocity Percentage",    y_scilimits=None)
+setup_plots.style(ax_tri           , parameter_name, "Transport Reaction Integral"          , y_scilimits=[-3, -3])
+setup_plots.style(ax_vmi           , parameter_name, "Velocity Magnitude Integral"          , y_scilimits=[-2, -2])
+setup_plots.style(ax_svp_ivs       , parameter_name, "Slow Velocity Percentage (IVS)"       , y_scilimits=None    , y_top=100)
+setup_plots.style(ax_svp_everywhere, parameter_name, "Slow Velocity Percentage (everywhere)", y_scilimits=None    , y_top=100)
+setup_plots.style(ax_svp_dellschaft, parameter_name, "Slow Velocity Percentage (Dellschaft)", y_scilimits=None    , y_top=100)
+setup_plots.style(ax_fvp_dellschaft, parameter_name, "Fast Velocity Percentage (Dellschaft)", y_scilimits=None    , y_top=100)
 
 # Save plots.
-fig_tri.savefig(f"images/transport-reaction-integral_{parameter_safe_name}.png", dpi=300)
-fig_vmi.savefig(f"images/velocity-magnitude-integral_{parameter_safe_name}.png", dpi=300)
-fig_svp.savefig(f"images/slow-velocity-percentage_{parameter_safe_name}.png",    dpi=300)
+fig_tri           .savefig(f"images/transport-reaction-integral_{parameter_safe_name}.png"        , dpi=300)
+fig_vmi           .savefig(f"images/velocity-magnitude-integral_{parameter_safe_name}.png"        , dpi=300)
+fig_svp_ivs       .savefig(f"images/slow-velocity-percentage_IVS_{parameter_safe_name}.png"       , dpi=300)
+fig_svp_everywhere.savefig(f"images/slow-velocity-percentage_everywhere_{parameter_safe_name}.png", dpi=300)
+fig_svp_dellschaft.savefig(f"images/slow-velocity-percentage_Dellschaft_{parameter_safe_name}.png", dpi=300)
+fig_fvp_dellschaft.savefig(f"images/fast-velocity-percentage_Dellschaft_{parameter_safe_name}.png", dpi=300)
 
 # Print the number of subsamples in each bin.
 no_per_bin = [len(simulation_bins[i]) for i in range(0, no_bins)]

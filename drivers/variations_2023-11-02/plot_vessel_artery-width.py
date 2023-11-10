@@ -7,24 +7,22 @@ max_run_no  = run_no.get_completed_run_no()
 simulations = run_data.import_simulations(max_run_no)
   
 # Varying parameters.
-parameter_name      = "ratio of veins to arteries"
-parameter_safe_name = "ratio-of-veins-to-arteries"
-min_value           = 0
-max_value           = 27.0
+parameter_name      = "artery width"
+parameter_safe_name = "artery-width"
+min_value           = 0.0125
+max_value           = 0.075
 no_bins             = 10
 parameter_values    = np.linspace(min_value, max_value, no_bins)
+
+db            = (max_value - min_value)/(no_bins-1)
+integer_ticks = db.is_integer()
 
 # Populate the bins.
 simulation_bins = [[] for i in range(no_bins)]
 for i in range(0, max_run_no):
   run_no = i+1
 
-  no_veins    = simulations[i].get_no_veins()
-  no_arteries = simulations[i].get_no_arteries()
-
-  ratio = float(no_veins)/float(no_arteries)
-  
-  bin_no = int(np.floor((no_bins-1)*(ratio - min_value)/(max_value - min_value)))
+  bin_no = int(np.floor((no_bins-1)*(simulations[i].parameters["artery_width"] - min_value)/(max_value - min_value)))
   simulation_bins[bin_no].append(run_no)
 
 # Setup plots.
@@ -46,20 +44,20 @@ fig_fvp_dellschaft, ax_fvp_dellschaft = setup_plots.setup(6)
 data_tri, data_vmi, data_svp_ivs, data_svp_everywhere, data_svp_dellschaft, data_fvp_dellschaft, avg_tri, avg_vmi, avg_svp_ivs, avg_svp_everywhere, avg_svp_dellschaft, avg_fvp_dellschaft = setup_plots.get_data(no_bins, simulation_bins, simulations)
 
 # Plot data.
-setup_plots.plot(ax_tri           , parameter_values, data_tri           , avg_tri           )
-setup_plots.plot(ax_vmi           , parameter_values, data_vmi           , avg_vmi           )
-setup_plots.plot(ax_svp_ivs       , parameter_values, data_svp_ivs       , avg_svp_ivs       )
-setup_plots.plot(ax_svp_everywhere, parameter_values, data_svp_everywhere, avg_svp_everywhere)
-setup_plots.plot(ax_svp_dellschaft, parameter_values, data_svp_dellschaft, avg_svp_dellschaft)
-setup_plots.plot(ax_fvp_dellschaft, parameter_values, data_fvp_dellschaft, avg_fvp_dellschaft)
+setup_plots.plot(ax_tri           , parameter_values, data_tri           , avg_tri           , 0.75*db)
+setup_plots.plot(ax_vmi           , parameter_values, data_vmi           , avg_vmi           , 0.75*db)
+setup_plots.plot(ax_svp_ivs       , parameter_values, data_svp_ivs       , avg_svp_ivs       , 0.75*db)
+setup_plots.plot(ax_svp_everywhere, parameter_values, data_svp_everywhere, avg_svp_everywhere, 0.75*db)
+setup_plots.plot(ax_svp_dellschaft, parameter_values, data_svp_dellschaft, avg_svp_dellschaft, 0.75*db)
+setup_plots.plot(ax_fvp_dellschaft, parameter_values, data_fvp_dellschaft, avg_fvp_dellschaft, 0.75*db)
 
 # Style plots.
-setup_plots.style(ax_tri           , parameter_name, "Transport Reaction Integral"          , y_scilimits=[-3, -3])
-setup_plots.style(ax_vmi           , parameter_name, "Velocity Magnitude Integral"          , y_scilimits=[-2, -2])
-setup_plots.style(ax_svp_ivs       , parameter_name, "Slow Velocity Percentage (IVS)"       , y_scilimits=None    , y_top=100)
-setup_plots.style(ax_svp_everywhere, parameter_name, "Slow Velocity Percentage (everywhere)", y_scilimits=None    , y_top=100)
-setup_plots.style(ax_svp_dellschaft, parameter_name, "Slow Velocity Percentage (Dellschaft)", y_scilimits=None    , y_top=100)
-setup_plots.style(ax_fvp_dellschaft, parameter_name, "Fast Velocity Percentage (Dellschaft)", y_scilimits=None    , y_top=100)
+setup_plots.style(ax_tri           , parameter_name, "Transport Reaction Integral"          , y_scilimits=[-3, -3], integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db])
+setup_plots.style(ax_vmi           , parameter_name, "Velocity Magnitude Integral"          , y_scilimits=[-2, -2], integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db])
+setup_plots.style(ax_svp_ivs       , parameter_name, "Slow Velocity Percentage (IVS)"       , y_scilimits=None    , integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db], y_top=100)
+setup_plots.style(ax_svp_everywhere, parameter_name, "Slow Velocity Percentage (everywhere)", y_scilimits=None    , integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db], y_top=100)
+setup_plots.style(ax_svp_dellschaft, parameter_name, "Slow Velocity Percentage (Dellschaft)", y_scilimits=None    , integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db], y_top=100)
+setup_plots.style(ax_fvp_dellschaft, parameter_name, "Fast Velocity Percentage (Dellschaft)", y_scilimits=None    , integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db], y_top=100)
 
 # Save plots.
 fig_tri           .savefig(f"images/transport-reaction-integral_{parameter_safe_name}.png"        , dpi=300)
