@@ -22,7 +22,9 @@ simulation_bins = [[] for i in range(no_bins)]
 for i in range(0, max_run_no):
   run_no = i+1
 
-  bin_no = int(np.floor((no_bins-1)*(simulations[i].parameters["artery_width"] - min_value)/(max_value - min_value)))
+  bin_no = int(np.floor((no_bins)*(simulations[i].parameters["artery_width"] - min_value)/(max_value - min_value)))
+  if (bin_no == no_bins):
+    bin_no -= 1
   simulation_bins[bin_no].append(run_no)
 
 # Setup plots.

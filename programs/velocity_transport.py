@@ -76,6 +76,9 @@ def run(simulation_no, p):
 	assert(p["run_type"      ] in ['serial'    , 'openmp'       , 'mpi'            ])
 	assert(p["geometry"      ] in ['placentone', 'placentone-3d', 'placenta'       ])
 
+	if (p["rerun_with_reynold_steps"] or p["rerun_on_oscillation"]):
+		assert(not p["error_on_fail"])
+
 	program = "velocity-transport"
 
 	if (p["no_time_steps"] == 0):
@@ -261,7 +264,10 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_w
 	program           = f"velocity-transport"
 	program_directory = f"programs/velocity-transport/"
 
-	from miscellaneous import set_parameter
+	from miscellaneous import set_parameter, set_run_numbers
+
+	# Set run no.
+	set_run_numbers.set_run_numbers(simulation_no, program)
 
 	# Number of threads.
 	import os
