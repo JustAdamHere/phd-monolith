@@ -267,7 +267,7 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_w
 	from miscellaneous import set_parameter, set_run_numbers
 
 	# Set run no.
-	set_run_numbers.set_run_numbers(simulation_no, program)
+	set_run_numbers.set_run_numbers(simulation_no-1, program)
 
 	# Number of threads.
 	import os
