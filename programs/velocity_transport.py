@@ -378,12 +378,13 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_w
 	output.output("", terminal_output)
 	while run_process.poll() is None:
 		line = run_process.stdout.readline().decode('utf-8').rstrip('\r\n')
-		output.output(f">>> {line[:line_truncation]:<{line_truncation}}", terminal_output, end='')
-		if (len(line) > line_truncation):
-			output.output("...", terminal_output, end=end)
-		else:
-			output.output("", terminal_output, end=end)
-		run_output.write(line + '\n')
+		if (line != ""):
+			output.output(f">>> {line[:line_truncation]:<{line_truncation}}", terminal_output, end='')
+			if (len(line) > line_truncation):
+				output.output("...", terminal_output, end=end)
+			else:
+				output.output("", terminal_output, end=end)
+			run_output.write(line + '\n')
 	run_output.close()
 	output.output("", terminal_output, end='\x1b[1A\rStarting AptoFEM simulation... ')
 

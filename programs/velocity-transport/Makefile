@@ -7,7 +7,7 @@ OBJ_DIR=./.obj
 MOD_DIR=./.mod
 BIN_DIR=./
 
-velocity_assembly  = jacobi_residual_nsb.f90 jacobi_residual_nsb-ss.f90 jacobi_residual_ns_nsb-ss.f90 jacobi_residual_ns-b-ss.f90 matrix_rhs_s-b-ss.f90 
+velocity_assembly  = jacobi_residual_nsb.f90 jacobi_residual_nsb-mm.f90 jacobi_residual_nsb-ss.f90 jacobi_residual_ns_nsb-ss.f90 jacobi_residual_ns-b-ss.f90 matrix_rhs_s-b-ss.f90 
 transport_assembly = matrix_rhs_transport.f90 matrix_rhs_transport-ss.f90
 
 storage         = solution-storage_velocity.f90

@@ -23,6 +23,7 @@ program velocity_transport
     use jacobi_residual_ns_nsb_ss
     use jacobi_residual_nsb
     use jacobi_residual_nsb_ss
+    use jacobi_residual_nsb_mm
 
     use coupled_sp_matrix_solvers
 
@@ -234,7 +235,7 @@ program velocity_transport
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
                     element_residual_face_nsb_ss, 1)
             else if (trim(assembly_name) == 'ns-nsb') then
-                call store_subroutine_names(fe_solver_routines_velocity,  'assemble_jac_matrix_element', &
+                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
                     jacobian_ns_nsb_ss, 1)
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
                     jacobian_face_ns_nsb_ss, 1)
@@ -243,7 +244,7 @@ program velocity_transport
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
                     element_residual_face_ns_nsb_ss, 1)
             else if (trim(assembly_name) == 'ns-b') then
-                call store_subroutine_names(fe_solver_routines_velocity,  'assemble_jac_matrix_element', &
+                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
                     jacobian_ns_b_ss, 1)
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
                     jacobian_face_ns_b_ss, 1)
@@ -469,21 +470,32 @@ program velocity_transport
     if (compute_velocity  .and. no_time_steps > 0) then
         ! Velocity routines.
         if (trim(assembly_name) == 'nsb') then
-            call store_subroutine_names(fe_solver_routines_velocity,  'assemble_jac_matrix_element', &
-                jacobian_nsb, 1)
-            call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
-                jacobian_face_nsb, 1)
-            call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element', &
-                element_residual_nsb, 1)
-            call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
-                element_residual_face_nsb, 1)
+            if (moving_mesh) then
+                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
+                    jacobian_nsb, 1)
+                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
+                    jacobian_face_nsb, 1)
+                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element', &
+                    element_residual_nsb, 1)
+                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
+                    element_residual_face_nsb, 1)
+            else
+                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
+                    jacobian_nsb_mm, 1)
+                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
+                    jacobian_face_nsb_mm, 1)
+                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element', &
+                    element_residual_nsb_mm, 1)
+                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
+                    element_residual_face_nsb_mm, 1)
+            end if
         else if (trim(assembly_name) == 's-b' .or. trim(assembly_name) == 'ns-b' .or. trim(assembly_name) == 'ns-nsb') then
             ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_matrix_rhs_element', &
             !     stiffness_matrix_load_vector_s_b, 1)
             ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_matrix_rhs_face',    &
             !     stiffness_matrix_load_vector_face_s_b, 1)
-            !! WARNING: time-dependence not yet implemented !!
-            ! error stop
+            print *, "!! WARNING: time-dependence not yet implemented !!"
+            error stop
         else
             print *, "ERROR: Unknown assembly name for velocity solver."
             error stop
@@ -594,6 +606,7 @@ program velocity_transport
         if (moving_mesh) then
             ! Plus dt since t has not yet been updated.
             ! TODO: Is this right?! ^^
+            ! TODO: Make a copy of the mesh (or at least do something appropriate so you can store fe_basis_info_old).
             call move_mesh(mesh_data, problem_dim, current_time + time_step, time_step)
             call update_geometry(current_time + time_step, time_step, geometry_name)
         end if
@@ -636,6 +649,8 @@ program velocity_transport
             if (linear_solver == 'petsc') then
                 call pop_petsc_options()
             end if
+
+            !! TODO: Need to think about how we pass through fe_basis_info_old
 
             call dirk_single_time_step(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
                 aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, dirk_scheme_velocity, &
