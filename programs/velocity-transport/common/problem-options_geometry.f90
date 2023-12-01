@@ -288,10 +288,10 @@ module problem_options_geometry
                 r = boundary_radius + artery_length
 
                 artery_sides(i, 1, 1) = x_centre + r*cos(vessel_angles(i, 2) - artery_width_sm/r)
-                artery_sides(i, 1, 2) = y_centre - (r**2 - (x - x_centre)**2)**0.5
+                artery_sides(i, 1, 2) = y_centre - (r**2 - (artery_sides(i, 1, 1) - x_centre)**2)**0.5
 
                 artery_sides(i, 2, 1) = x_centre + r*cos(vessel_angles(i, 2) + artery_width_sm/r)
-                artery_sides(i, 2, 2) = y_centre - (r**2 - (x - x_centre)**2)**0.5
+                artery_sides(i, 2, 2) = y_centre - (r**2 - (artery_sides(i, 2, 1) - x_centre)**2)**0.5
             end do
 
         else if (trim(control_file) == 'placentone') then
@@ -908,6 +908,7 @@ module problem_options_geometry
                 else 
                     print *, "Error in translate_placenta_to_placentone_point. Missed case."
                     print *, "element_region_id = ", element_region_id
+                    print *, "vessel_no = ", vessel_no
                     error stop
                 end if
             end if
