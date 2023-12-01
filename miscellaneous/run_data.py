@@ -15,16 +15,23 @@ class class_run_data:
     R = self.parameters["scaling_R"]
 
     vmi                                         = get_velocity_magnitude.get_velocity_magnitude_integral("velocity-transport", "placenta", self.sim_no)
-    self.velocity_magnitude_integral_ivs        = vmi[0]
-    self.velocity_magnitude_integral_everywhere = vmi[1]
-    self.transport_reaction_integral            = get_transport_reaction_integral.get_transport_reaction_integral("velocity-transport", "placenta", self.sim_no)
-    av                                          = get_velocity_magnitude.get_average_velocity("dg_velocity-transport", self.sim_no)
-    self.average_velocity_ivs                   = av[0]
-    self.average_velocity_everywhere            = av[1]
-    self.slow_velocity_percentage_ivs           = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, self.average_velocity_ivs       , 520          )
-    self.slow_velocity_percentage_everywhere    = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, self.average_velocity_everywhere, 500          )
-    self.slow_velocity_percentage_dellschaft    = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, 0.0005                          , 500, U       )
-    self.fast_velocity_percentage_dellschaft    = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, 0.001                           , 500, U, False)
+    self.velocity_magnitude_integral_ivs        = U*vmi[0]
+    self.velocity_magnitude_integral_everywhere = U*vmi[1]
+    self.transport_reaction_integral            = C*get_transport_reaction_integral.get_transport_reaction_integral("velocity-transport", "placenta", self.sim_no)
+    av                                          = get_velocity_magnitude.get_average_velocity("velocity-transport", "placenta", self.sim_no)
+    self.average_velocity_ivs                   = U*av[0]
+    self.average_velocity_everywhere            = U*av[1]
+    # self.slow_velocity_percentage_ivs           = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, self.average_velocity_ivs       , 520          )
+    # self.slow_velocity_percentage_everywhere    = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, self.average_velocity_everywhere, 500          )
+    # self.slow_velocity_percentage_dellschaft    = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, 0.0005                          , 500, U       )
+    # self.fast_velocity_percentage_dellschaft    = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, 0.001                           , 500, U, False)
+    svp                                         = get_velocity_magnitude.get_slow_velocity_percentage("velocity-transport", "placenta", self.sim_no)
+    self.slow_velocity_percentage_ivs           = svp[0]
+    self.slow_velocity_percentage_everywhere    = svp[1]
+    self.slow_velocity_percentage_dellschaft    = svp[2]
+    self.fast_velocity_percentage_dellschaft    = svp[3]
+    self.slow_velocity_perctange_nominal_ivs    = svp[4]
+    self.slow_velocity_perctange_nominal_everywhere = svp[5]
     self.run_data                               = get_run_data.get_run_data("velocity-transport", "placenta", self.sim_no, 0)
 
     self.flux                                   = self.get_file_contents("flux_velocity-transport_placenta")

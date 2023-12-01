@@ -9,26 +9,16 @@ def get_velocity_magnitude_integral(program, geometry, run_no):
 
   return integral_ivs, integral_everywhere
 
-  # time_step           = integral_data.iloc[0]['Time step']
-  # integral_ivs        = integral_data.iloc[0]['Integral velocity magnitude']
+def get_one_integral(program, geometry, run_no):
+  import pandas as pd
 
-  # return integral_ivs, 0
+  integral_data = pd.read_csv(f'./output/one-integral_{program}_{geometry}_{run_no}.dat', sep='\t', header=[0])
 
-def get_average_velocity(program, run_no):
-  with open(f'./output/average-velocity_{program}_{run_no}.dat', 'r') as file:
-    content = file.readlines()
+  time_step           = integral_data.iloc[0]['Time step']
+  integral_ivs        = integral_data.iloc[0]['Integral one (IVS)']
+  integral_everywhere = integral_data.iloc[0]['Integral one (everywhere)']
 
-    average_velocity_IVS        = float(content[0])
-    average_velocity_everywhere = float(content[1])
-
-  return average_velocity_IVS, average_velocity_everywhere
-
-  # with open(f'./output/average-velocity_{program}_{run_no}.dat', 'r') as file:
-  #   content = file.readlines()
-
-  #   average_velocity_IVS        = float(content[0])
-
-  # return average_velocity_IVS, 0
+  return integral_ivs, integral_everywhere
 
 def calculate_average_velocity(aptofem_run_no, geometry):
   import subprocess
@@ -45,6 +35,12 @@ def calculate_average_velocity(aptofem_run_no, geometry):
     return False
 
   return True
+
+def get_average_velocity(program, geometry, run_no):
+  vmi_ivs, vmi_everywhere = get_velocity_magnitude_integral(program, geometry, run_no)
+  one_ivs, one_everywhere = get_one_integral               (program, geometry, run_no)
+
+  return vmi_ivs/one_ivs, vmi_everywhere/one_everywhere
 
 def output_solution(aptofem_run_no, geometry):
   import subprocess
@@ -78,64 +74,19 @@ def get_solution(program, run_no):
 
   return no_points, u, v, x, y, element_nos
 
-# def get_slow_velocity_percentage(program, run_no, average_2=None):
-#   if (average_2 == None):
-#     average_2 = (get_average_velocity(program, run_no)[0])**2
+def get_slow_velocity_percentage(program, geometry, run_no):
+  import pandas as pd
 
-#   no_points, u, v, x, y, element_nos = get_solution(program, run_no)
+  integral_data = pd.read_csv(f'./output/slow-velocity-integral_{program}_{geometry}_{run_no}.dat', sep='\t', header=[0])
 
-#   slow_velocity_counter_ivs        = 0
-#   slow_velocity_counter_everywhere = 0
-#   ivs_points_counter               = 0
-#   everywhere_points_counter        = 0
-#   for i in range(no_points):
-#     if (element_nos[i] > 0):
-#       velocity_magnitude_2 = (u[i]**2 + v[i]**2)
+  time_step              = integral_data.iloc[0]['Time step']
+  svp_ivs                = integral_data.iloc[0]['Integral slow velocity (IVS)']
+  svp_everywhere         = integral_data.iloc[0]['Integral slow velocity (everywhere)']
+  svp_dellschaft         = integral_data.iloc[0]['Integral slow velocity (everywhere, 0.0005)']
+  fvp_dellschaft         = integral_data.iloc[0]['Integral fast velocity (everywhere, 0.001)']
+  svp_nominal_ivs        = integral_data.iloc[0]['Integral slow velocity (IVS, nominal)']
+  svp_nominal_everywhere = integral_data.iloc[0]['Integral slow velocity (everywhere, nominal)']
 
-#       if (500 <= element_nos[i] and element_nos[i] <= 519):
-#         everywhere_points_counter += 1
+  one_ivs, one_everywhere = get_one_integral(program, geometry, run_no)
 
-#         if (velocity_magnitude_2 < average_2):
-#           slow_velocity_counter_everywhere += 1
-#       elif ((300 <= element_nos[i] and element_nos[i] <= 399) or
-#           (520 <= element_nos[i] and element_nos[i] <= 599)):        
-#         everywhere_points_counter += 1
-#         ivs_points_counter        += 1
-#         if (velocity_magnitude_2 < average_2):
-#           slow_velocity_counter_ivs        += 1
-#           slow_velocity_counter_everywhere += 1
-
-#   del u, v, x, y, element_nos
-  
-#   slow_velocity_percentage_ivs        = 100*slow_velocity_counter_ivs       /ivs_points_counter
-#   slow_velocity_percentage_everywhere = 100*slow_velocity_counter_everywhere/everywhere_points_counter
-
-#   return slow_velocity_percentage_ivs, slow_velocity_percentage_everywhere
-
-def get_slow_velocity_percentage(program, run_no, average, minimum_region_id, U=1.0, less_than=True, fraction=1.0):
-  no_points, u, v, x, y, element_nos = get_solution(program, run_no)
-
-  slow_velocity_counter   = 0
-  placenta_points_counter = 0
-  for i in range(no_points):
-    if (element_nos[i] > 0):
-      velocity_magnitude = U*(u[i]**2 + v[i]**2)**0.5
-      
-      placenta_points_counter += 1
-
-      if ((300 <= element_nos[i] and element_nos[i] <= 399) or
-          (minimum_region_id <= element_nos[i] and element_nos[i] <= 529)):
-        if (less_than):
-          if (velocity_magnitude < fraction*average):
-            slow_velocity_counter += 1
-        else:
-          if (velocity_magnitude > fraction*average):
-            slow_velocity_counter += 1
-
-
-  del u, v, x, y, element_nos
-  
-  slow_velocity_percentage = 100*slow_velocity_counter/placenta_points_counter
-
-  return slow_velocity_percentage
-
+  return 100*svp_ivs/one_ivs, 100*svp_everywhere/one_everywhere, 100*svp_dellschaft/one_everywhere, 100*fvp_dellschaft/one_everywhere, 100*svp_nominal_ivs/one_ivs, 100*svp_nominal_everywhere/one_everywhere

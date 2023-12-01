@@ -54,12 +54,12 @@ setup_plots.plot(ax_svp_dellschaft, parameter_values, data_svp_dellschaft, avg_s
 setup_plots.plot(ax_fvp_dellschaft, parameter_values, data_fvp_dellschaft, avg_fvp_dellschaft, 0.75*db)
 
 # Style plots.
-setup_plots.style(ax_tri           , parameter_name, "Transport Reaction Integral"          , y_scilimits=[-3, -3], integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db])
-setup_plots.style(ax_vmi           , parameter_name, "Velocity Magnitude Integral"          , y_scilimits=[-2, -2], integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db])
-setup_plots.style(ax_svp_ivs       , parameter_name, "Slow Velocity Percentage (IVS)"       , y_scilimits=None    , integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db], y_top=100)
-setup_plots.style(ax_svp_everywhere, parameter_name, "Slow Velocity Percentage (everywhere)", y_scilimits=None    , integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db], y_top=100)
-setup_plots.style(ax_svp_dellschaft, parameter_name, "Slow Velocity Percentage (Dellschaft)", y_scilimits=None    , integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db], y_top=100)
-setup_plots.style(ax_fvp_dellschaft, parameter_name, "Fast Velocity Percentage (Dellschaft)", y_scilimits=None    , integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db], y_top=100)
+setup_plots.style(fig_tri            , ax_tri            , parameter_name, r"$E_r ~ \text{(M}/\text{m}^3\text{)}$" , y_scilimits=[-3, -3], integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db])
+setup_plots.style(fig_vmi            , ax_vmi            , parameter_name, r"$E_v ~ \text{(m}/\text{s)}$"          , y_scilimits=[-2, -2], integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db])
+setup_plots.style(fig_svp_ivs        , ax_svp_ivs        , parameter_name, r"$E_s(U_\text{avg})$ (IVS)"            , y_scilimits=None ,    integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db], y_top=100)
+setup_plots.style(fig_svp_everywhere , ax_svp_everywhere , parameter_name, r"$E_s(U_\text{avg})$ (everywhere)"     , y_scilimits=None ,    integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db], y_top=100)
+setup_plots.style(fig_svp_dellschaft , ax_svp_dellschaft , parameter_name, r"$E_s(0.0005)$ (everywhere)"           , y_scilimits=None ,    integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db], y_top=100)
+setup_plots.style(fig_fvp_dellschaft , ax_fvp_dellschaft , parameter_name, r"$1-E_s(0.001)$ (everywhere)"          , y_scilimits=None ,    integer_ticks=integer_ticks, xlim=[min_value-0.5*db, max_value+0.5*db], y_top=100)
 
 # Save plots.
 fig_tri           .savefig(f"images/transport-reaction-integral_{parameter_safe_name}.png"        , dpi=300)

@@ -433,8 +433,8 @@ module problem_options_geometry
         x = coord(1) - move_mesh_centre(1)
         y = coord(2) - move_mesh_centre(2)
         
-        calculate_mesh_velocity(1) = x!x*sin(2.0_db*pi*mesh_time)
-        calculate_mesh_velocity(2) = y!y*sin(2.0_db*pi*mesh_time)
+        calculate_mesh_velocity(1) = 0.0_db! x!x*sin(2.0_db*pi*mesh_time)
+        calculate_mesh_velocity(2) = 0.0_db! y!y*sin(2.0_db*pi*mesh_time)
         
     end function
 
@@ -906,8 +906,7 @@ module problem_options_geometry
                     translate_angle = wall_angles(placentone_no)
                     y_offset        = circle_centre(2) - placenta_bottom(2)
                 else 
-                    print *, "Error in translate_placenta_to_placentone_point. Missed case."
-                    print *, "element_region_id = ", element_region_id
+                    print *, "Error in translate_placenta_to_placentone_point. Missed case: element_region_id = ", element_region_id
                     error stop
                 end if
             end if
@@ -921,8 +920,7 @@ module problem_options_geometry
             y_offset         = circle_centre(2) - placenta_bottom(2)
             temp_coord       = placenta_point
         else
-            print *, "Error in translate_placenta_to_placentone_point. Missed case."
-            print *, "element_region_id = ", element_region_id
+            print *, "Error in translate_placenta_to_placentone_point. Missed case: element_region_id = ", element_region_id
             error stop
         end if
         

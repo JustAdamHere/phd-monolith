@@ -5,6 +5,9 @@ from programs import velocity_transport
 
 parameters = velocity_transport.get_default_run_parameters()
 
+# Problem type.
+parameters["velocity_model"] = "nsb"
+
 # Geometry measurements.
 parameters["central_cavity_width"]      = 0.25
 parameters["central_cavity_height"]     = 0.50
@@ -32,16 +35,16 @@ parameters["final_time"]    = 0.1
 # Output.
 parameters["terminal_output"] = True
 parameters["verbose_output"]  = True
-parameters["plot"]            = True
+parameters["plot"]            = False
 
 # Mesh resolution.
-parameters["mesh_resolution"] = 0.02
+parameters["mesh_resolution"] = 0.1#0.02
 
 # Simulation.
 parameters["compute_permeability"     ] = True
-parameters["compute_transport"        ] = True
-parameters["compute_uptake"           ] = True
-parameters["compute_velocity"         ] = True
+parameters["compute_transport"        ] = False
+parameters["compute_uptake"           ] = False
+parameters["compute_velocity"         ] = False
 parameters["compute_velocity_average" ] = False
 parameters["compute_velocity_sample"  ] = False
 
@@ -61,7 +64,7 @@ parameters["rerun_with_reynold_steps"] = True
 # Run type.
 parameters["run_type"]      = 'openmp'
 parameters["linear_solver"] = 'mumps'
-parameters["no_threads"]    = 20
+parameters["no_threads"]    = 10
 
 ##################
 # SIMULATION RUN #
