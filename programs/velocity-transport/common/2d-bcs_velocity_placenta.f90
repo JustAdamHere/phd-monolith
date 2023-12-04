@@ -102,10 +102,10 @@ module placenta_2d_bcs_velocity
       
       theta_bc  = theta_top
       radius    = boundary_radius
-      centre_bc(1) = x_centre + radius*cos(theta_bc) + artery_length*cos(theta_bc)
-      centre_bc(2) = y_centre - ((radius+artery_length)**2 - (centre_bc(1) - x_centre)**2)**0.5
-      ! centre_bc(1) = (artery_sides(placentone_no, 1, 1) + artery_sides(placentone_no, 2, 1))/2.0_db
-      ! centre_bc(2) = (artery_sides(placentone_no, 1, 2) + artery_sides(placentone_no, 2, 2))/2.0_db
+      ! centre_bc(1) = x_centre + radius*cos(theta_bc) + artery_length*cos(theta_bc)
+      ! centre_bc(2) = y_centre - ((radius+artery_length)**2 - (centre_bc(1) - x_centre)**2)**0.5
+      centre_bc(1) = (artery_sides(placentone_no, 1, 1) + artery_sides(placentone_no, 2, 1))/2.0_db
+      centre_bc(2) = (artery_sides(placentone_no, 1, 2) + artery_sides(placentone_no, 2, 2))/2.0_db
 
       r    = sqrt((global_point(1) - centre_bc(1))**2 + (global_point(2) - centre_bc(2))**2)
       u    = current_velocity_amplitude * calculate_poiseuille_flow(r, artery_width_sm/2.0_db)
@@ -113,21 +113,25 @@ module placenta_2d_bcs_velocity
       u(2) =  u(2) * sin(theta_bc)
     end if
 
+    ! if (boundary_no == 111) then
+    !   print *, "centre_bc = ", centre_bc
+    !   print *, "u = ", u
+
+    ! end if
+
     if (moving_mesh .and. .not. compute_ss_flag) then
-      u(1:2) = u(1:2) + calculate_mesh_velocity(global_point, problem_dim, t)
+      ! u(1:2) = u(1:2) + calculate_mesh_velocity(global_point, problem_dim, t)
     end if
 
     ! if (u(2) <= -1e-5) then
     !     print *, "Error: vertical inflow velocity negative"
     !     print *, "boundary_no = ", boundary_no
-    !     print *, "point = ", x, y
     !     print *, "r = ", r
     !     print *, "centre = ", x_centre, y_centre
     !     print *, "radius = ", radius
     !     print *, "centre_top = ", centre_top(1), centre_top(2)
     !     print *, "theta_top = ", theta_top
     !     print *, "centre_bc = ", centre_bc
-    !     print *, "artery_location = ", artery_location
     !     print *, "artery_width_sm = ", artery_width_sm
     !     print *, "no_placentones = ", no_placentones
     !     print *, "placentone_widths = ", placentone_widths

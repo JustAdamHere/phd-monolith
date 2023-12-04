@@ -5,6 +5,8 @@ aptofem_help .false.
 aptofem_pause_code .false.
 aptofem_back_up_control_file .false.
 aptofem_no_openmp_threads 40
+
+aptofem_email_address adam.blakey@nott.ac.uk
 # ==========================================================
 >>> mesh_gen
 display_mesh .false.
@@ -159,7 +161,7 @@ damping_strategy incremental
 minimum_damping 0.01
 initial_damping 1.0
 damping_increment 0.2
-newton_itns_max 30
+newton_itns_max 8
 newton_tolerance 1.0d-6
 newton_terminate_on_fail .true.
 

@@ -367,22 +367,22 @@ module problem_options_geometry
         ! Inflation ratio.
         ! inflation_ratio = 1.0_db
 
-        if (processor_no == 0) then
-            print *, "INITIALISING...."
-            print *, "CAVITY HEIGHT: ", central_cavity_heights(4)
-            print *, "CAVITY WIDTH:  ", central_cavity_widths(4)
-            print *, "CAVITY RATIO: ", central_cavity_ratios(4)
-            print *, "CAVITY TRANSITION: ", central_cavity_transition
-            print *, "CAVITY TOP: ", cavity_tops(4, 2, :)
-            print *, "VESSEL TOP: ", vessel_tops(4, 2, :)
-            print *, "BOUNDARY RADIUS: ", boundary_radius
-            print *, "X_CENTRE: ", x_centre
-            print *, "Y_CENTRE: ", y_centre
-            print *, "CAVITY SIDE 1: ", cavity_sides(4, 1, :)
-            print *, "CAVITY SIDE 2: ", cavity_sides(4, 2, :)
-            print *, "CAVITY SIDE 3: ", cavity_sides(4, 3, :)
-            print *, "PLACENTONE WIDTH: ", placentone_widths(4)
-        end if
+        ! if (processor_no == 0) then
+        !     print *, "INITIALISING...."
+        !     print *, "CAVITY HEIGHT: ", central_cavity_heights(4)
+        !     print *, "CAVITY WIDTH:  ", central_cavity_widths(4)
+        !     print *, "CAVITY RATIO: ", central_cavity_ratios(4)
+        !     print *, "CAVITY TRANSITION: ", central_cavity_transition
+        !     print *, "CAVITY TOP: ", cavity_tops(4, 2, :)
+        !     print *, "VESSEL TOP: ", vessel_tops(4, 2, :)
+        !     print *, "BOUNDARY RADIUS: ", boundary_radius
+        !     print *, "X_CENTRE: ", x_centre
+        !     print *, "Y_CENTRE: ", y_centre
+        !     print *, "CAVITY SIDE 1: ", cavity_sides(4, 1, :)
+        !     print *, "CAVITY SIDE 2: ", cavity_sides(4, 2, :)
+        !     print *, "CAVITY SIDE 3: ", cavity_sides(4, 3, :)
+        !     print *, "PLACENTONE WIDTH: ", placentone_widths(4)
+        ! end if
     end subroutine
     
     subroutine finalise_geometry(control_file)
@@ -433,8 +433,8 @@ module problem_options_geometry
         x = coord(1) - move_mesh_centre(1)
         y = coord(2) - move_mesh_centre(2)
         
-        calculate_mesh_velocity(1) = x!x*sin(2.0_db*pi*mesh_time)
-        calculate_mesh_velocity(2) = y!y*sin(2.0_db*pi*mesh_time)
+        calculate_mesh_velocity(1) = x*sin(2.0_db*pi*mesh_time)
+        calculate_mesh_velocity(2) = y*sin(2.0_db*pi*mesh_time)
         
     end function
 
@@ -447,12 +447,6 @@ module problem_options_geometry
         real(db), dimension(2) :: update_velocity, coord
         integer                :: i, j
         real(db)               :: x, y
-
-        call write_message(io_msg, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-        call write_message(io_msg, "!! WARNING: update_geometry is still in development. !!")
-        call write_message(io_msg, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-
-        ! TODO: Perhaps start by copying over code from the initialise_geometry routine?
 
         if (trim(control_file) == 'placenta') then
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -522,8 +516,9 @@ module problem_options_geometry
                 end do
             end do
 
+            ! TODO: investigate why you need to divide by 2...
             artery_width_sm = sqrt((artery_sides(1, 1, 1) - artery_sides(1, 2, 1))**2 + &
-                (artery_sides(1, 1, 2) - artery_sides(1, 2, 2))**2)
+                (artery_sides(1, 1, 2) - artery_sides(1, 2, 2))**2)/2.0_db
             
             x = (artery_sides(1, 1, 1) + artery_sides(1, 2, 1))/2.0_db
             y = (artery_sides(1, 1, 2) + artery_sides(1, 2, 2))/2.0_db
@@ -592,19 +587,19 @@ module problem_options_geometry
             central_cavity_transition = sqrt((cavity_sides(4, 3, 1) - cavity_sides(4, 1, 1))**2 + &
                 (cavity_sides(4, 3, 2) - cavity_sides(4, 1, 2))**2)
 
-            if (processor_no == 0) then
-                print *, "UPDATING..."
-                print *, "CAVITY HEIGHT: ", central_cavity_heights(4)
-                print *, "CAVITY WIDTH:  ", central_cavity_widths(4)
-                print *, "CAVITY RATIO: ", central_cavity_ratios(4)
-                print *, "CAVITY TRANSITION: ", central_cavity_transition
-                print *, "CAVITY TOP: ", cavity_tops(4, 2, :)
-                print *, "VESSEL TOP: ", vessel_tops(4, 2, :)
-                print *, "BOUNDARY RADIUS: ", boundary_radius
-                print *, "X_CENTRE: ", x_centre
-                print *, "Y_CENTRE: ", y_centre
-                print *, "PLACENTONE WIDTH: ", placentone_widths(4)
-            end if
+            ! if (processor_no == 0) then
+            !     print *, "UPDATING..."
+            !     print *, "CAVITY HEIGHT: ", central_cavity_heights(4)
+            !     print *, "CAVITY WIDTH:  ", central_cavity_widths(4)
+            !     print *, "CAVITY RATIO: ", central_cavity_ratios(4)
+            !     print *, "CAVITY TRANSITION: ", central_cavity_transition
+            !     print *, "CAVITY TOP: ", cavity_tops(4, 2, :)
+            !     print *, "VESSEL TOP: ", vessel_tops(4, 2, :)
+            !     print *, "BOUNDARY RADIUS: ", boundary_radius
+            !     print *, "X_CENTRE: ", x_centre
+            !     print *, "Y_CENTRE: ", y_centre
+            !     print *, "PLACENTONE WIDTH: ", placentone_widths(4)
+            ! end if
         else
             call write_message(io_msg, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             call write_message(io_msg, "!! WARNING: update_geometry not implemented for this geometry. !!")

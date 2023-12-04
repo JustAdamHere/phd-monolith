@@ -27,6 +27,12 @@ program velocity_transport
 
     use coupled_sp_matrix_solvers
 
+    ! To avoid race condition when outputting permeability/uptake fields.
+    use omp_lib
+#ifdef MPI
+    use mpi
+#endif
+
     implicit none
 
     type(aptofem_keys), pointer   :: aptofem_stored_keys
@@ -67,6 +73,8 @@ program velocity_transport
     integer :: no_command_line_arguments
 
     real(db) :: current_time, time_step
+
+    integer :: thread_no
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! COMMAND LINE ARGUMENTS !!
@@ -176,8 +184,23 @@ program velocity_transport
         call create_fe_solution(solution_permeability, mesh_data, 'fe_projection_permeability', aptofem_stored_keys, &
             anal_soln_transport, get_boundary_no_transport) ! Doesn't matter what dirichlet bc is passed.
 
+#ifdef OPENMP        
+!$OMP PARALLEL PRIVATE(thread_no)
+        thread_no = omp_get_thread_num()
+        if (thread_no == 0) then
+            call project_function_region_id(solution_permeability, mesh_data, project_permeability)
+            call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 0, mesh_data, solution_permeability)
+        end if
+!$OMP END PARALLEL
+#elif MPI
+    if (processor_no == 0) then
         call project_function_region_id(solution_permeability, mesh_data, project_permeability)
         call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 0, mesh_data, solution_permeability)
+    end if
+#else
+    call project_function_region_id(solution_permeability, mesh_data, project_permeability)
+    call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 0, mesh_data, solution_permeability)
+#endif
 
         call delete_solution(solution_permeability)
     end if
@@ -189,8 +212,23 @@ program velocity_transport
         call create_fe_solution(solution_uptake, mesh_data, 'fe_projection_uptake', aptofem_stored_keys, &
             anal_soln_transport, get_boundary_no_transport) ! Doesn't matter what dirichlet bc is passed.
 
+#ifdef OPENMP        
+!$OMP PARALLEL PRIVATE(thread_no)
+        thread_no = omp_get_thread_num()
+        if (thread_no == 0) then
+            call project_function_region_id(solution_uptake, mesh_data, project_uptake)
+            call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, 0, mesh_data, solution_uptake)
+        end if
+!$OMP END PARALLEL
+#elif MPI
+    if (processor_no == 0) then
         call project_function_region_id(solution_uptake, mesh_data, project_uptake)
         call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, 0, mesh_data, solution_uptake)
+    end if
+#else
+    call project_function_region_id(solution_uptake, mesh_data, project_uptake)
+    call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, 0, mesh_data, solution_uptake)
+#endif
 
         call delete_solution(solution_uptake)
     end if
@@ -472,15 +510,6 @@ program velocity_transport
         if (trim(assembly_name) == 'nsb') then
             if (moving_mesh) then
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
-                    jacobian_nsb, 1)
-                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
-                    jacobian_face_nsb, 1)
-                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element', &
-                    element_residual_nsb, 1)
-                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
-                    element_residual_face_nsb, 1)
-            else
-                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
                     jacobian_nsb_mm, 1)
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
                     jacobian_face_nsb_mm, 1)
@@ -488,6 +517,15 @@ program velocity_transport
                     element_residual_nsb_mm, 1)
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
                     element_residual_face_nsb_mm, 1)
+            else
+                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
+                    jacobian_nsb, 1)
+                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
+                    jacobian_face_nsb, 1)
+                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element', &
+                    element_residual_nsb, 1)
+                call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
+                    element_residual_face_nsb, 1)
             end if
         else if (trim(assembly_name) == 's-b' .or. trim(assembly_name) == 'ns-b' .or. trim(assembly_name) == 'ns-nsb') then
             ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_matrix_rhs_element', &
@@ -618,9 +656,26 @@ program velocity_transport
             call create_fe_solution(solution_permeability, mesh_data, 'fe_projection_permeability', aptofem_stored_keys, &
                 anal_soln_transport, get_boundary_no_transport) ! Doesn't matter what dirichlet bc is passed.
 
+#ifdef OPENMP        
+!$OMP PARALLEL PRIVATE(thread_no)
+            thread_no = omp_get_thread_num()
+            if (thread_no == 0) then                
+                call project_function_region_id(solution_permeability, mesh_data, project_permeability)
+                call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, time_step_no, mesh_data, &
+                    solution_permeability)
+            end if
+!$OMP END PARALLEL
+#elif MPI
+            if (processor_no == 0) then
+                call project_function_region_id(solution_permeability, mesh_data, project_permeability)
+                call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, time_step_no, mesh_data, &
+                    solution_permeability)
+            end if
+#else
             call project_function_region_id(solution_permeability, mesh_data, project_permeability)
             call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, time_step_no, mesh_data, &
                 solution_permeability)
+#endif                
 
             call delete_solution(solution_permeability)
         end if
@@ -632,8 +687,25 @@ program velocity_transport
             call create_fe_solution(solution_uptake, mesh_data, 'fe_projection_uptake', aptofem_stored_keys, &
                 anal_soln_transport, get_boundary_no_transport) ! Doesn't matter what dirichlet bc is passed.
 
+#ifdef OPENMP
+!$OMP PARALLEL PRIVATE(thread_no)
+            thread_no = omp_get_thread_num()
+            if (thread_no == 0) then
+                call project_function_region_id(solution_uptake, mesh_data, project_uptake)
+                call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, time_step_no, mesh_data, &
+                    solution_uptake)
+            end if
+!$OMP END PARALLEL
+#elif MPI
+            if (processor_no == 0) then
+                call project_function_region_id(solution_uptake, mesh_data, project_uptake)
+                call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, time_step_no, mesh_data, &
+                    solution_uptake)
+            end if
+#else
             call project_function_region_id(solution_uptake, mesh_data, project_uptake)
             call write_fe_data('output_mesh_solution_uptake', aptofem_stored_keys, time_step_no, mesh_data, solution_uptake)
+#endif
 
             call delete_solution(solution_uptake)
         end if
@@ -643,7 +715,8 @@ program velocity_transport
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if (.not. velocity_ss .and. compute_velocity) then
             ! Set velocity amplitude.
-            call Carson_velocity_amplitude(current_time)
+            ! call Carson_velocity_amplitude(current_time)
+            ! current_velocity_amplitude = 1.0_db
 
             ! Reset preconditioner to one specified in file.
             if (linear_solver == 'petsc') then

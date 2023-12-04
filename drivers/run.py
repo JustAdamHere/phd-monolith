@@ -26,8 +26,8 @@ parameters["scaling_R"]   = 1.667e-2 # m^2/s
 
 # Moving mesh.
 parameters["moving_mesh"]   = True
-parameters["no_time_steps"] = 1
-parameters["final_time"]    = 0.1
+parameters["no_time_steps"] = 200
+parameters["final_time"]    = 2.0
 
 # Output.
 parameters["terminal_output"] = True
@@ -35,12 +35,12 @@ parameters["verbose_output"]  = True
 parameters["plot"]            = True
 
 # Mesh resolution.
-parameters["mesh_resolution"] = 0.02
+parameters["mesh_resolution"] = 0.1
 
 # Simulation.
 parameters["compute_permeability"     ] = True
-parameters["compute_transport"        ] = True
-parameters["compute_uptake"           ] = True
+parameters["compute_transport"        ] = False
+parameters["compute_uptake"           ] = False
 parameters["compute_velocity"         ] = True
 parameters["compute_velocity_average" ] = False
 parameters["compute_velocity_sample"  ] = False
