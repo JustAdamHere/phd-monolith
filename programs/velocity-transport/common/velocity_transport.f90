@@ -14,7 +14,11 @@ program velocity_transport
     use outflow_transport_flux
     use integrate_transport_reaction
     use integrate_velocity_magnitude
+    use integrate_one
+    use integrate_slow_velocity
+    use integrate_fast_velocity
     use projections
+    use previous_velocity
 
     use matrix_rhs_transport
     use matrix_rhs_transport_ss
@@ -60,7 +64,7 @@ program velocity_transport
 
     logical, dimension(20) :: mesh_smoother
 
-    character(len=100) :: flux_file, data_file, velocity_magnitude_file
+    character(len=100) :: flux_file, data_file, velocity_magnitude_file, one_file, slow_velocity_file
     character(len=100) :: aptofem_run_number_string
     character(len=100) :: tsvFormat
 
@@ -75,6 +79,9 @@ program velocity_transport
     real(db) :: current_time, time_step
 
     integer :: thread_no
+
+    real(db) :: one_ivs, one_everywhere, vmi_ivs, vmi_everywhere, velocity_average_ivs, velocity_average_everywhere, svp_ivs, &
+        svp_everywhere, svp_0_0005_everywhere, fvp_0_001_everywhere, svp_nominal_ivs, svp_nominal_everywhere
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! COMMAND LINE ARGUMENTS !!
@@ -509,6 +516,15 @@ program velocity_transport
         ! Velocity routines.
         if (trim(assembly_name) == 'nsb') then
             if (moving_mesh) then
+                ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
+                !     jacobian_nsb_mm, 1)
+                ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
+                !     jacobian_face_nsb_mm, 1)
+                ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element', &
+                !     element_residual_nsb_mm, 1)
+                ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
+                !     element_residual_face_nsb_mm, 1)
+
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
                     jacobian_nsb_mm, 1)
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
@@ -557,18 +573,64 @@ program velocity_transport
         compute_ss_flag = .false.
     end if
 
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    !! SAVE THE INTEGRAL OVER THE DOMAIN !!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if (compute_velocity) then ! <- velocity required because we need the basis.
+        one_ivs        = calculate_integral_one(mesh_data, solution_velocity, .true.)
+        one_everywhere = calculate_integral_one(mesh_data, solution_velocity, .false.)
+
+        write(aptofem_run_number_string, '(i10)') aptofem_run_number
+        one_file = '../../output/one-integral' // '_' // 'velocity-transport' // '_' // &
+            trim(geometry_name) // '_' // trim(adjustl(aptofem_run_number_string)) // '.dat'
+        open(23111995, file=one_file, status='replace')
+        tsvFormat = '(*(G0.6,:,"'//achar(9)//'"))'
+        write(23111995, tsvFormat) 'Time step', 'Integral one (IVS)', 'Integral one (everywhere)'
+        write(23111995, tsvFormat) 0, one_ivs, one_everywhere
+    end if
+
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! SAVE INTEGRAL VELOCITY MAGNITUDE !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if (compute_velocity) then
+        vmi_ivs        = calculate_integral_velocity_magnitude(mesh_data, solution_velocity, .true.)
+        vmi_everywhere = calculate_integral_velocity_magnitude(mesh_data, solution_velocity, .false.)
+
         write(aptofem_run_number_string, '(i10)') aptofem_run_number
         velocity_magnitude_file = '../../output/velocity-magnitude-integral' // '_' // 'velocity-transport' // '_' // &
             trim(geometry_name) // '_' // trim(adjustl(aptofem_run_number_string)) // '.dat'
         open(23111996, file=velocity_magnitude_file, status='replace')
         tsvFormat = '(*(G0.6,:,"'//achar(9)//'"))'
         write(23111996, tsvFormat) 'Time step', 'Integral velocity magnitude (IVS)', 'Integral velocity magnitude (everywhere)'
-        write(23111996, tsvFormat) 0, calculate_integral_velocity_magnitude(mesh_data, solution_velocity, .true.), &
-            calculate_integral_velocity_magnitude(mesh_data, solution_velocity, .false.)
+        write(23111996, tsvFormat) 0, vmi_ivs, vmi_everywhere  
+    end if
+
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    !! SAVE THE SLOW VELOCITY INTEGRAL !!
+    !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if (compute_velocity) then
+        velocity_average_ivs        = vmi_ivs       /one_ivs
+        velocity_average_everywhere = vmi_everywhere/one_everywhere
+
+        svp_ivs                 = calculate_integral_slow_velocity(mesh_data, solution_velocity, .true.,  0.35_db, &
+            velocity_average_ivs)
+        svp_everywhere          = calculate_integral_slow_velocity(mesh_data, solution_velocity, .false., 0.35_db, &
+            velocity_average_everywhere)
+        svp_0_0005_everywhere   = calculate_integral_slow_velocity(mesh_data, solution_velocity, .false., 0.35_db, 0.0005_db)
+        fvp_0_001_everywhere    = calculate_integral_fast_velocity(mesh_data, solution_velocity, .false., 0.35_db, 0.001_db)
+        svp_nominal_ivs         = calculate_integral_slow_velocity(mesh_data, solution_velocity, .true.,  0.35_db, 0.0026_db)
+        svp_nominal_everywhere  = calculate_integral_slow_velocity(mesh_data, solution_velocity, .false., 0.35_db, 0.0026_db)
+
+        write(aptofem_run_number_string, '(i10)') aptofem_run_number
+        slow_velocity_file = '../../output/slow-velocity-integral' // '_' // 'velocity-transport' // '_' // &
+            trim(geometry_name) // '_' // trim(adjustl(aptofem_run_number_string)) // '.dat'
+        open(23111994, file=slow_velocity_file, status='replace')
+        tsvFormat = '(*(G0.6,:,"'//achar(9)//'"))'
+        write(23111994, tsvFormat) 'Time step', 'Integral slow velocity (IVS)', 'Integral slow velocity (everywhere)', &
+            'Integral slow velocity (everywhere, 0.0005)', 'Integral fast velocity (everywhere, 0.001)', &
+            'Integral slow velocity (IVS, nominal)', 'Integral slow velocity (everywhere, nominal)'
+        write(23111994, tsvFormat) 0, svp_ivs, svp_everywhere, svp_0_0005_everywhere, fvp_0_001_everywhere, svp_nominal_ivs, &
+            svp_nominal_everywhere
     end if
 
     !!!!!!!!!!!!!!!!!
@@ -636,6 +698,13 @@ program velocity_transport
                 solution_transport)
             call set_current_time                 (solution_transport, current_time)
             call project_dirichlet_boundary_values(solution_transport, mesh_data)
+        end if
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ! SAVE PREVIOUS VELOCITY MESH AND SOLUTION !
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (moving_mesh) then
+            call setup_previous_velocity(mesh_data, solution_velocity)
         end if
 
         !!!!!!!!!!!!!
@@ -820,6 +889,13 @@ program velocity_transport
         ! SIMULATION DATA !
         !!!!!!!!!!!!!!!!!!!
         write(23111999, tsvFormat) no_dofs_velocity, no_dofs_transport, scheme_data_velocity%newton_norm_residual, -1, no_eles
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ! CLEANUP PREVIOUS VELOCITY MESH AND SOLUTION !
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (moving_mesh) then
+            call finalise_previous_velocity()
+        end if
     end do
 
     !!!!!!!!!!!!!!
@@ -827,6 +903,8 @@ program velocity_transport
     !!!!!!!!!!!!!!
     close(23111999)
     if (compute_velocity) then
+        close(23111994)
+        close(23111995)
         close(23111996)
     end if
     if (compute_velocity .and. compute_transport) then

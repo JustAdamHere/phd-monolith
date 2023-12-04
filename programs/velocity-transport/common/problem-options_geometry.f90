@@ -917,8 +917,7 @@ module problem_options_geometry
             y_offset         = circle_centre(2) - placenta_bottom(2)
             temp_coord       = placenta_point
         else
-            print *, "Error in translate_placenta_to_placentone_point. Missed case."
-            print *, "element_region_id = ", element_region_id
+            print *, "Error in translate_placenta_to_placentone_point. Missed case: element_region_id = ", element_region_id
             error stop
         end if
         
