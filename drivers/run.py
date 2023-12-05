@@ -29,8 +29,8 @@ parameters["scaling_R"]   = 1.667e-2 # m^2/s
 
 # Moving mesh.
 parameters["moving_mesh"]   = True
-parameters["no_time_steps"] = 200
-parameters["final_time"]    = 2.0
+parameters["no_time_steps"] = 2
+parameters["final_time"]    = 0.01
 
 # Output.
 parameters["terminal_output"] = True
@@ -38,7 +38,7 @@ parameters["verbose_output"]  = True
 parameters["plot"]            = False
 
 # Mesh resolution.
-parameters["mesh_resolution"] = 0.1
+parameters["mesh_resolution"] = 0.1#0.02
 
 # Simulation.
 parameters["compute_permeability"     ] = True
@@ -59,12 +59,12 @@ parameters["clean_files"][6] = False # Images.
 
 # Reruns.
 parameters["error_on_fail"           ] = False
-parameters["rerun_with_reynold_steps"] = True
+parameters["rerun_with_reynold_steps"] = False
 
 # Run type.
 parameters["run_type"]      = 'openmp'
 parameters["linear_solver"] = 'mumps'
-parameters["no_threads"]    = 10
+parameters["no_threads"]    = 20
 
 ##################
 # SIMULATION RUN #

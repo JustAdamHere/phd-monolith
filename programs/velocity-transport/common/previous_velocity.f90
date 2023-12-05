@@ -18,23 +18,26 @@ module previous_velocity
 
     character(len=aptofem_length_key_def) :: control_parameter
 
-    ! call make_copy_of_mesh(prev_mesh_data, mesh_data)
-    ! call make_copy_of_solution(prev_solution_velocity_data, solution_velocity)
+    call make_copy_of_mesh(prev_mesh_data, mesh_data)
+    call make_copy_of_solution(prev_solution_velocity_data, solution_velocity)
 
-    ! call get_mesh_info(prev_no_elements, prev_no_nodes, prev_no_faces, prev_problem_dim, prev_mesh_data)
+    prev_dim_soln_coeff = get_dim_soln_coeff(prev_solution_velocity_data)
+    prev_no_pdes        = get_no_pdes(prev_solution_velocity_data)
 
-    ! prev_npinc = 2
-    ! call compute_max_no_quad_points(prev_no_quad_points_volume_max, prev_no_quad_points_face_max, prev_mesh_data, &
-    !   prev_solution_velocity_data, prev_npinc)
+    call get_mesh_info(prev_no_elements, prev_no_nodes, prev_no_faces, prev_problem_dim, prev_mesh_data)
 
-    ! control_parameter = 'uh_ele'
-    ! call initialize_fe_basis_storage(prev_fe_basis_info, control_parameter, prev_solution_velocity_data, &
-    !   prev_problem_dim, prev_no_quad_points_volume_max, prev_no_quad_points_face_max)
+    prev_npinc = 2
+    call compute_max_no_quad_points(prev_no_quad_points_volume_max, prev_no_quad_points_face_max, prev_mesh_data, &
+      prev_solution_velocity_data, prev_npinc)
+
+    control_parameter = 'uh_ele'
+    call initialize_fe_basis_storage(prev_fe_basis_info, control_parameter, prev_solution_velocity_data, &
+      prev_problem_dim, prev_no_quad_points_volume_max, prev_no_quad_points_face_max)
 
   end subroutine
 
   subroutine finalise_previous_velocity()
-    ! call delete_fe_basis_storage(prev_fe_basis_info)
+    call delete_fe_basis_storage(prev_fe_basis_info)
   end subroutine
 
 end module

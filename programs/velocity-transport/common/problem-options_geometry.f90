@@ -433,8 +433,8 @@ module problem_options_geometry
         x = coord(1) - move_mesh_centre(1)
         y = coord(2) - move_mesh_centre(2)
         
-        calculate_mesh_velocity(1) = x*sin(2.0_db*pi*mesh_time)
-        calculate_mesh_velocity(2) = y*sin(2.0_db*pi*mesh_time)
+        calculate_mesh_velocity(1) = 0.0_db! x*sin(2.0_db*pi*mesh_time)
+        calculate_mesh_velocity(2) = 0.0_db! y*sin(2.0_db*pi*mesh_time)
         
     end function
 

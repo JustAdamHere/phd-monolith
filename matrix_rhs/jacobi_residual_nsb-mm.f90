@@ -129,16 +129,16 @@ module jacobi_residual_nsb_mm
           do i = 1,no_dofs_per_variable(ieqn)
 
             ! ! Note: this assumes the time coefficient doesn't vary spatially.
-            ! time_terms = calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
-            !     element_region_id)* &
-            !   ( &
-            !     ! prev_uh(ieqn)*prev_phi(ieqn, qk, i) - &
-            !     prev_jacobian(qk)*prev_quad_weights_ele(qk)*prev_uh(ieqn)*prev_phi(ieqn, qk, i) - &
-            !     dirk_scaling_factor*interpolant_uh(ieqn, qk)*phi(ieqn, qk, i) &
-            !   )
-            !   ! (uh_previous_time_step(ieqn, qk) - dirk_scaling_factor*interpolant_uh(ieqn, qk))*phi(ieqn, qk, i)
+            time_terms = calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
+                element_region_id)* &
+              ( &
+                ! prev_uh(ieqn)*prev_phi(ieqn, qk, i) - &
+                prev_jacobian(qk)*prev_quad_weights_ele(qk)*prev_uh(ieqn)*prev_phi(ieqn, qk, i) - &
+                dirk_scaling_factor*interpolant_uh(ieqn, qk)*phi(ieqn, qk, i) &
+              )
+              ! (uh_previous_time_step(ieqn, qk) - dirk_scaling_factor*interpolant_uh(ieqn, qk))*phi(ieqn, qk, i)
 
-            time_terms = 0.0_db
+            ! time_terms = 0.0_db
 
             diffusion_terms = calculate_velocity_diffusion_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
