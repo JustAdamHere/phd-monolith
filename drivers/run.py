@@ -20,7 +20,7 @@ parameters["no_placentones"]            = 6
 
 # Problem parameters.
 parameters["scaling_L"]   = 0.04     # m
-parameters["scaling_U"]   = 0.35     # m/s
+parameters["scaling_U"]   = 0.1#0.35     # m/s
 parameters["scaling_k"]   = 1e-8     # m^2
 parameters["scaling_mu"]  = 4e-3     # Pa s
 parameters["scaling_rho"] = 1e3      # kg/m^3

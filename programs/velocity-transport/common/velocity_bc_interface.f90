@@ -97,8 +97,8 @@ module velocity_bc_interface
   procedure (if_anal_soln_velocity), pointer           :: anal_soln_velocity => null()
   procedure (if_anal_soln_velocity_1), pointer         :: anal_soln_velocity_1 => null()
   procedure (if_get_boundary_no_velocity), pointer     :: get_boundary_no_velocity => null()
-  procedure (if_dirichlet_bc_velocity), pointer    :: dirichlet_bc_velocity => null()
-  procedure (if_neumann_bc_velocity), pointer      :: neumann_bc_velocity => null()
+  procedure (if_dirichlet_bc_velocity), pointer        :: dirichlet_bc_velocity => null()
+  procedure (if_neumann_bc_velocity), pointer          :: neumann_bc_velocity => null()
 
   contains
 

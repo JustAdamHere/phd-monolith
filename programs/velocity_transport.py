@@ -251,6 +251,8 @@ def run(simulation_no, p):
 def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, artery_width_sm, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, compute_permeability, compute_uptake, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver, wall_height_ratio, basal_plate_vessel_positions, rerun_with_reynold_steps):
 
 	# Programatically create coefficients. ##
+	#  Re
+	velocity_time_coefficient = scaling_rho*scaling_U*scaling_L/scaling_mu
 	#  Re 
 	velocity_convection_coefficient = scaling_rho*scaling_U*scaling_L/scaling_mu
 	# 1/Dar
@@ -289,7 +291,7 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_w
 	set_parameter.set_parameter("velocity-transport", geometry, 67, f"velocity_convection_coefficient {velocity_convection_coefficient:.4e}")
 	set_parameter.set_parameter("velocity-transport", geometry, 68, f"velocity_reaction_coefficient {velocity_reaction_coefficient:.4e}")
 	set_parameter.set_parameter("velocity-transport", geometry, 69, f"velocity_pressure_coefficient {1.0}")
-	set_parameter.set_parameter("velocity-transport", geometry, 70, f"velocity_time_coefficient {1.0}")
+	set_parameter.set_parameter("velocity-transport", geometry, 70, f"velocity_time_coefficient {velocity_time_coefficient:.4e}")
 	set_parameter.set_parameter("velocity-transport", geometry, 71, f"velocity_forcing_coefficient {1.0}")
 
 	set_parameter.set_parameter("velocity-transport", geometry, 73, f"transport_diffusion_coefficient {transport_diffusion_coefficient:.4e}")
