@@ -145,7 +145,8 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, central_cavity_width
 	full_mesh_command = [\
 		'/home/pmyambl/software/gmsh-4.11.1-Linux64/bin/gmsh',\
 		f'./meshes/{geo_file}',\
-		'-string', 'Mesh.MshFileVersion=2;'\
+		'-string', 'Mesh.MshFileVersion=2;',\
+		'-tol', '1e-12',\
 	]
 
 	full_mesh_output = [\

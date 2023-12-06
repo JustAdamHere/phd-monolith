@@ -83,10 +83,6 @@ program velocity_transport
     real(db) :: one_ivs, one_everywhere, vmi_ivs, vmi_everywhere, velocity_average_ivs, velocity_average_everywhere, svp_ivs, &
         svp_everywhere, svp_0_0005_everywhere, fvp_0_001_everywhere, svp_nominal_ivs, svp_nominal_everywhere
 
-    !! DELETE ME !!
-    type(solution) :: solution_difference
-    !! DELETE ME !!
-
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! COMMAND LINE ARGUMENTS !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -860,13 +856,6 @@ program velocity_transport
                     // trim(geometry_name), '../../output/')
             end if
         end if
-
-        !! DELETE ME !!
-        call create_fe_solution(solution_difference, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, dirichlet_bc_velocity)
-        solution_difference%soln_values = solution_velocity%soln_values - prev_solution_velocity_data%soln_values
-        call write_fe_data('solution_difference', aptofem_stored_keys, time_step_no, mesh_data, solution_difference)
-        call delete_solution(solution_difference)
-        !! DELETE ME !!
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! SAVE INTEGRAL VELOCITY MAGNITUDE !

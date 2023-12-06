@@ -294,6 +294,14 @@ module problem_options_geometry
                 artery_sides(i, 2, 2) = y_centre - (r**2 - (artery_sides(i, 2, 1) - x_centre)**2)**0.5
             end do
 
+            ! Recalculated here to help with the boundary conditions being consistent between timesteps.
+            artery_width_sm = sqrt((artery_sides(1, 1, 1) - artery_sides(1, 2, 1))**2 + &
+                (artery_sides(1, 1, 2) - artery_sides(1, 2, 2))**2)/2.0_db
+
+            x = (artery_sides(1, 1, 1) + artery_sides(1, 2, 1))/2.0_db
+            y = (artery_sides(1, 1, 2) + artery_sides(1, 2, 2))/2.0_db
+            artery_length = sqrt((x - vessel_tops(1, 2, 1))**2 + (y - vessel_tops(1, 2, 2))**2)
+
         else if (trim(control_file) == 'placentone') then
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!
             !! VESSEL TOPS AND ANGLES !!
@@ -364,23 +372,32 @@ module problem_options_geometry
                 sin(vessel_angles(i, 2) + ((central_cavity_widths(i) + central_cavity_transition)/2)/boundary_radius)
         end do
 
-        ! Inflation ratio.
-        ! inflation_ratio = 1.0_db
+        ! Recalculated here to help with the boundary conditions being consistent between timesteps.
+        do i = 1, no_placentones
+            central_cavity_heights(i) = 2*sqrt( &
+                (cavity_tops(i, 2, 1) - vessel_tops(i, 2, 1))**2 + (cavity_tops(i, 2, 2) - vessel_tops(i, 2, 2))**2 &
+            )
+            central_cavity_widths(i) = 2*sqrt( &
+                (cavity_sides(i, 2, 1) - vessel_tops(i, 2, 1))**2 + (cavity_sides(i, 2, 2) - vessel_tops(i, 2, 2))**2 &
+            )
+            central_cavity_ratios(i) = central_cavity_heights(i)/central_cavity_widths(i)
+        end do
+        central_cavity_transition = sqrt((cavity_sides(4, 3, 1) - cavity_sides(4, 1, 1))**2 + &
+            (cavity_sides(4, 3, 2) - cavity_sides(4, 1, 2))**2)
 
         ! if (processor_no == 0) then
-        !     print *, "INITIALISING...."
+        !     print *, "INITIALISING..."
         !     print *, "CAVITY HEIGHT: ", central_cavity_heights(4)
         !     print *, "CAVITY WIDTH:  ", central_cavity_widths(4)
         !     print *, "CAVITY RATIO: ", central_cavity_ratios(4)
         !     print *, "CAVITY TRANSITION: ", central_cavity_transition
         !     print *, "CAVITY TOP: ", cavity_tops(4, 2, :)
         !     print *, "VESSEL TOP: ", vessel_tops(4, 2, :)
+        !     print *, "ARTERY WIDTH SM: ", artery_width_sm
+        !     print *, "ARTERY LENGTH: ", artery_length
         !     print *, "BOUNDARY RADIUS: ", boundary_radius
         !     print *, "X_CENTRE: ", x_centre
         !     print *, "Y_CENTRE: ", y_centre
-        !     print *, "CAVITY SIDE 1: ", cavity_sides(4, 1, :)
-        !     print *, "CAVITY SIDE 2: ", cavity_sides(4, 2, :)
-        !     print *, "CAVITY SIDE 3: ", cavity_sides(4, 3, :)
         !     print *, "PLACENTONE WIDTH: ", placentone_widths(4)
         ! end if
     end subroutine
@@ -595,6 +612,8 @@ module problem_options_geometry
             !     print *, "CAVITY TRANSITION: ", central_cavity_transition
             !     print *, "CAVITY TOP: ", cavity_tops(4, 2, :)
             !     print *, "VESSEL TOP: ", vessel_tops(4, 2, :)
+            !     print *, "ARTERY WIDTH SM: ", artery_width_sm
+            !     print *, "ARTERY LENGTH: ", artery_length
             !     print *, "BOUNDARY RADIUS: ", boundary_radius
             !     print *, "X_CENTRE: ", x_centre
             !     print *, "Y_CENTRE: ", y_centre
