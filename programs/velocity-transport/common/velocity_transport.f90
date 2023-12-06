@@ -516,23 +516,14 @@ program velocity_transport
         ! Velocity routines.
         if (trim(assembly_name) == 'nsb') then
             if (moving_mesh) then
-                ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
-                !     jacobian_nsb_mm, 1)
-                ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
-                !     jacobian_face_nsb_mm, 1)
-                ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element', &
-                !     element_residual_nsb_mm, 1)
-                ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
-                !     element_residual_face_nsb_mm, 1)
-
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
-                    jacobian_nsb_ss, 1)
+                    jacobian_nsb_mm, 1)
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
-                    jacobian_face_nsb_ss, 1)
+                    jacobian_face_nsb_mm, 1)
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element', &
-                    element_residual_nsb_ss, 1)
+                    element_residual_nsb_mm, 1)
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
-                    element_residual_face_nsb_ss, 1)
+                    element_residual_face_nsb_mm, 1)
             else
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
                     jacobian_nsb, 1)
@@ -703,8 +694,7 @@ program velocity_transport
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! SAVE PREVIOUS VELOCITY MESH AND SOLUTION !
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        ! if (moving_mesh) then
-        if (.True.) then
+        if (moving_mesh) then
             call setup_previous_velocity(mesh_data, solution_velocity)
         end if
 

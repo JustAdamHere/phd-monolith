@@ -45,7 +45,7 @@ module jacobi_residual_nsb_mm
     real(db) :: dirk_scaling_factor,current_time
 
     real(db) :: diffusion_terms, convection_terms, reaction_terms, forcing_terms, pressure_terms, incompressibility_terms, &
-      time_terms
+      time_terms, prev_time_terms
     integer  :: element_region_id
 
     ! Moving mesh variables.
@@ -124,21 +124,28 @@ module jacobi_residual_nsb_mm
 
           ! Loop over phi_i
 
+          ! Really inefficient way of doing this...
           prev_uh = uh_element(prev_fe_basis_info, prev_no_pdes, qk)
 
           do i = 1,no_dofs_per_variable(ieqn)
+            ! TODO: DIRK scaling factor needs investigation. I think this only appeared on one term in Paul's original
+            !   discretisation.
+            ! Note: this assumes the time coefficient takes the same value on both meshes.
+            prev_time_terms = calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
+              element_region_id)* &
+                dirk_scaling_factor*prev_uh(ieqn)*prev_phi(ieqn, qk, i)
 
-            ! ! Note: this assumes the time coefficient doesn't vary spatially.
-            ! time_terms = calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
-            !     element_region_id)* &
-            !   ( &
-            !     ! prev_uh(ieqn)*prev_phi(ieqn, qk, i) - &
-            !     prev_jacobian(qk)*prev_quad_weights_ele(qk)*prev_uh(ieqn)*prev_phi(ieqn, qk, i) - &
-            !     dirk_scaling_factor*interpolant_uh(ieqn, qk)*phi(ieqn, qk, i) &
-            !   )
-              ! (uh_previous_time_step(ieqn, qk) - dirk_scaling_factor*interpolant_uh(ieqn, qk))*phi(ieqn, qk, i)
+            time_terms = -calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
+                element_region_id)* &
+                  dirk_scaling_factor*interpolant_uh(ieqn, qk)*phi(ieqn, qk, i)
 
-            time_terms = 0.0_db
+            ! time_terms = 0.0_db
+
+            ! if (prev_time_terms > time_terms) then
+            !   print *, "+: ", prev_time_terms, time_terms
+            ! else
+            !   print *, "-: ", prev_time_terms, time_terms
+            ! end if
 
             diffusion_terms = calculate_velocity_diffusion_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
@@ -167,7 +174,8 @@ module jacobi_residual_nsb_mm
               reaction_terms + &
               pressure_terms + &
               forcing_terms &
-            )
+            ) &
+            + prev_jacobian(qk)*prev_quad_weights_ele(qk)*prev_time_terms
 
           end do
         end do
@@ -1564,8 +1572,8 @@ module jacobi_residual_nsb_mm
 
     do i = 1,problem_dim
       do j = 1,problem_dim
-        fluxes(i,j) = velocity(i)*velocity(j)
-        ! fluxes(i,j) = (velocity(i) - mesh_velocity(i))*velocity(j)
+        ! fluxes(i,j) = velocity(i)*velocity(j)
+        fluxes(i,j) = (velocity(i) - mesh_velocity(i))*velocity(j)
       end do
     end do
 
@@ -1608,87 +1616,87 @@ module jacobi_residual_nsb_mm
 
     if (problem_dim == 2) then
 
-      fluxes_prime(1,1,1) = 2.0_db*velocity(1)
-      fluxes_prime(1,1,2) = 0.0_db
-      fluxes_prime(1,2,1) = velocity(2)
-      fluxes_prime(1,2,2) = velocity(1)
-
-      fluxes_prime(2,1,1) = velocity(2)
-      fluxes_prime(2,1,2) = velocity(1)
-      fluxes_prime(2,2,1) = 0.0_db
-      fluxes_prime(2,2,2) = 2.0_db*velocity(2)
-
-      ! fluxes_prime(1,1,1) = 2.0_db*velocity(1) - mesh_velocity(1)
+      ! fluxes_prime(1,1,1) = 2.0_db*velocity(1)
       ! fluxes_prime(1,1,2) = 0.0_db
       ! fluxes_prime(1,2,1) = velocity(2)
-      ! fluxes_prime(1,2,2) = velocity(1) - mesh_velocity(1)
+      ! fluxes_prime(1,2,2) = velocity(1)
 
-      ! fluxes_prime(2,1,1) = velocity(2) - mesh_velocity(2)
+      ! fluxes_prime(2,1,1) = velocity(2)
       ! fluxes_prime(2,1,2) = velocity(1)
       ! fluxes_prime(2,2,1) = 0.0_db
-      ! fluxes_prime(2,2,2) = 2.0_db*velocity(2) - mesh_velocity(2)
+      ! fluxes_prime(2,2,2) = 2.0_db*velocity(2)
+
+      fluxes_prime(1,1,1) = 2.0_db*velocity(1) - mesh_velocity(1)
+      fluxes_prime(1,1,2) = 0.0_db
+      fluxes_prime(1,2,1) = velocity(2)
+      fluxes_prime(1,2,2) = velocity(1) - mesh_velocity(1)
+
+      fluxes_prime(2,1,1) = velocity(2) - mesh_velocity(2)
+      fluxes_prime(2,1,2) = velocity(1)
+      fluxes_prime(2,2,1) = 0.0_db
+      fluxes_prime(2,2,2) = 2.0_db*velocity(2) - mesh_velocity(2)
 
     else if (problem_dim == 3) then
 
-      fluxes_prime(1,1,1) = 2.0_db*velocity(1)
-      fluxes_prime(1,1,2) = 0.0_db
-      fluxes_prime(1,1,3) = 0.0_db
-      fluxes_prime(1,2,1) = velocity(2)
-      fluxes_prime(1,2,2) = velocity(1)
-      fluxes_prime(1,2,3) = 0.0_db
-      fluxes_prime(1,3,1) = velocity(3)
-      fluxes_prime(1,3,2) = 0.0_db
-      fluxes_prime(1,3,3) = velocity(1)
-
-      fluxes_prime(2,1,1) = velocity(2)
-      fluxes_prime(2,1,2) = velocity(1)
-      fluxes_prime(2,1,3) = 0.0_db
-      fluxes_prime(2,2,1) = 0.0_db
-      fluxes_prime(2,2,2) = 2.0_db*velocity(2)
-      fluxes_prime(2,2,3) = 0.0_db
-      fluxes_prime(2,3,1) = 0.0_db
-      fluxes_prime(2,3,2) = velocity(3)
-      fluxes_prime(2,3,3) = velocity(2)
-
-      fluxes_prime(3,1,1) = velocity(3)
-      fluxes_prime(3,1,2) = 0.0_db
-      fluxes_prime(3,1,3) = velocity(1)
-      fluxes_prime(3,2,1) = 0.0_db
-      fluxes_prime(3,2,2) = velocity(3)
-      fluxes_prime(3,2,3) = velocity(2)
-      fluxes_prime(3,3,1) = 0.0_db
-      fluxes_prime(3,3,2) = 0.0_db
-      fluxes_prime(3,3,3) = 2.0_db*velocity(3)
-
-      ! fluxes_prime(1,1,1) = 2.0_db*velocity(1) - mesh_velocity(1)
+      ! fluxes_prime(1,1,1) = 2.0_db*velocity(1)
       ! fluxes_prime(1,1,2) = 0.0_db
       ! fluxes_prime(1,1,3) = 0.0_db
       ! fluxes_prime(1,2,1) = velocity(2)
-      ! fluxes_prime(1,2,2) = velocity(1) - mesh_velocity(1)
+      ! fluxes_prime(1,2,2) = velocity(1)
       ! fluxes_prime(1,2,3) = 0.0_db
       ! fluxes_prime(1,3,1) = velocity(3)
       ! fluxes_prime(1,3,2) = 0.0_db
-      ! fluxes_prime(1,3,3) = velocity(1) - mesh_velocity(1)
+      ! fluxes_prime(1,3,3) = velocity(1)
 
-      ! fluxes_prime(2,1,1) = velocity(2) - mesh_velocity(2)
+      ! fluxes_prime(2,1,1) = velocity(2)
       ! fluxes_prime(2,1,2) = velocity(1)
       ! fluxes_prime(2,1,3) = 0.0_db
       ! fluxes_prime(2,2,1) = 0.0_db
-      ! fluxes_prime(2,2,2) = 2.0_db*velocity(2) - mesh_velocity(2)
+      ! fluxes_prime(2,2,2) = 2.0_db*velocity(2)
       ! fluxes_prime(2,2,3) = 0.0_db
       ! fluxes_prime(2,3,1) = 0.0_db
       ! fluxes_prime(2,3,2) = velocity(3)
-      ! fluxes_prime(2,3,3) = velocity(2) - mesh_velocity(2)
+      ! fluxes_prime(2,3,3) = velocity(2)
 
-      ! fluxes_prime(3,1,1) = velocity(3) - mesh_velocity(3)
+      ! fluxes_prime(3,1,1) = velocity(3)
       ! fluxes_prime(3,1,2) = 0.0_db
       ! fluxes_prime(3,1,3) = velocity(1)
       ! fluxes_prime(3,2,1) = 0.0_db
-      ! fluxes_prime(3,2,2) = velocity(3) - mesh_velocity(3)
+      ! fluxes_prime(3,2,2) = velocity(3)
       ! fluxes_prime(3,2,3) = velocity(2)
       ! fluxes_prime(3,3,1) = 0.0_db
       ! fluxes_prime(3,3,2) = 0.0_db
-      ! fluxes_prime(3,3,3) = 2.0_db*velocity(3) - mesh_velocity(3)
+      ! fluxes_prime(3,3,3) = 2.0_db*velocity(3)
+
+      fluxes_prime(1,1,1) = 2.0_db*velocity(1) - mesh_velocity(1)
+      fluxes_prime(1,1,2) = 0.0_db
+      fluxes_prime(1,1,3) = 0.0_db
+      fluxes_prime(1,2,1) = velocity(2)
+      fluxes_prime(1,2,2) = velocity(1) - mesh_velocity(1)
+      fluxes_prime(1,2,3) = 0.0_db
+      fluxes_prime(1,3,1) = velocity(3)
+      fluxes_prime(1,3,2) = 0.0_db
+      fluxes_prime(1,3,3) = velocity(1) - mesh_velocity(1)
+
+      fluxes_prime(2,1,1) = velocity(2) - mesh_velocity(2)
+      fluxes_prime(2,1,2) = velocity(1)
+      fluxes_prime(2,1,3) = 0.0_db
+      fluxes_prime(2,2,1) = 0.0_db
+      fluxes_prime(2,2,2) = 2.0_db*velocity(2) - mesh_velocity(2)
+      fluxes_prime(2,2,3) = 0.0_db
+      fluxes_prime(2,3,1) = 0.0_db
+      fluxes_prime(2,3,2) = velocity(3)
+      fluxes_prime(2,3,3) = velocity(2) - mesh_velocity(2)
+
+      fluxes_prime(3,1,1) = velocity(3) - mesh_velocity(3)
+      fluxes_prime(3,1,2) = 0.0_db
+      fluxes_prime(3,1,3) = velocity(1)
+      fluxes_prime(3,2,1) = 0.0_db
+      fluxes_prime(3,2,2) = velocity(3) - mesh_velocity(3)
+      fluxes_prime(3,2,3) = velocity(2)
+      fluxes_prime(3,3,1) = 0.0_db
+      fluxes_prime(3,3,2) = 0.0_db
+      fluxes_prime(3,3,3) = 2.0_db*velocity(3) - mesh_velocity(3)
 
     end if
 
