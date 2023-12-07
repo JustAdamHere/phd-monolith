@@ -385,21 +385,21 @@ module problem_options_geometry
         central_cavity_transition = sqrt((cavity_sides(4, 3, 1) - cavity_sides(4, 1, 1))**2 + &
             (cavity_sides(4, 3, 2) - cavity_sides(4, 1, 2))**2)
 
-        ! if (processor_no == 0) then
-        !     print *, "INITIALISING..."
-        !     print *, "CAVITY HEIGHT: ", central_cavity_heights(4)
-        !     print *, "CAVITY WIDTH:  ", central_cavity_widths(4)
-        !     print *, "CAVITY RATIO: ", central_cavity_ratios(4)
-        !     print *, "CAVITY TRANSITION: ", central_cavity_transition
-        !     print *, "CAVITY TOP: ", cavity_tops(4, 2, :)
-        !     print *, "VESSEL TOP: ", vessel_tops(4, 2, :)
-        !     print *, "ARTERY WIDTH SM: ", artery_width_sm
-        !     print *, "ARTERY LENGTH: ", artery_length
-        !     print *, "BOUNDARY RADIUS: ", boundary_radius
-        !     print *, "X_CENTRE: ", x_centre
-        !     print *, "Y_CENTRE: ", y_centre
-        !     print *, "PLACENTONE WIDTH: ", placentone_widths(4)
-        ! end if
+        if (processor_no == 0) then
+            print *, "INITIALISING..."
+            print *, "CAVITY HEIGHT: ", central_cavity_heights(4)
+            print *, "CAVITY WIDTH:  ", central_cavity_widths(4)
+            print *, "CAVITY RATIO: ", central_cavity_ratios(4)
+            print *, "CAVITY TRANSITION: ", central_cavity_transition
+            print *, "CAVITY TOP: ", cavity_tops(4, 2, :)
+            print *, "VESSEL TOP: ", vessel_tops(4, 2, :)
+            print *, "ARTERY WIDTH SM: ", artery_width_sm
+            print *, "ARTERY LENGTH: ", artery_length
+            print *, "BOUNDARY RADIUS: ", boundary_radius
+            print *, "X_CENTRE: ", x_centre
+            print *, "Y_CENTRE: ", y_centre
+            print *, "PLACENTONE WIDTH: ", placentone_widths(4)
+        end if
     end subroutine
     
     subroutine finalise_geometry(control_file)
@@ -604,21 +604,21 @@ module problem_options_geometry
             central_cavity_transition = sqrt((cavity_sides(4, 3, 1) - cavity_sides(4, 1, 1))**2 + &
                 (cavity_sides(4, 3, 2) - cavity_sides(4, 1, 2))**2)
 
-            ! if (processor_no == 0) then
-            !     print *, "UPDATING..."
-            !     print *, "CAVITY HEIGHT: ", central_cavity_heights(4)
-            !     print *, "CAVITY WIDTH:  ", central_cavity_widths(4)
-            !     print *, "CAVITY RATIO: ", central_cavity_ratios(4)
-            !     print *, "CAVITY TRANSITION: ", central_cavity_transition
-            !     print *, "CAVITY TOP: ", cavity_tops(4, 2, :)
-            !     print *, "VESSEL TOP: ", vessel_tops(4, 2, :)
-            !     print *, "ARTERY WIDTH SM: ", artery_width_sm
-            !     print *, "ARTERY LENGTH: ", artery_length
-            !     print *, "BOUNDARY RADIUS: ", boundary_radius
-            !     print *, "X_CENTRE: ", x_centre
-            !     print *, "Y_CENTRE: ", y_centre
-            !     print *, "PLACENTONE WIDTH: ", placentone_widths(4)
-            ! end if
+            if (processor_no == 0) then
+                print *, "UPDATING..."
+                print *, "CAVITY HEIGHT: ", central_cavity_heights(4)
+                print *, "CAVITY WIDTH:  ", central_cavity_widths(4)
+                print *, "CAVITY RATIO: ", central_cavity_ratios(4)
+                print *, "CAVITY TRANSITION: ", central_cavity_transition
+                print *, "CAVITY TOP: ", cavity_tops(4, 2, :)
+                print *, "VESSEL TOP: ", vessel_tops(4, 2, :)
+                print *, "ARTERY WIDTH SM: ", artery_width_sm
+                print *, "ARTERY LENGTH: ", artery_length
+                print *, "BOUNDARY RADIUS: ", boundary_radius
+                print *, "X_CENTRE: ", x_centre
+                print *, "Y_CENTRE: ", y_centre
+                print *, "PLACENTONE WIDTH: ", placentone_widths(4)
+            end if
         else
             call write_message(io_msg, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             call write_message(io_msg, "!! WARNING: update_geometry not implemented for this geometry. !!")
