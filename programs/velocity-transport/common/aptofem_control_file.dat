@@ -161,8 +161,8 @@ damping_strategy incremental
 minimum_damping 0.01
 initial_damping 1.0
 damping_increment 0.2
-newton_itns_max 8
-newton_tolerance 1.0d-6
+newton_itns_max 30
+newton_tolerance 1.0d-10
 newton_terminate_on_fail .true.
 
 output_residual_vector .false.

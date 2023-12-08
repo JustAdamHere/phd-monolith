@@ -1,7 +1,7 @@
-def set_parameter(program, geometry, line, value):
+def set_parameter(program, line, value):
 	import os
 
-	acp_filename = f'./programs/{program}/common/acf_{geometry}.dat'
+	acp_filename = f'./programs/{program}/common/aptofem_control_file.dat'
 
 	arn_file    = open(acp_filename, 'r')
 	arn_content = arn_file .readlines()
@@ -11,10 +11,10 @@ def set_parameter(program, geometry, line, value):
 	arn_file    .writelines(arn_content)
 	arn_file    .close()
 
-def update_parameter(program, geometry, line, column_min, column_max, value):
+def update_parameter(program, line, column_min, column_max, value):
 	import os
 
-	acp_filename = f'./programs/{program}/common/acf_{geometry}.dat'
+	acp_filename = f'./programs/{program}/common/aptofem_control_file.dat'
 
 	arn_file    = open(acp_filename, 'r')
 	arn_content = arn_file .readlines()
