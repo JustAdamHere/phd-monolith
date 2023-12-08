@@ -87,7 +87,7 @@ cavity_height = 2*central_cavity_width;
 
 // Default transition region -- added onto the central cavity width.
 If (!Exists(central_cavity_transition))
-	central_cavity_transition = 0.04; // 1.6 mm
+	central_cavity_transition = 0.12; // 4.8 mm
 EndIf
 
 outlet_location_1 = location_11;

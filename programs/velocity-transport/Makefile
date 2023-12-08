@@ -22,6 +22,8 @@ bcs = bcs_transport.f90 2d-bcs_velocity_placenta.f90 2d-bcs_velocity_placentone.
 SOURCES = $(storage) $(fluxes) $(problem_options) $(bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) velocity_transport.f90
 OBJECTS = $(patsubst %.f90,./.obj/%.o,$(SOURCES))
 
+#FFLAGS = -O3 -fallow-argument-mismatch -cpp -DARPACK -DMETIS_5_64 -DMUMPS -DSPARSKIT -DOPENMP -DLAPACK -fopenmp
+FFLAGS = -O -Wno-argument-mismatch -cpp -DARPACK -DMETIS_5_64 -DMUMPS -DSPARSKIT -DOPENMP -DLAPACK -fopenmp
 FFLAGS += -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow -fcheck=all
 
 # $(OBJ_DIR)/%.o: ./common/%.f90 $(MOD_DIR)/%.mod 

@@ -386,10 +386,13 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_w
 				output.output("", terminal_output, end=end)
 			run_output.write(line + '\n')
 	run_output.close()
-	output.output("", terminal_output, end='\x1b[1A\rStarting AptoFEM simulation... ')
+	if (verbose_output):
+		output.output("", terminal_output, end='\rStarting AptoFEM simulation... ')
+	else:
+		output.output("", terminal_output, end='\x1b[1A\rStarting AptoFEM simulation... ')
 
 	# Possibly return an error.
-	if (run_process.returncode != 0):
+	if (run_process.poll() != 0):
 		if (error_on_fail):
 			raise_error.raise_error(run_process.stderr.read())
 		else:

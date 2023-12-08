@@ -110,6 +110,7 @@ central_cavity_width_3 0.25
 central_cavity_width_4 0.25
 central_cavity_width_5 0.25
 central_cavity_width_6 0.25
+central_cavity_width_7 0.25
 
 central_cavity_height_1 0.5
 central_cavity_height_2 0.5
@@ -117,6 +118,7 @@ central_cavity_height_3 0.5
 central_cavity_height_4 0.5
 central_cavity_height_5 0.5
 central_cavity_height_6 0.5
+central_cavity_height_7 0.5
 
 vein_location_11 0.2
 vein_location_21 0.2
