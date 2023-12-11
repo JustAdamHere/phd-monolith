@@ -117,7 +117,7 @@ program evaluate_solution
   !!!!!!!!!!!!!!!!!!!
   !! APTOFEM SETUP !!
   !!!!!!!!!!!!!!!!!!!
-  call AptoFEM_initialize     (aptofem_stored_keys, 'acf_' // trim(geometry_name) // '.dat', trim(program_dir))
+  call AptoFEM_initialize     (aptofem_stored_keys, 'aptofem_control_file.dat', trim(program_dir))
   call setup_velocity_bcs     (geometry_name)
   call create_mesh            (mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
   call get_user_data          ('user_data', aptofem_stored_keys)

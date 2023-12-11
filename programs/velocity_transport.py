@@ -172,21 +172,21 @@ def run(simulation_no, p):
 
 	from plotting import calculate_flux
 
-	##################
-	# CALCULATE FLUX #
-	##################
-	if (p["compute_transport"]):
-		flux_uptake = calculate_flux.calculate_transport_flux(aptofem_run_no, p["geometry"])
-		flux_cache.append(flux_uptake)
+	# ##################
+	# # CALCULATE FLUX #
+	# ##################
+	# if (p["compute_transport"]):
+	# 	flux_uptake = calculate_flux.calculate_transport_flux(aptofem_run_no, p["geometry"])
+	# 	flux_cache.append(flux_uptake)
 
-	###############################
-	# CALCULATE REACTION INTEGRAL #
-	###############################
-	if (p["compute_transport"]):
-		from miscellaneous import get_transport_reaction_integral
+	# ###############################
+	# # CALCULATE REACTION INTEGRAL #
+	# ###############################
+	# if (p["compute_transport"]):
+	# 	from miscellaneous import get_transport_reaction_integral
 
-		reaction_integral = get_transport_reaction_integral.get_transport_reaction_integral(program, p["geometry"], aptofem_run_no)
-		integral_cache.append(reaction_integral)
+	# 	reaction_integral = get_transport_reaction_integral.get_transport_reaction_integral(program, p["geometry"], aptofem_run_no)
+	# 	integral_cache.append(reaction_integral)
 
 	#################
 	# CALCULATE MRI #

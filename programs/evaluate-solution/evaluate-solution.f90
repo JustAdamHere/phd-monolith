@@ -73,7 +73,7 @@ program evaluate_solution
   !!!!!!!!!!!!!!!!!!!
   !! APTOFEM SETUP !!
   !!!!!!!!!!!!!!!!!!!
-  call AptoFEM_initialize(aptofem_stored_keys, 'acf_' // trim(control_file) // '.dat', trim(program_dir))
+  call AptoFEM_initialize(aptofem_stored_keys, 'aptofem_control_file.dat', trim(program_dir))
   call get_user_data     ('user_data', aptofem_stored_keys)
   call create_mesh       (mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
   call set_space_type_velocity(aptofem_stored_keys)

@@ -19,6 +19,7 @@ program velocity_transport
     use integrate_fast_velocity
     use projections
     use previous_velocity
+    use flux_output
 
     use matrix_rhs_transport
     use matrix_rhs_transport_ss
@@ -435,6 +436,8 @@ program velocity_transport
         call create_fe_solution(solution_transport, mesh_data, 'fe_solution_transport', aptofem_stored_keys, &
             anal_soln_transport, get_boundary_no_transport)
 
+        no_dofs_transport = get_no_dofs(solution_transport)
+
         call set_current_time(solution_transport, current_time)
 
         call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
@@ -464,6 +467,8 @@ program velocity_transport
                 call project_dirichlet_boundary_values(solution_transport, mesh_data)
             end if
         end if
+    else
+        no_dofs_transport = -1
     end if
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -508,8 +513,6 @@ program velocity_transport
         scheme_data_transport%temp_real_array  = 0.0_db
         scheme_data_transport%dim_real_array_1 = 1
         scheme_data_transport%dim_real_array_2 = no_dofs_transport
-    else
-        no_dofs_transport = -1
     end if
 
     if (compute_velocity  .and. no_time_steps > 0) then
@@ -930,164 +933,3 @@ program velocity_transport
     call finalise_user_data()
     call AptoFEM_finalize  (aptofem_stored_keys)
 end program
-
-subroutine write_to_file_headers(file_no, tsvFormat)
-    integer, intent(in)            :: file_no
-    character(len=100), intent(in) :: tsvFormat
-
-    write(file_no, tsvFormat) 'Time step', &
-    'Time', &
-    'Placentone 1 to 2', &
-    'Placentone 2 to 3', &
-    'Placentone 3 to 4', &
-    'Placentone 4 to 5', &
-    'Placentone 5 to 6', &
-    'Inlet 1', &
-    'Inlet 2', &
-    'Inlet 3', &
-    'Inlet 4', &
-    'Inlet 5', &
-    'Inlet 6', &
-    'Outlet 1L', &
-    'Outlet 1R', &
-    'Outlet 2L', &
-    'Outlet 2R', &
-    'Outlet 3L', &
-    'Outlet 3R', &
-    'Outlet 4L', &
-    'Outlet 4R', &
-    'Outlet 5L', &
-    'Outlet 5R', &
-    'Outlet 6L', &
-    'Outlet 6R', &
-    'Corner L', &
-    'Corner R', &
-    'Septa 1', &
-    'Septa 2', &
-    'Septa 3', &
-    'Septa 4', &
-    'Inlet 1 transport', &
-    'Inlet 2 transport', &
-    'Inlet 3 transport', &
-    'Inlet 4 transport', &
-    'Inlet 5 transport', &
-    'Inlet 6 transport', &
-    'Outlet 1L transport', &
-    'Outlet 1R transport', &
-    'Outlet 2L transport', &
-    'Outlet 2R transport', &
-    'Outlet 3L transport', &
-    'Outlet 3R transport', &
-    'Outlet 4L transport', &
-    'Outlet 4R transport', &
-    'Outlet 5L transport', &
-    'Outlet 5R transport', &
-    'Outlet 6L transport', &
-    'Outlet 6R transport', &
-    'Corner L transport', &
-    'Corner R transport', &
-    'Septa 1 transport', &
-    'Septa 2 transport', &
-    'Septa 3 transport', &
-    'Septa 4 transport', &
-    'Norm velocity L2', &
-    'Norm pressure L2', &
-    'Norm velocity-pressure L2', &
-    'Norm velocity-pressure DG', &
-    'Norm velocity div', &
-    'Norm transport L2', &
-    'Norm transport H1', &
-    'Norm transport DG', &
-    'Norm transport H2', &
-    'Sum velocity flux', &
-    'Sum transport flux'
-
-    flush(file_no)
-
-end subroutine
-
-subroutine write_to_file(file_no, tsvFormat, mesh_data, solution_velocity, solution_transport, timestep_no, current_time)
-    use param
-    use fe_mesh
-    use fe_solution
-    use crossflow_flux
-    use outflow_flux
-    use outflow_transport_flux
-
-    integer, intent(in)        :: file_no
-    character(len=100)         :: tsvFormat
-    type(mesh), intent(inout)  :: mesh_data
-    type(solution), intent(in) :: solution_velocity, solution_transport
-    integer, intent(in)        :: timestep_no
-    real(db), intent(in)       :: current_time
-
-    write(file_no, tsvFormat) timestep_no, &
-    current_time, &
-    calculate_crossflow_flux(mesh_data, solution_velocity, 301, 302), &
-    calculate_crossflow_flux(mesh_data, solution_velocity, 302, 303), &
-    calculate_crossflow_flux(mesh_data, solution_velocity, 303, 304), &
-    calculate_crossflow_flux(mesh_data, solution_velocity, 304, 305), &
-    calculate_crossflow_flux(mesh_data, solution_velocity, 305, 306), &
-    outflow_fluxes(111), &
-    outflow_fluxes(112), &
-    outflow_fluxes(113), &
-    outflow_fluxes(114), &
-    outflow_fluxes(115), &
-    outflow_fluxes(116), &
-    outflow_fluxes(211), &
-    outflow_fluxes(212), &
-    outflow_fluxes(213), &
-    outflow_fluxes(214), &
-    outflow_fluxes(215), &
-    outflow_fluxes(216), &
-    outflow_fluxes(217), &
-    outflow_fluxes(218), &
-    outflow_fluxes(219), &
-    outflow_fluxes(220), &
-    outflow_fluxes(221), &
-    outflow_fluxes(222), &
-    outflow_fluxes(230), &
-    outflow_fluxes(231), &
-    outflow_fluxes(240), &
-    outflow_fluxes(241), &
-    outflow_fluxes(242), &
-    outflow_fluxes(243), &
-    outflow_transport_fluxes(111), &
-    outflow_transport_fluxes(112), &
-    outflow_transport_fluxes(113), &
-    outflow_transport_fluxes(114), &
-    outflow_transport_fluxes(115), &
-    outflow_transport_fluxes(116), &
-    outflow_transport_fluxes(211), &
-    outflow_transport_fluxes(212), &
-    outflow_transport_fluxes(213), &
-    outflow_transport_fluxes(214), &
-    outflow_transport_fluxes(215), &
-    outflow_transport_fluxes(216), &
-    outflow_transport_fluxes(217), &
-    outflow_transport_fluxes(218), &
-    outflow_transport_fluxes(219), &
-    outflow_transport_fluxes(220), &
-    outflow_transport_fluxes(221), &
-    outflow_transport_fluxes(222), &
-    outflow_transport_fluxes(230), &
-    outflow_transport_fluxes(231), &
-    outflow_transport_fluxes(240), &
-    outflow_transport_fluxes(241), &
-    outflow_transport_fluxes(242), &
-    outflow_transport_fluxes(243), &
-    0, &
-    0, &
-    0, &
-    0, &
-    0, &
-    0, &
-    0, &
-    0, &
-    0, &
-    sum_nonzero_fluxes(), &
-    sum_nonzero_transport_fluxes()
-
-    flush(file_no)
-
-end subroutine

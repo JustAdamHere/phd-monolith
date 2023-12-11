@@ -5,3 +5,4 @@ numpy
 vtk
 scipy
 jsbeautifier
+tabulate

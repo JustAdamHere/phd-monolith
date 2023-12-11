@@ -11,7 +11,7 @@ velocity_assembly  = jacobi_residual_nsb.f90 jacobi_residual_nsb-mm.f90 jacobi_r
 transport_assembly = matrix_rhs_transport.f90 matrix_rhs_transport-ss.f90
 
 storage         = solution-storage_velocity.f90 previous_velocity.f90
-fluxes          = crossflow_flux.f90 outflow_flux.f90 outflow_transport_flux.f90
+fluxes          = crossflow_flux.f90 outflow_flux.f90 outflow_transport_flux.f90 flux_output.f90
 problem_options = problem-options.f90 problem-options_geometry.f90 problem-options_velocity.f90 problem-options_transport.f90
 miscellaneous   = refine_region.f90 integrate_transport-reaction.f90 integrate_velocity-magnitude.f90 integrate_one.f90 integrate_slow-velocity.f90 integrate_fast-velocity.f90 projections.f90
 
@@ -23,8 +23,8 @@ SOURCES = $(storage) $(fluxes) $(problem_options) $(bcs) $(velocity_assembly) $(
 OBJECTS = $(patsubst %.f90,./.obj/%.o,$(SOURCES))
 
 #FFLAGS = -O3 -fallow-argument-mismatch -cpp -DARPACK -DMETIS_5_64 -DMUMPS -DSPARSKIT -DOPENMP -DLAPACK -fopenmp
-FFLAGS = -O -Wno-argument-mismatch -cpp -DARPACK -DMETIS_5_64 -DMUMPS -DSPARSKIT -DOPENMP -DLAPACK -fopenmp
-FFLAGS += -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow -fcheck=all
+#FFLAGS = -O -Wno-argument-mismatch -cpp -DARPACK -DMETIS_5_64 -DMUMPS -DSPARSKIT -DOPENMP -DLAPACK -fopenmp
+#FFLAGS += -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow -fcheck=all
 
 # $(OBJ_DIR)/%.o: ./common/%.f90 $(MOD_DIR)/%.mod 
 # 	@echo "Compiling $@... "

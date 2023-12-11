@@ -78,11 +78,6 @@ velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile
 # Run simulations.
 velocity_transport.run(1, parameters)
 
-# Output measured quantities.
-from miscellaneous import output
-output.output("##########################", True)
-output.output(f"Fluxes: {velocity_transport.flux_cache}", True)
-output.output(f"Integrals: {velocity_transport.integral_cache}", True)
-
 # Save output.
+from miscellaneous import output
 output.save()
