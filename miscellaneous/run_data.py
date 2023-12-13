@@ -34,7 +34,7 @@ class class_run_data:
     self.slow_velocity_perctange_nominal_everywhere = svp[5]
     self.run_data                               = get_run_data.get_run_data("velocity-transport", "placenta", self.sim_no, 0)
 
-    flux_data                                   = get_flux.get_flux("velocity-transport", "placenta", self.sim_no, self.parameters["no_placentones"])
+    flux_data                                   = get_flux.get_fluxes("velocity-transport", "placenta", self.sim_no, self.parameters["no_placentones"])
     self.velocity_cross_flow_fluxes             = flux_data[2]
     self.velocity_inlet_fluxes                  = flux_data[3]
     self.velocity_bp_outlet_fluxes              = flux_data[4]

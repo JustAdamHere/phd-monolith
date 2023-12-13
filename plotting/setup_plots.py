@@ -50,7 +50,7 @@ def get_data(no_bins, simulation_bins, simulations):
   average_slow_velocity_percentage_dellschaft = []
   average_fast_velocity_percentage_dellschaft = []
   average_velocity_cross_flow_flux            = []
-  average_transport_cross_flow_flux            = []
+  average_transport_cross_flow_flux           = []
   for i in range(0, no_bins):
     for j in range(0, len(simulation_bins[i])):
       run_no = simulation_bins[i][j]
