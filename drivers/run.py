@@ -28,7 +28,7 @@ parameters["scaling_D"]   = 1.667e-9 # m^2/s
 parameters["scaling_R"]   = 1.667e-2 # m^2/s
 
 # Moving mesh.
-parameters["moving_mesh"]   = False
+parameters["moving_mesh"]   = True
 parameters["no_time_steps"] = 2
 parameters["final_time"]    = 0.01
 
@@ -69,19 +69,12 @@ parameters["no_threads"]    = 20
 ##################
 # SIMULATION RUN #
 ##################
-import numpy as np
-
 # Clean and compile.
 velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True)
 
 # Run simulations.
 velocity_transport.run(1, parameters)
 
-# Output measured quantities.
-from miscellaneous import output
-output.output("##########################", True)
-output.output(f"Fluxes: {velocity_transport.flux_cache}", True)
-output.output(f"Integrals: {velocity_transport.integral_cache}", True)
-
 # Save output.
+from miscellaneous import output
 output.save()

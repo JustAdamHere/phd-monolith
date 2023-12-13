@@ -117,7 +117,7 @@ program velocity_transport
     call get_user_data_velocity ('user_data', aptofem_stored_keys)
     call get_user_data_transport('user_data', aptofem_stored_keys)
     call set_space_type_velocity(aptofem_stored_keys)
-    call initialise_geometry    (geometry_name, no_placentones)
+    call initialise_geometry    (geometry_name)
 
     !!!!!!!!!!!!!!!!!
     !! REFINE MESH !!
@@ -195,7 +195,7 @@ program velocity_transport
         call create_fe_solution(solution_permeability, mesh_data, 'fe_projection_permeability', aptofem_stored_keys, &
             anal_soln_transport, get_boundary_no_transport) ! Doesn't matter what dirichlet bc is passed.
 
-#ifdef OPENMP        
+#if defined(OPENMP)
 !$OMP PARALLEL PRIVATE(thread_no)
         thread_no = omp_get_thread_num()
         if (thread_no == 0) then
@@ -203,7 +203,7 @@ program velocity_transport
             call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 0, mesh_data, solution_permeability)
         end if
 !$OMP END PARALLEL
-#elif MPI
+#elif defined(MPI)
     if (processor_no == 0) then
         call project_function_region_id(solution_permeability, mesh_data, project_permeability)
         call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 0, mesh_data, solution_permeability)

@@ -129,13 +129,12 @@ module problem_options_geometry
     !     ! inflation_ratio = 1.0_db
     ! end subroutine
 
-    subroutine initialise_geometry(control_file, no_placentones)
+    subroutine initialise_geometry(control_file)
         use aptofem_kernel
 
         implicit none
         
         character(len=20), intent(in) :: control_file
-        integer, intent(in)           :: no_placentones
         
         integer  :: i, j, problem_dim, no_vessels
         real(db) :: x, y, r

@@ -114,6 +114,22 @@ module jacobi_residual_nsb_mm
           prev_fe_basis_info%basis_element%basis_fns(i)%fem_basis_fns(1:prev_no_quad_points, 1:prev_no_dofs_per_variable(i), 1)
       end do
 
+      ! ! Separately doing the previous mesh integral.
+      ! do qk = 1, prev_no_quad_points
+      !   prev_uh = uh_element(prev_fe_basis_info, prev_no_pdes, qk)
+
+      !   do ieqn = 1, prev_problem_dim
+      !     do i = 1, prev_no_dofs_per_variable(ieqn)
+      !       prev_time_terms = calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
+      !         element_region_id)* &
+      !           dirk_scaling_factor*prev_uh(ieqn)*prev_phi(ieqn, qk, i)
+
+      !       element_rhs(ieqn, i) = element_rhs(ieqn, i) + &
+      !         prev_jacobian(qk)*prev_quad_weights_ele(qk)*prev_time_terms
+      !     end do
+      !   end do
+      ! end do
+
       ! Momentum Equations
 
       do ieqn = 1,problem_dim
@@ -139,7 +155,14 @@ module jacobi_residual_nsb_mm
                 element_region_id)* &
                   dirk_scaling_factor*interpolant_uh(ieqn, qk)*phi(ieqn, qk, i)
 
+            prev_time_terms = 1e10*prev_jacobian(qk)
+
+            ! print *, prev_uh(ieqn)
+
+            ! DID CHANGE: prev_uh(ieqn)
+
             ! time_terms = 0.0_db
+            ! prev_time_terms = 0.0_db
 
             ! if (prev_time_terms > time_terms) then
             !   print *, "+: ", prev_time_terms, time_terms
@@ -864,7 +887,7 @@ module jacobi_residual_nsb_mm
           call compute_boundary_condition(interpolant_uh2(:,qk), &
             interpolant_uh1(:,qk),uloc(:,qk),abs(bdry_face),problem_dim,no_pdes)
             alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
-            face_normals(:,qk),problem_dim,no_pdes)
+            face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh1(:,qk), &
             fluxes_prime1(:,:,:,qk),problem_dim,no_pdes, mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh2(:,qk), &
@@ -970,7 +993,7 @@ module jacobi_residual_nsb_mm
           end do
           mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
           alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
-            face_normals(:,qk),problem_dim,no_pdes)
+            face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh1(:,qk), &
             fluxes_prime1(:,:,:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh2(:,qk), &
@@ -1096,7 +1119,7 @@ module jacobi_residual_nsb_mm
           end do
           mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
           alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
-            face_normals(:,qk),problem_dim,no_pdes)
+            face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh1(:,qk), &
             fluxes_prime1(:,:,:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh2(:,qk), &
@@ -1276,7 +1299,7 @@ module jacobi_residual_nsb_mm
           call compute_boundary_condition(interpolant_uh2(:,qk), &
             interpolant_uh1(:,qk),uloc(:,qk),abs(bdry_face),problem_dim,no_pdes)
             alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
-            face_normals(:,qk),problem_dim,no_pdes)
+            face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
           mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
           call jacobian_convective_fluxes(interpolant_uh1(:,qk), &
             fluxes_prime1(:,:,:,qk),problem_dim,no_pdes,mesh_velocity)
@@ -1775,7 +1798,7 @@ module jacobi_residual_nsb_mm
     call convective_fluxes(u1,fluxes1,problem_dim,no_pdes,mesh_velocity)
     call convective_fluxes(u2,fluxes2,problem_dim,no_pdes,mesh_velocity)
 
-    alpha = cal_alpha(u1,u2,normal,problem_dim,no_pdes)
+    alpha = cal_alpha(u1,u2,normal,problem_dim,no_pdes,mesh_velocity)
 
     nflxsoln = 0.0_db
 
@@ -1787,7 +1810,7 @@ module jacobi_residual_nsb_mm
 
   end subroutine lax_friedrichs
 
-  function cal_alpha(u1,u2,normal,problem_dim,no_pdes)
+  function cal_alpha(u1,u2,normal,problem_dim,no_pdes,mesh_velocity)
 
     use param
 
@@ -1795,11 +1818,13 @@ module jacobi_residual_nsb_mm
 
     real(db) :: cal_alpha
     integer, intent(in) :: problem_dim,no_pdes
-    real(db), dimension(problem_dim), intent(in) :: normal
+    real(db), dimension(problem_dim), intent(in) :: normal,mesh_velocity
     real(db), dimension(no_pdes), intent(in) :: u1,u2
 
-    cal_alpha = 2.0_db*max(abs(dot_product(u1(1:problem_dim),normal)), &
-    abs(dot_product(u2(1:problem_dim),normal)))
+    cal_alpha = max( &
+      abs(2.0_db*dot_product(u1(1:problem_dim), normal) - dot_product(mesh_velocity, normal)), &
+      abs(2.0_db*dot_product(u2(1:problem_dim), normal) - dot_product(mesh_velocity, normal))  &
+    )
 
   end function cal_alpha
   !  -------------------------------------------------------------
