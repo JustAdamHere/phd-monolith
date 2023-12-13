@@ -1584,9 +1584,6 @@ module jacobi_residual_nsb_mm
     !  -------------------------------------------------------------
     !<   This routine defines the Jacobian matrix of the convective fluxes
     !<
-    !<   AB: I don't think this storage arrangement is correct... I think it's
-    !<      Fluxes\_prime(ieqn,ivar,problem\_dim)
-    !<
     !<   Storage arrangement:
     !<
     !<   Fluxes\_prime(problem\_dim,ieqn,ivar)
@@ -1616,84 +1613,44 @@ module jacobi_residual_nsb_mm
 
     if (problem_dim == 2) then
 
-      ! fluxes_prime(1,1,1) = 2.0_db*velocity(1)
-      ! fluxes_prime(1,1,2) = 0.0_db
-      ! fluxes_prime(1,2,1) = velocity(2)
-      ! fluxes_prime(1,2,2) = velocity(1)
-
-      ! fluxes_prime(2,1,1) = velocity(2)
-      ! fluxes_prime(2,1,2) = velocity(1)
-      ! fluxes_prime(2,2,1) = 0.0_db
-      ! fluxes_prime(2,2,2) = 2.0_db*velocity(2)
-
       fluxes_prime(1,1,1) = 2.0_db*velocity(1) - mesh_velocity(1)
       fluxes_prime(1,1,2) = 0.0_db
-      fluxes_prime(1,2,1) = velocity(2)
-      fluxes_prime(1,2,2) = velocity(1) - mesh_velocity(1)
+      fluxes_prime(1,2,1) = velocity(2) - mesh_velocity(2)
+      fluxes_prime(1,2,2) = velocity(1)
 
-      fluxes_prime(2,1,1) = velocity(2) - mesh_velocity(2)
-      fluxes_prime(2,1,2) = velocity(1)
+      fluxes_prime(2,1,1) = velocity(2)
+      fluxes_prime(2,1,2) = velocity(1) - mesh_velocity(1)
       fluxes_prime(2,2,1) = 0.0_db
       fluxes_prime(2,2,2) = 2.0_db*velocity(2) - mesh_velocity(2)
 
     else if (problem_dim == 3) then
 
-      ! fluxes_prime(1,1,1) = 2.0_db*velocity(1)
-      ! fluxes_prime(1,1,2) = 0.0_db
-      ! fluxes_prime(1,1,3) = 0.0_db
-      ! fluxes_prime(1,2,1) = velocity(2)
-      ! fluxes_prime(1,2,2) = velocity(1)
-      ! fluxes_prime(1,2,3) = 0.0_db
-      ! fluxes_prime(1,3,1) = velocity(3)
-      ! fluxes_prime(1,3,2) = 0.0_db
-      ! fluxes_prime(1,3,3) = velocity(1)
-
-      ! fluxes_prime(2,1,1) = velocity(2)
-      ! fluxes_prime(2,1,2) = velocity(1)
-      ! fluxes_prime(2,1,3) = 0.0_db
-      ! fluxes_prime(2,2,1) = 0.0_db
-      ! fluxes_prime(2,2,2) = 2.0_db*velocity(2)
-      ! fluxes_prime(2,2,3) = 0.0_db
-      ! fluxes_prime(2,3,1) = 0.0_db
-      ! fluxes_prime(2,3,2) = velocity(3)
-      ! fluxes_prime(2,3,3) = velocity(2)
-
-      ! fluxes_prime(3,1,1) = velocity(3)
-      ! fluxes_prime(3,1,2) = 0.0_db
-      ! fluxes_prime(3,1,3) = velocity(1)
-      ! fluxes_prime(3,2,1) = 0.0_db
-      ! fluxes_prime(3,2,2) = velocity(3)
-      ! fluxes_prime(3,2,3) = velocity(2)
-      ! fluxes_prime(3,3,1) = 0.0_db
-      ! fluxes_prime(3,3,2) = 0.0_db
-      ! fluxes_prime(3,3,3) = 2.0_db*velocity(3)
-
       fluxes_prime(1,1,1) = 2.0_db*velocity(1) - mesh_velocity(1)
       fluxes_prime(1,1,2) = 0.0_db
       fluxes_prime(1,1,3) = 0.0_db
-      fluxes_prime(1,2,1) = velocity(2)
-      fluxes_prime(1,2,2) = velocity(1) - mesh_velocity(1)
+      fluxes_prime(1,2,1) = velocity(2) - mesh_velocity(2)
+      fluxes_prime(1,2,2) = velocity(1)
       fluxes_prime(1,2,3) = 0.0_db
-      fluxes_prime(1,3,1) = velocity(3)
+      fluxes_prime(1,3,1) = velocity(3) - mesh_velocity(3)
       fluxes_prime(1,3,2) = 0.0_db
-      fluxes_prime(1,3,3) = velocity(1) - mesh_velocity(1)
+      fluxes_prime(1,3,3) = velocity(1)
 
       fluxes_prime(2,1,1) = velocity(2) - mesh_velocity(2)
-      fluxes_prime(2,1,2) = velocity(1)
+      fluxes_prime(2,1,2) = velocity(1) - mesh_velocity(1)
       fluxes_prime(2,1,3) = 0.0_db
       fluxes_prime(2,2,1) = 0.0_db
       fluxes_prime(2,2,2) = 2.0_db*velocity(2) - mesh_velocity(2)
       fluxes_prime(2,2,3) = 0.0_db
       fluxes_prime(2,3,1) = 0.0_db
-      fluxes_prime(2,3,2) = velocity(3)
-      fluxes_prime(2,3,3) = velocity(2) - mesh_velocity(2)
+      fluxes_prime(2,3,2) = velocity(3) - mesh_velocity(3)
+      fluxes_prime(2,3,3) = velocity(2)
 
-      fluxes_prime(3,1,1) = velocity(3) - mesh_velocity(3)
+      fluxes_prime(3,1,1) = velocity(3)
       fluxes_prime(3,1,2) = 0.0_db
-      fluxes_prime(3,1,3) = velocity(1)
+      fluxes_prime(3,1,3) = velocity(1) - mesh_velocity(1)
       fluxes_prime(3,2,1) = 0.0_db
-      fluxes_prime(3,2,2) = velocity(3) - mesh_velocity(3)
-      fluxes_prime(3,2,3) = velocity(2)
+      fluxes_prime(3,2,2) = velocity(3)
+      fluxes_prime(3,2,3) = velocity(2) - mesh_velocity(2)
       fluxes_prime(3,3,1) = 0.0_db
       fluxes_prime(3,3,2) = 0.0_db
       fluxes_prime(3,3,3) = 2.0_db*velocity(3) - mesh_velocity(3)
