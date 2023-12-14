@@ -54,7 +54,7 @@ setup_plots.plot(ax_fvp_dellschaft, parameter_values, data_fvp_dellschaft, avg_f
 
 # Style plots.
 setup_plots.style(fig_tri            , ax_tri            , parameter_name, r"$E_r ~ \text{(M}/\text{m}^3\text{)}$" , y_scilimits=[-3, -3])
-setup_plots.style(fig_vmi            , ax_vmi            , parameter_name, r"$E_v ~ \text{(m}/\text{s)}$"          , y_scilimits=[-2, -2])
+setup_plots.style(fig_vmi            , ax_vmi            , parameter_name, r"$E_v ~ \text{(m}/\text{s)}$"          , y_scilimits=[-3, -3])
 setup_plots.style(fig_svp_ivs        , ax_svp_ivs        , parameter_name, r"$E_s(U_\text{avg})$ (IVS)"            , y_scilimits=None , y_top=100)
 setup_plots.style(fig_svp_everywhere , ax_svp_everywhere , parameter_name, r"$E_s(U_\text{avg})$ (everywhere)"     , y_scilimits=None , y_top=100)
 setup_plots.style(fig_svp_dellschaft , ax_svp_dellschaft , parameter_name, r"$E_s(0.0005)$ (everywhere)"           , y_scilimits=None , y_top=100)

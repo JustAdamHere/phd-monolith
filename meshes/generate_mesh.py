@@ -4,6 +4,9 @@ def add_option(options, option, value):
 def generate_mesh(simulation_no, geometry, mesh_resolution, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, basal_plate_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones, vessel_fillet_radius, basal_plate_vessel_locations, septal_vein_locations, equal_wall_heights, generate_outline_mesh):
 	import subprocess
 
+	if (geometry == "placentone" or geometry == "placentone-3d"):
+		assert(no_placentones == 1)
+
 	# Mesh files for each geometry.
 	if (geometry == "placentone"):
 		geo_file = "box-circle.geo"
@@ -93,31 +96,34 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, central_cavity_width
 	add_option(options, 'ms_2', 					marginal_sinus[1])
 
 	# Loop over placentones.
-	assert(len(basal_plate_vessels) == no_placentones)
-	assert(len(basal_plate_vessel_locations) == no_placentones)
-	for i in range(no_placentones):
-		add_option(options, f'vein_{i+1}1',   basal_plate_vessels[i][0])
-		add_option(options, f'artery_{i+1}1', basal_plate_vessels[i][1])
-		add_option(options, f'vein_{i+1}2',   basal_plate_vessels[i][2])
+	if (geometry == 'placenta'):
+		assert(len(basal_plate_vessels) == no_placentones)
+		assert(len(basal_plate_vessel_locations) == no_placentones)
+		for i in range(no_placentones):
+			add_option(options, f'vein_{i+1}1',   basal_plate_vessels[i][0])
+			add_option(options, f'artery_{i+1}1', basal_plate_vessels[i][1])
+			add_option(options, f'vein_{i+1}2',   basal_plate_vessels[i][2])
 
-		add_option(options, f'vessel_locations_{i+1}1', basal_plate_vessel_locations[i][0])
-		add_option(options, f'vessel_locations_{i+1}2', basal_plate_vessel_locations[i][1])
-		add_option(options, f'vessel_locations_{i+1}3', basal_plate_vessel_locations[i][2])
+			add_option(options, f'vessel_locations_{i+1}1', basal_plate_vessel_locations[i][0])
+			add_option(options, f'vessel_locations_{i+1}2', basal_plate_vessel_locations[i][1])
+			add_option(options, f'vessel_locations_{i+1}3', basal_plate_vessel_locations[i][2])
 
 	# Loop over walls.
-	wall_heights = [wall_height_1, wall_height_2, wall_height_3, wall_height_4, wall_height_5, wall_height_6]
-	assert(len(septal_veins) == no_placentones-1)
-	assert(len(septal_vein_locations) == no_placentones-1)
-	for i in range(no_placentones-1):
-		add_option(options, f'septal_vein_{i+1}1', septal_veins[i][0])
-		add_option(options, f'septal_vein_{i+1}2', septal_veins[i][1])
-		add_option(options, f'septal_vein_{i+1}3', septal_veins[i][2])
+	if (geometry == 'placenta'):
+		for i in range(no_placentones):
+			wall_heights = [wall_height_1, wall_height_2, wall_height_3, wall_height_4, wall_height_5, wall_height_6]
+		assert(len(septal_veins) == no_placentones-1)
+		assert(len(septal_vein_locations) == no_placentones-1)
+		for i in range(no_placentones-1):
+			add_option(options, f'septal_vein_{i+1}1', septal_veins[i][0])
+			add_option(options, f'septal_vein_{i+1}2', septal_veins[i][1])
+			add_option(options, f'septal_vein_{i+1}3', septal_veins[i][2])
 
-		add_option(options, f'septal_vein_position_{i+1}1', septal_vein_locations[i][0])
-		add_option(options, f'septal_vein_position_{i+1}2', septal_vein_locations[i][1])
-		add_option(options, f'septal_vein_position_{i+1}3', septal_vein_locations[i][2])
+			add_option(options, f'septal_vein_position_{i+1}1', septal_vein_locations[i][0])
+			add_option(options, f'septal_vein_position_{i+1}2', septal_vein_locations[i][1])
+			add_option(options, f'septal_vein_position_{i+1}3', septal_vein_locations[i][2])
 
-		add_option(options, f'wall_height_{i+1}', wall_heights[i])
+			add_option(options, f'wall_height_{i+1}', wall_heights[i])
 
 	# Cavity widths.
 	if (type(central_cavity_width) == list):

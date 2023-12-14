@@ -104,6 +104,7 @@ module problem_options
                 aptofem_stored_keys, ierr)
         end do
 
+        !! TODO: Why is this here?
         compute_ss_flag = .true.
     end subroutine
 

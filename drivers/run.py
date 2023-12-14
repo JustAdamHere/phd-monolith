@@ -17,6 +17,7 @@ parameters["vessel_fillet_radius"]      = 0.01
 parameters["artery_width"]              = 0.06
 parameters["artery_width_sm"]           = 0.0125
 parameters["no_placentones"]            = 6
+parameters["geometry"]                  = 'placenta'
 
 # Problem parameters.
 parameters["scaling_L"]   = 0.04     # m
@@ -28,8 +29,8 @@ parameters["scaling_D"]   = 1.667e-9 # m^2/s
 parameters["scaling_R"]   = 1.667e-2 # m^2/s
 
 # Moving mesh.
-parameters["moving_mesh"]   = True
-parameters["no_time_steps"] = 2
+parameters["moving_mesh"]   = False
+parameters["no_time_steps"] = 0
 parameters["final_time"]    = 0.01
 
 # Output.
@@ -38,7 +39,7 @@ parameters["verbose_output"]  = True
 parameters["plot"]            = False
 
 # Mesh resolution.
-parameters["mesh_resolution"] = 1#0.1#0.02
+parameters["mesh_resolution"] = 0.02
 
 # Simulation.
 parameters["compute_permeability"     ] = True
@@ -58,7 +59,7 @@ parameters["clean_files"][5] = False # Mesh VTKs.
 parameters["clean_files"][6] = False # Images.
 
 # Reruns.
-parameters["error_on_fail"           ] = False
+parameters["error_on_fail"           ] = True
 parameters["rerun_with_reynold_steps"] = False
 
 # Run type.

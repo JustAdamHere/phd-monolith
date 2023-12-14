@@ -5,7 +5,7 @@ class class_run_data:
     self.read_data()
 
   def read_data(self):
-    from miscellaneous import get_transport_reaction_integral, get_velocity_magnitude, get_run_data, parameters_io
+    from miscellaneous import get_transport_reaction_integral, get_velocity_magnitude, get_run_data, parameters_io, get_flux
 
     self.parameters                    = parameters_io.load_parameters("velocity-transport", "placenta", self.sim_no)
 
@@ -34,7 +34,19 @@ class class_run_data:
     self.slow_velocity_perctange_nominal_everywhere = svp[5]
     self.run_data                               = get_run_data.get_run_data("velocity-transport", "placenta", self.sim_no, 0)
 
-    self.flux                                   = self.get_file_contents("flux_velocity-transport_placenta")
+    flux_data                                   = get_flux.get_fluxes("velocity-transport", "placenta", self.sim_no, self.parameters["no_placentones"])
+    self.velocity_cross_flow_fluxes             = flux_data[2]
+    self.velocity_inlet_fluxes                  = flux_data[3]
+    self.velocity_bp_outlet_fluxes              = flux_data[4]
+    self.velocity_sw_outlet_fluxes              = flux_data[5]
+    self.velocity_ms_outlet_fluxes              = flux_data[6]
+    self.sum_velocity_flux                      = flux_data[7]
+    self.transport_cross_flow_fluxes            = flux_data[8]
+    self.transport_inlet_fluxes                 = flux_data[9]
+    self.transport_bp_outlet_fluxes             = flux_data[10]
+    self.transport_sw_outlet_fluxes             = flux_data[11]
+    self.transport_ms_outlet_fluxes             = flux_data[12]
+    self.sum_transport_flux                     = flux_data[13]
 
     # print(f"\nAverage velocity: {self.average_velocity_ivs}")
     # print(f"VMI IVS: {self.velocity_magnitude_integral_ivs}")

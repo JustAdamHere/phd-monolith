@@ -10,7 +10,7 @@ aptofem_email_address adam.blakey@nott.ac.uk
 # ==========================================================
 >>> mesh_gen
 display_mesh .false.
-problem_dim 3
+problem_dim 2
 
 mesh_file_name mesh_0.msh
 mesh_file_dir ../../meshes/
@@ -18,16 +18,16 @@ mesh_file_dir ../../meshes/
 quadrature_rule gauss_leg_tensor_prod
 # ==========================================================
 >>> fe_solution_velocity
-fe_space DG(q,2,2,2,1;region=301,411,412,413,501,511,521)
+fe_space DG(q,2,2,1;region=301,302,303,304,305,306,307,401,402,403,404,405,406,411,412,413,421,422,423,431,432,433,441,442,443,451,452,453,461,462,463,471,472,473,417,418,419,427,428,429,437,438,439,447,448,449,457,458,459,467,468,469,494,495,501,502,503,504,505,506,507,511,512,513,514,515,516,517,521,522,523,524,525,526,527)
 # ==========================================================
 >>> fe_solution_transport
-fe_space DG(q,1;region=301,411,412,413,501,511,521)
+fe_space DG(q,1;region=301,302,303,304,305,306,307,401,402,403,404,405,406,411,412,413,421,422,423,431,432,433,441,442,443,451,452,453,461,462,463,471,472,473,417,418,419,427,428,429,437,438,439,447,448,449,457,458,459,467,468,469,494,495,501,502,503,504,505,506,507,511,512,513,514,515,516,517,521,522,523,524,525,526,527)
 # ==========================================================
 >>> fe_projection_permeability
-fe_space DG(q,1;region=301,411,412,413,501,511,521)
+fe_space DG(q,1;region=301,302,303,304,305,306,307,401,402,403,404,405,406,411,412,413,421,422,423,431,432,433,441,442,443,451,452,453,461,462,463,471,472,473,417,418,419,427,428,429,437,438,439,447,448,449,457,458,459,467,468,469,494,495,501,502,503,504,505,506,507,511,512,513,514,515,516,517,521,522,523,524,525,526,527)
 # ==========================================================
 >>> fe_projection_uptake
-fe_space DG(q,1;region=301,411,412,413,501,511,521)
+fe_space DG(q,1;region=301,302,303,304,305,306,307,401,402,403,404,405,406,411,412,413,421,422,423,431,432,433,441,442,443,451,452,453,461,462,463,471,472,473,417,418,419,427,428,429,437,438,439,447,448,449,457,458,459,467,468,469,494,495,501,502,503,504,505,506,507,511,512,513,514,515,516,517,521,522,523,524,525,526,527)
 # ==========================================================
 #---------------- #
 #L = 0.04         #
@@ -77,10 +77,10 @@ transport_time_coefficient 1.0
 transport_forcing_coefficient 1.0
 
 no_uniform_refinements_inlet 0
-no_uniform_refinements_cavity 0
+no_uniform_refinements 0
 no_uniform_refinements_everywhere 0
 
-velocity_ss .true.
+velocity_ss .false.
 velocity_ic_from_ss .true.
 transport_ic_from_ss .true.
 compute_velocity .true.
@@ -89,11 +89,11 @@ compute_permeability .true.
 compute_uptake .true.
 large_boundary_v_penalisation .false.
 moving_mesh .false.
-no_reynold_ramp_steps 1
-reynold_ramp_start_ratio 0.4
+no_reynold_ramp_steps 10
+reynold_ramp_start_ratio 0.1
 reynold_ramp_step_base 2.0
 
-no_placentones 1
+no_placentones 6
 
 output_frequency 1
 
@@ -110,6 +110,7 @@ central_cavity_width_3 0.25
 central_cavity_width_4 0.25
 central_cavity_width_5 0.25
 central_cavity_width_6 0.25
+central_cavity_width_7 0.25
 
 central_cavity_height_1 0.5
 central_cavity_height_2 0.5
@@ -117,6 +118,7 @@ central_cavity_height_3 0.5
 central_cavity_height_4 0.5
 central_cavity_height_5 0.5
 central_cavity_height_6 0.5
+central_cavity_height_7 0.5
 
 vein_location_11 0.2
 vein_location_21 0.2
@@ -148,7 +150,7 @@ dirk_solver_type newton
 
 dirk_no_inner_steps 1
 dirk_order 1
-dirk_final_time 0.0
+dirk_final_time 1.0
 dirk_number_of_timesteps 0
 
 dirk_output .false.
@@ -160,13 +162,13 @@ minimum_damping 0.01
 initial_damping 1.0
 damping_increment 0.2
 newton_itns_max 30
-newton_tolerance 1.0d-6
+newton_tolerance 1.0d-10
 newton_terminate_on_fail .true.
 
 output_residual_vector .false.
 output_residual_dir ../../output/
 
-linear_solver petsc
+linear_solver mumps
 mumps_matrix_type mumps_unsymmetric
 mumps_output off
 
@@ -175,8 +177,8 @@ turn_off_output .true.
 write_rhs_to_file .false.
 write_matrix_to_file .false.
 
-write_rhs_filename dg_velocity_placentone-3d
-write_matrix_filename dg_velocity_placentone-3d
+write_rhs_filename dg_velocity_placenta
+write_matrix_filename dg_velocity_placenta
 
 write_rhs_dir ../../output/
 write_matrix_dir ../../output/
@@ -185,7 +187,7 @@ quadrature_inc 2
 # ==========================================================
 >>> solver_transport
 solver_type linear
-linear_solver petsc
+linear_solver mumps
 mumps_matrix_type mumps_unsymmetric
 mumps_output off
 
@@ -194,8 +196,8 @@ turn_off_output .true.
 write_rhs_to_file .false.
 write_matrix_to_file .false.
 
-write_rhs_filename dg_transport_placentone-3d
-write_matrix_filename dg_transport_placentone-3d
+write_rhs_filename dg_transport_placenta
+write_matrix_filename dg_transport_placenta
 
 write_rhs_dir ../../output/
 write_matrix_dir ../../output/
@@ -204,31 +206,31 @@ quadrature_inc 2
 # ==========================================================
 >>> output_mesh_solution_velocity_2D
 output_directory ../../output/
-append_filename dg_velocity_placentone-3d
+append_filename dg_velocity_placenta
 
 fe_output fe_solution
 fe_output_file_type vtk
 
 variable_1 u
 variable_2 v
-variable_3 w
-variable_4 p
+variable_3 p
+
 # ==========================================================
 >>> output_mesh_solution_re_velocity_2D
 output_directory ../../output/
-append_filename dg_re_velocity_placentone-3d
+append_filename dg_re_velocity_placenta
 
 fe_output fe_solution
 fe_output_file_type vtk
 
 variable_1 u
 variable_2 v
-variable_3 w
-variable_4 p
+variable_3 p
+
 # ==========================================================
 >>> output_mesh_solution_transport_2D
 output_directory ../../output/
-append_filename dg_transport_placentone-3d
+append_filename dg_transport_placenta
 
 fe_output fe_solution
 fe_output_file_type vtk
@@ -237,7 +239,7 @@ variable_1 c
 # ==========================================================
 >>> output_mesh_solution_permeability
 output_directory ../../output/
-append_filename dg_permeability_placentone-3d
+append_filename dg_permeability_placenta
 
 fe_output fe_solution
 fe_output_file_type vtk
@@ -246,7 +248,7 @@ variable_1 k
 # ==========================================================
 >>> output_mesh_solution_uptake
 output_directory ../../output/
-append_filename dg_uptake_placentone-3d
+append_filename dg_uptake_placenta
 
 fe_output fe_solution
 fe_output_file_type vtk
@@ -257,11 +259,11 @@ variable_1 r
 terminal_output on
 
 output_directory ../../output/
-append_filename dg_velocity_placentone-3d
+append_filename dg_velocity_placenta
 output_file_titles both
 # ==========================================================
 >>> uniform_refinement
-append_filename dg_velocity_placentone-3d_uniform-refinement
+append_filename dg_velocity_placenta_uniform-refinement
 output_directory ../../output/
 
 isoh_one_hanging_node_per_face .true.
@@ -273,3 +275,13 @@ minimum_polynomial_degree 0
 
 refinement_type h_refinement
 # ==========================================================
+>>> solution_difference
+output_directory ../../output/
+append_filename solution_difference
+
+fe_output fe_solution
+fe_output_file_type vtk
+
+variable_1 u
+variable_2 v
+variable_3 p
