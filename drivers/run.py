@@ -39,7 +39,7 @@ parameters["verbose_output"]  = True
 parameters["plot"]            = False
 
 # Mesh resolution.
-parameters["mesh_resolution"] = 0.02
+parameters["mesh_resolution"] = 0.1#0.02
 
 # Simulation.
 parameters["compute_permeability"     ] = True

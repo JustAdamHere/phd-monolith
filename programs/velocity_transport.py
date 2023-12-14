@@ -69,7 +69,8 @@ def get_default_run_parameters():
 def run(simulation_no, p):
 	if (set(p.keys()) != set(get_default_run_parameters().keys())):
 		unexpected_keys = set(p.keys()) - set(get_default_run_parameters().keys())
-		error_string = f"Incorrect parameters in velocity_transport.run(). Unexpected keys found: {unexpected_keys}"
+		missing_keys		= set(get_default_run_parameters().keys()) - set(p.keys())
+		error_string = f"Incorrect parameters in velocity_transport.run(). Unexpected keys found: {unexpected_keys}. Missing keys: {missing_keys}"
 		raise ValueError(error_string)
 
 	assert(p["velocity_model"] in ['nsb'       , 'ns-nsb'       , 'ns-b'    , 's-b'])
@@ -472,7 +473,7 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_w
 # def convergence():
 # 	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration
 
-def setup(clean, terminal_output, compile=True, compile_clean=True, run_type='openmp', verbose_output=False):
+def setup(clean, terminal_output, compile=True, compile_clean=True, run_type='openmp', verbose_output=False, compile_entry='velocity-transport'):
 	from miscellaneous import output
 
 	output.output("##########################", terminal_output)
@@ -507,25 +508,25 @@ def setup(clean, terminal_output, compile=True, compile_clean=True, run_type='op
 		output.output("Skipping cleaning.", terminal_output)
 
 	import subprocess, sys
-	from miscellaneous import output_timer, save_output, choose_make_type
+	from miscellaneous import output_timer, raise_error, choose_make_type
 
 	if (compile_clean):
 		make_clean_process = subprocess.run(['make', 'cleanall'], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
 
 	# Compile programs.
 	if (compile):
-		output_timer.time(0, "compilation", terminal_output)
+		output_timer.time(0, f"compilation", terminal_output)
 		choose_make_type.choose_make_type(run_type, program)
 
-		make_process = subprocess.Popen(['make', 'velocity-transport'], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		make_process = subprocess.Popen(['make', compile_entry], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 		# Display last line of output to screen, and write lines to file.
-		line_truncation = 120
+		line_truncation = 123
 		if (verbose_output):
 			end = '\r\n'
 		else:
 			end = '\r'
-		make_output = open(f"./output/compile_velocity-transport.txt", "w")
+		make_output = open(f"./output/compile_{compile_entry}.txt", "w")
 		output.output("", terminal_output)
 		while make_process.poll() is None:
 			line = make_process.stdout.readline().decode('utf-8').rstrip('\r\n')
@@ -537,11 +538,13 @@ def setup(clean, terminal_output, compile=True, compile_clean=True, run_type='op
 					output.output("", terminal_output, end=end)
 				make_output.write(line + '\n')
 		make_output.close()
-		output.output("", terminal_output, end='\x1b[1A\rStarting compilation... ')
+		if (verbose_output):
+			output.output("", terminal_output, end='\rStarting compilation... ')
+		else:
+			output.output("", terminal_output, end='\x1b[1A\rStarting compilation... ')
 
-		# Possibly return an error.
-		from miscellaneous import raise_error
-		if (make_process.returncode != 0):
-			raise_error.raise_error(make_process.stderr.read().decode('utf-8'))
+	# Possibly return an error.
+	if (make_process.poll() != 0):
+		raise_error.raise_error(make_process.stderr.read())
 			
-		output_timer.time(0, "compilation", terminal_output)
+	output_timer.time(0, f"compilation", terminal_output)

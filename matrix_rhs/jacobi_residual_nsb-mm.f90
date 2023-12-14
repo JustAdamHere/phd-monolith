@@ -23,6 +23,8 @@ module jacobi_residual_nsb_mm
     use problem_options
     use problem_options_velocity
     use problem_options_geometry
+    use basis_fns_storage_type
+    use aptofem_fe_matrix_assembly
 
     include 'assemble_residual_element.h'
 
@@ -50,12 +52,34 @@ module jacobi_residual_nsb_mm
 
     ! Moving mesh variables.
     real(db), dimension(facet_data%problem_dim) :: mesh_velocity, prev_uh
-    real(db), dimension(prev_problem_dim, prev_no_quad_points_volume_max) :: prev_global_points_ele
-    real(db), dimension(prev_no_quad_points_volume_max) :: prev_jacobian, prev_quad_weights_ele
-    real(db), dimension(prev_dim_soln_coeff, prev_no_quad_points_volume_max, no_ele_dofs_per_var_max) :: prev_phi
-    integer, dimension(prev_dim_soln_coeff, no_ele_dofs_per_var_max) :: prev_global_dof_numbers
-    integer, dimension(prev_dim_soln_coeff) :: prev_no_dofs_per_variable
+    real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: prev_global_points_ele
+    real(db), dimension(facet_data%no_quad_points) :: prev_jacobian, prev_quad_weights_ele
+    real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable)) :: prev_phi
+    integer, dimension(facet_data%dim_soln_coeff, maxval(facet_data%no_dofs_per_variable)) :: prev_global_dof_numbers
+    integer, dimension(facet_data%dim_soln_coeff) :: prev_no_dofs_per_variable
     integer :: prev_no_quad_points
+
+    character(len=aptofem_length_key_def) :: control_parameter
+
+    integer             :: prev_dim_soln_coeff, prev_no_pdes, prev_no_elements, prev_no_nodes, prev_no_faces, prev_problem_dim, &
+      prev_npinc, prev_no_quad_points_volume_max, prev_no_quad_points_face_max
+    type(basis_storage) :: prev_fe_basis_info
+
+    ! Setup basis storage.
+    prev_dim_soln_coeff = get_dim_soln_coeff(prev_solution_velocity_data)
+    prev_no_pdes        = get_no_pdes(prev_solution_velocity_data)
+
+    call get_mesh_info(prev_no_elements, prev_no_nodes, prev_no_faces, prev_problem_dim, prev_mesh_data)
+
+    prev_npinc = 2
+    call compute_max_no_quad_points(prev_no_quad_points_volume_max, prev_no_quad_points_face_max, prev_mesh_data, &
+      prev_solution_velocity_data, prev_npinc)
+
+    control_parameter = 'uh_ele'
+    call initialize_fe_basis_storage(prev_fe_basis_info, control_parameter, prev_solution_velocity_data, &
+      prev_problem_dim, prev_no_quad_points_volume_max, prev_no_quad_points_face_max)
+
+    call create_aptofem_dg_penalisation(prev_mesh_data, prev_solution_velocity_data)
 
     ! Integration info on the previous mesh.
     call element_integration_info(prev_dim_soln_coeff, prev_problem_dim, prev_mesh_data, prev_solution_velocity_data, &
@@ -155,7 +179,7 @@ module jacobi_residual_nsb_mm
                 element_region_id)* &
                   dirk_scaling_factor*interpolant_uh(ieqn, qk)*phi(ieqn, qk, i)
 
-            prev_time_terms = 1e10*prev_jacobian(qk)
+            ! prev_time_terms = 1e10*prev_jacobian(qk)
 
             ! print *, prev_uh(ieqn)
 
@@ -228,6 +252,8 @@ module jacobi_residual_nsb_mm
       end do
 
     end associate
+
+    call delete_fe_basis_storage(prev_fe_basis_info)
 
   end subroutine element_residual_nsb_mm
 

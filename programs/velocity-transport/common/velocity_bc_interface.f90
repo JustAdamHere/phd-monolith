@@ -107,6 +107,7 @@ module velocity_bc_interface
     use placenta_2d_bcs_velocity
     use placentone_2d_bcs_velocity
     use placentone_3d_bcs_velocity
+    use bcs_analytic_velocity
 
     implicit none
 
@@ -139,6 +140,15 @@ module velocity_bc_interface
       get_boundary_no_velocity     => placentone_3d_get_boundary_no_velocity
       dirichlet_bc_velocity        => placentone_3d_dirichlet_bc_velocity
       neumann_bc_velocity          => placentone_3d_neumann_bc_velocity
+    else if (trim(geometry_name) == 'square') then
+      convert_velocity_boundary_no => analytic_2d_convert_velocity_boundary_no
+      convert_velocity_region_id   => analytic_2d_convert_velocity_region_id
+      forcing_function_velocity    => analytic_2d_forcing_function_velocity
+      anal_soln_velocity           => analytic_2d_anal_soln_velocity
+      anal_soln_velocity_1         => analytic_2d_anal_soln_velocity_1
+      get_boundary_no_velocity     => analytic_2d_get_boundary_no_velocity
+      dirichlet_bc_velocity        => analytic_2d_dirichlet_bc_velocity
+      neumann_bc_velocity          => analytic_2d_neumann_bc_velocity
     else 
       call write_message(io_err, "Error: Unknown geometry name: " // trim(geometry_name))
       error stop

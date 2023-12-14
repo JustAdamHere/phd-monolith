@@ -94,7 +94,7 @@ program velocity_transport
     no_command_line_arguments = command_argument_count()
     if (no_command_line_arguments /= 2) then
         print *, "ERROR: Incorrect number of command line arguments."
-        print *, "       Usage: ./velocity_transport.out <nsb|ns-b|ns-nsb|s-b> <placentone|placenta|placentone-3d>"
+        print *, "       Usage: ./velocity-transport.out <nsb|ns-b|ns-nsb|s-b> <placentone|placenta|placentone-3d>"
         error stop
     end if
     call get_command_argument(1, assembly_name)

@@ -1,4 +1,5 @@
 module jacobi_residual_nsb
+  use bcs_analytic_velocity
   use placenta_2d_bcs_velocity
   use placentone_2d_bcs_velocity
   use placentone_3d_bcs_velocity
