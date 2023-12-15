@@ -40,9 +40,13 @@ program velocity_transport_convergence
   type(dirk_time_stepping_scheme) :: dirk_scheme_velocity
 
   ! Norm storage.
-  character(15), dimension(5) :: errors_format, errors_name
+  character(30), dimension(5) :: errors_format, errors_name
   real(db), dimension(5)      :: errors
   integer                     :: no_errors_velocity, no_errors_transport
+
+  ! Norm output.
+  integer            :: velocity_dofs
+  character(len=100) :: norm_file, aptofem_run_number_string, tsv_format
 
   ! CLA variables.
   integer       :: no_command_line_arguments
@@ -83,6 +87,15 @@ program velocity_transport_convergence
   call get_user_data_transport('user_data', aptofem_stored_keys)
   call set_space_type_velocity(aptofem_stored_keys)
   ! call initialise_geometry    (geometry_name)
+
+  !!!!!!!!!!!!!!!!!!!!!!!
+  !! SETUP NORM OUTPUT !!
+  !!!!!!!!!!!!!!!!!!!!!!!
+  write(aptofem_run_number_string, '(i10)') aptofem_run_number
+  norm_file = '../../output/norms' // '_' // 'velocity-transport_convergence' // '_' // &
+    trim(geometry_name) // '_' // trim(adjustl(aptofem_run_number_string)) // '.dat'
+  open(23111997, file=norm_file, status='replace')
+  tsv_format = '(*(G0.6,:,"'//achar(9)//'"))'
   
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! VELOCITY STEADY-STATE SPATIAL CONVERGENCE !!
@@ -103,11 +116,13 @@ program velocity_transport_convergence
     end if
 
     errors_format  = '(g15.5)'
-    errors_name(1) = '||u-u_h||_0'
-    errors_name(2) = '||p-p_h||_0'
-    errors_name(3) = '||u-u_h,p-p_h||_0'
-    errors_name(4) = '||u-u_h,p-p_h||_E'
-    errors_name(5) = '||div(u-u_h)||_0'
+    errors_name(1) = '||u-u_h||_L_2'
+    errors_name(2) = '||p-p_h||_L_2'
+    errors_name(3) = '||u-u_h,p-p_h||_L_2'
+    errors_name(4) = '||u-u_h,p-p_h||_DG'
+    errors_name(5) = '||div(u-u_h)||_L_2'
+
+    write(23111997, tsv_format) 'timestep_no', 'mesh_no', 'dofs', 'L2_u', 'L2_p', 'L2_up', 'DG_up', 'L2_div_u'
 
     ! Loop over meshes.
     do mesh_no = 1, no_meshes
@@ -120,12 +135,15 @@ program velocity_transport_convergence
       call newton_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', aptofem_stored_keys, &
         sp_matrix_rhs_data_velocity, scheme_data_velocity, ifail)
 
+      ! Get DoFs.
+      velocity_dofs = get_no_dofs(solution_velocity)
+
       ! Norms and output.
       call error_norms_velocity(errors, mesh_data, solution_velocity)
       call write_data   ('output_data', aptofem_stored_keys, errors, 5, errors_name, errors_format, mesh_data, &
         solution_velocity)
       call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, mesh_no, mesh_data, solution_velocity)
-      ! TODO WRITE OUT NORMS?
+      write(23111997, tsv_format) 0, mesh_no, velocity_dofs, errors(1), errors(2), errors(3), errors(4), errors(5)
 
       ! Clean up solver storage.
       call linear_fe_solver(solution_velocity,  mesh_data, fe_solver_routines_velocity,  'solver_velocity', &
@@ -151,6 +169,7 @@ program velocity_transport_convergence
   !!!!!!!!!!!!!!
   !! CLEAN UP !!
   !!!!!!!!!!!!!!
+  close(23111997)
   call delete_mesh(mesh_data)
   call finalise_user_data()
   call AptoFEM_finalize  (aptofem_stored_keys)

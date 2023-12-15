@@ -46,6 +46,7 @@ module bcs_analytic_velocity
   subroutine analytic_2d_forcing_function_velocity(f, global_point, problem_dim, no_vars, t, element_region_id)
     use param
     use problem_options
+    use problem_options_velocity
 
     implicit none
 
@@ -56,16 +57,51 @@ module bcs_analytic_velocity
     real(db), intent(in)                         :: t
     integer, intent(in)                          :: element_region_id
 
-    real(db)                                  :: u1_xx, u1_yy, u2_xx, u2_yy, u1_t, u2_t
-    real(db), dimension(no_vars)              :: u
-    real(db), dimension(no_vars, problem_dim) :: grad_u
+    real(db)                                  :: u1_xx, u1_yy, u2_xx, u2_yy, u1_t, u2_t, u, v, p
+    real(db), dimension(no_vars)              :: u_exact
+    real(db), dimension(no_vars, problem_dim) :: grad_u_exact
     real(db)                                  :: x, y
-    real(db)                                  :: diffusion_coefficient
+    real(db)                                  :: time_coefficient, diffusion_coefficient, convection_coefficient, &
+      reaction_coefficient, pressure_coefficient
 
     x = global_point(1)
     y = global_point(2)
 
-    f = 0.0_db
+    call analytic_2d_anal_soln_velocity(u_exact,global_point,problem_dim,no_vars,0,t,element_region_id)
+    call analytic_2d_anal_soln_velocity_1(grad_u_exact,global_point,problem_dim,no_vars,t,element_region_id)
+
+    time_coefficient       = calculate_velocity_time_coefficient      (global_point, problem_dim, element_region_id)
+    diffusion_coefficient  = calculate_velocity_diffusion_coefficient (global_point, problem_dim, element_region_id)
+    convection_coefficient = calculate_velocity_convection_coefficient(global_point, problem_dim, element_region_id)
+    reaction_coefficient   = calculate_velocity_reaction_coefficient  (global_point, problem_dim, element_region_id)
+    pressure_coefficient   = calculate_velocity_pressure_coefficient  (global_point, problem_dim, element_region_id)
+
+    u = -exp(-2.0_db*pi**2*t/diffusion_coefficient)*(y*cos(y)+sin(y))*exp(x)
+    v =  exp(-2.0_db*pi**2*t/diffusion_coefficient)*y*sin(y)*exp(x)
+    p =  exp(-2.0_db*pi**2*t/diffusion_coefficient)*2.0_db*exp(x)*sin(y)
+
+    u1_t =  2.0_db*pi**2*t/diffusion_coefficient*exp(-2.0_db*pi**2*t/diffusion_coefficient)*(y*cos(y)+sin(y))*exp(x)
+    u2_t = -2.0_db*pi**2*t/diffusion_coefficient*exp(-2.0_db*pi**2*t/diffusion_coefficient)*y*sin(y)*exp(x)
+
+    u1_xx = -exp(-2.0_db*pi**2*t/diffusion_coefficient)*(y*cos(y)+sin(y))*exp(x)
+    u1_yy = -(-3.0_db*sin(y)-y*cos(y))*exp(x)*exp(-2.0_db*pi**2*t/diffusion_coefficient)
+
+    u2_xx = y*sin(y)*exp(x)*exp(-2.0_db*pi**2*t/diffusion_coefficient)
+    u2_yy = (-sin(y)*y+2.0_db*cos(y))*exp(x)*exp(-2.0_db*pi**2*t/diffusion_coefficient)
+
+    f(1) = 0.0_db + &
+      time_coefficient*u1_t - &
+      diffusion_coefficient*(u1_xx + u1_yy) + &
+      convection_coefficient*dot_product(u_exact(1:2), grad_u_exact(1, 1:2)) + &
+      pressure_coefficient*grad_u_exact(3, 1) + &
+      reaction_coefficient*u_exact(1)
+    f(2) = 0.0_db + &
+      time_coefficient*u2_t - &
+      diffusion_coefficient*(u2_xx + u2_yy) + &
+      convection_coefficient*dot_product(u_exact(1:2), grad_u_exact(2, 1:2)) + &
+      pressure_coefficient*grad_u_exact(3, 2) + &
+      reaction_coefficient*u_exact(2)
+    f(3) = 0.0_db
 
   end subroutine
 
@@ -89,20 +125,24 @@ module bcs_analytic_velocity
     real(db) :: left, right
     real(db) :: amplitude
     real(db) :: global_time ! TODO: check relationship between local and global t
+    real(db) diffusion_coefficient
 
     u = 0.0_db
 
     x = global_point(1)
     y = global_point(2)
 
-    u(1) = -(y*cos(y)+sin(y))*exp(x)
-    u(2) = y*sin(y)*exp(x)
-    u(3) = 2.0_db*exp(x)*sin(y)
+    diffusion_coefficient = calculate_velocity_diffusion_coefficient(global_point, problem_dim, element_region_id)
+
+    u(1) = -exp(-2.0_db*pi**2*t/diffusion_coefficient)*(y*cos(y)+sin(y))*exp(x)
+    u(2) =  exp(-2.0_db*pi**2*t/diffusion_coefficient)*y*sin(y)*exp(x)
+    u(3) =  exp(-2.0_db*pi**2*t/diffusion_coefficient)*2.0_db*exp(x)*sin(y)
   end subroutine
 
   subroutine analytic_2d_anal_soln_velocity_1(u_1, global_point, problem_dim, no_vars, t, element_region_id)
     use param
     use problem_options
+    use problem_options_velocity
 
     implicit none
 
