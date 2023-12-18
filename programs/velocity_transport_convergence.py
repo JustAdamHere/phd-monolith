@@ -68,7 +68,7 @@ def run(simulation_no, p):
 	# OUTPUT RATIOS #
 	#################
 	from tabulate import tabulate
-	output.output(tabulate(errors.transpose(), headers=['DoFs', 'L2_u', 'L2_p', 'L2_up', 'E_up', 'div_u'], tablefmt='rounded_outline'), p["terminal_output"])
+	output.output(tabulate(errors.transpose(), headers=['#Timesteps', 'DoFs', 'L2_u', 'L2_p', 'L2_up', 'E_up', 'div_u'], tablefmt='rounded_outline'), p["terminal_output"])
 	output.output(tabulate(error_ratios.transpose(), headers=['L2_u_ratio', 'L2_p_ratio', 'L2_up_ratio', 'E_up_ratio', 'div_u_ratio'], tablefmt='rounded_outline'), p["terminal_output"])
 
 def aptofem_simple_simulation(simulation_no, velocity_model, geometry, velocity_diffusion_coefficient, velocity_convection_coefficient, velocity_reaction_coefficient, velocity_pressure_coefficient, velocity_time_coefficient, velocity_forcing_coefficient, transport_diffusion_coefficient, transport_convection_coefficient, transport_reaction_coefficient, transport_time_coefficient, transport_forcing_coefficient, verbose_output, terminal_output, final_time, no_time_steps, no_threads, run_type, linear_solver, problem_dim, error_on_fail, test_type):

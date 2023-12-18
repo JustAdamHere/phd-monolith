@@ -13,15 +13,23 @@ parameters["velocity_diffusion_coefficient"] = 1.0
 velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True, compile_entry='velocity-transport_convergence')
 
 # Run the simulations.
-parameters["final_time"]    = 0.0
-parameters["no_time_steps"] = 0
-parameters["test_type"]     = "ss_velocity_space"
-velocity_transport_convergence.run(1, parameters)
+# parameters["final_time"]      = 0.0
+# parameters["no_time_steps"]   = 0
+# parameters["test_type"]       = "ss_velocity_space"
+# parameters["mesh_resolution"] = 2
+# velocity_transport_convergence.run(1, parameters)
 
-parameters["final_time"]    = 1e-3
-parameters["no_time_steps"] = 10
-parameters["test_type"]     = "velocity_space"
-velocity_transport_convergence.run(2, parameters)
+# parameters["final_time"]      = 1e-3
+# parameters["no_time_steps"]   = 10
+# parameters["test_type"]       = "velocity_space"
+# parameters["mesh_resolution"] = 2
+# velocity_transport_convergence.run(2, parameters)
+
+parameters["final_time"]      = 1
+parameters["no_time_steps"]   = 2
+parameters["test_type"]       = "velocity_time"
+parameters["mesh_resolution"] = 0.1
+velocity_transport_convergence.run(3, parameters)
 
 # Save output.
 from miscellaneous import output
