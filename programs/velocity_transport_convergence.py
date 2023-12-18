@@ -157,7 +157,7 @@ def aptofem_simple_simulation(simulation_no, velocity_model, geometry, velocity_
 		raise ValueError(f"Unknown problem dimension: {problem_dim}")	
 	
 	# Run AptoFEM simulation.
-	run_commands = [f'./velocity-transport_convergence.out', f'{velocity_model}', f'{test_type}', '5']
+	run_commands = [f'./velocity-transport_convergence.out', f'{velocity_model}', f'{test_type}', '4']
 	if (run_type == 'mpi'):
 		run_commands = ['mpirun', '-n', f'{no_threads}'] + run_commands
 	run_process = subprocess.Popen(run_commands, cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

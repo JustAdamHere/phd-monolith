@@ -129,6 +129,15 @@ module problem_options_geometry
     !     ! inflation_ratio = 1.0_db
     ! end subroutine
 
+    subroutine initialise_simple_geometry(problem_dim)
+        implicit none
+
+        integer, intent(in) :: problem_dim
+
+        allocate (move_mesh_centre(problem_dim))
+        move_mesh_centre = 0.5_db
+    end subroutine
+
     subroutine initialise_geometry(control_file)
         use aptofem_kernel
 
@@ -468,6 +477,10 @@ module problem_options_geometry
             print *, "Y_CENTRE: ", y_centre
             print *, "PLACENTONE WIDTH: ", placentone_widths(4)
         end if
+    end subroutine
+
+    subroutine finalise_simple_geometry()
+        deallocate(move_mesh_centre)
     end subroutine
     
     subroutine finalise_geometry(control_file)
