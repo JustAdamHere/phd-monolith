@@ -515,6 +515,15 @@ def setup(clean, terminal_output, compile=True, compile_clean=True, run_type='op
 
 	# Compile programs.
 	if (compile):
+		# Create object and module directories
+		from pathlib import Path
+		try:
+			Path(f'./programs/{program}/.obj').mkdir(exist_ok=True)
+			Path(f'./programs/{program}/.mod').mkdir(exist_ok=True)
+		except OSError as e:
+			print(f"Error: {e.strerror}.")
+			exit()
+
 		output_timer.time(0, f"compilation", terminal_output)
 		choose_make_type.choose_make_type(run_type, program)
 

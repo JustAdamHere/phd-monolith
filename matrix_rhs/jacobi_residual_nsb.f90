@@ -105,17 +105,22 @@ module jacobi_residual_nsb
 
           do i = 1,no_dofs_per_variable(ieqn)
 
-            time_terms = calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
-                element_region_id)* &
-              (uh_previous_time_step(ieqn, qk) - dirk_scaling_factor*interpolant_uh(ieqn, qk))*phi(ieqn, qk, i)
+            ! print *, 1.0_db/dirk_scaling_factor
 
-            diffusion_terms = calculate_velocity_diffusion_coefficient(global_points_ele(:, qk), problem_dim, &
+            time_terms = -calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
-              (-1.0_db) * dot_product(gradient_uh(ieqn,qk,:),grad_phi(ieqn,qk,:,i))
+              (interpolant_uh(ieqn, qk)*dirk_scaling_factor - uh_previous_time_step(ieqn, qk))*phi(ieqn, qk, i)
+              ! (interpolant_uh(ieqn, qk) - uh_previous_time_step(ieqn, qk))*phi(ieqn, qk, i)/dirk_scaling_factor
+              ! (uh_previous_time_step(ieqn, qk) - interpolant_uh(ieqn, qk))*phi(ieqn, qk, i)/dirk_scaling_factor
+              ! (uh_previous_time_step(ieqn, qk) - dirk_scaling_factor*interpolant_uh(ieqn, qk))*phi(ieqn, qk, i)
+
+            diffusion_terms = -calculate_velocity_diffusion_coefficient(global_points_ele(:, qk), problem_dim, &
+                element_region_id)* &
+              dot_product(gradient_uh(ieqn,qk,:),grad_phi(ieqn,qk,:,i))
 
             convection_terms = calculate_velocity_convection_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
-            dot_product(fluxes(1:problem_dim,ieqn,qk), grad_phi(ieqn,qk,1:problem_dim,i))
+              dot_product(fluxes(1:problem_dim,ieqn,qk), grad_phi(ieqn,qk,1:problem_dim,i))
 
             pressure_terms = calculate_velocity_pressure_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
@@ -1318,6 +1323,7 @@ module jacobi_residual_nsb
     real(db), dimension(facet_data%no_pdes,facet_data%no_quad_points) :: un
     real(db), dimension(facet_data%no_pdes) :: uh1
     real(db), dimension(facet_data%no_pdes,facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable1)) :: phi1
+    real(db) :: current_time
 
     associate( &
       dim_soln_coeff => facet_data%dim_soln_coeff, &
@@ -1331,14 +1337,17 @@ module jacobi_residual_nsb
       face_element_region_ids => facet_data%face_element_region_ids, &
       boundary_no => facet_data%bdry_no, &
       no_dofs_per_variable => facet_data%no_dofs_per_variable1, &
-      face_normals => facet_data%face_normals)
+      face_normals => facet_data%face_normals, &
+      scheme_user_data => facet_data%scheme_user_data)
+
+      current_time = scheme_user_data%current_time
 
       face_residual = 0.0_db
 
       if (200 <= abs(boundary_no) .and. abs(boundary_no) <= 299) then
         do qk = 1, no_quad_points
           uh1 = uh_face1(fe_basis_info, no_pdes, qk)
-          call neumann_bc_velocity(un, global_points(1:problem_dim, qk), problem_dim, boundary_no, 0.0_db, &
+          call neumann_bc_velocity(un, global_points(1:problem_dim, qk), problem_dim, boundary_no, current_time, &
             face_element_region_ids(1), face_normals(1:problem_dim, qk))
         end do
 

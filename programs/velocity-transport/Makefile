@@ -14,7 +14,7 @@ storage         = solution-storage_velocity.f90 previous_velocity.f90
 fluxes          = crossflow_flux.f90 outflow_flux.f90 outflow_transport_flux.f90 flux_output.f90
 problem_options = problem-options.f90 problem-options_geometry.f90 problem-options_velocity.f90 problem-options_transport.f90
 miscellaneous   = refine_region.f90 integrate_transport-reaction.f90 integrate_velocity-magnitude.f90 integrate_one.f90 integrate_slow-velocity.f90 integrate_fast-velocity.f90 projections.f90
-norms 				  = norms.f90
+norms 				  = error_norms.f90
 
 transport_bcs = bcs_transport.f90
 #transport_bcs_analytic = 2d-bcs_transport_analytic.f90

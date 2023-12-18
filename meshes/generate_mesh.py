@@ -6,6 +6,7 @@ def generate_simple_mesh(simulation_no, geometry, mesh_resolution):
 
 	if (geometry == "square"):
 		geo_file = "square.geo"
+		# geo_file = "l-shape.geo"
 		dim = 2
 	else:
 		raise ValueError("geometry must be 'square'")

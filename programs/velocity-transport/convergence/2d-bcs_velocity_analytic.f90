@@ -7,17 +7,19 @@ module bcs_analytic_velocity
     integer, intent(in)  :: boundary_no
     integer, intent(out) :: boundary_no_new
 
-    if (boundary_no == 0) then
-      boundary_no_new = 0
-    else if (100 <= boundary_no .and. boundary_no <= 199) then
-      boundary_no_new = boundary_no
-    else if (200 <= boundary_no .and. boundary_no <= 299) then
-      boundary_no_new = boundary_no
-    else
-      print *, "Error: no Navier-Stokes+ku boundary to convert to"
-      print *, boundary_no
-      stop
-    end if
+    ! if (boundary_no == 0) then
+    !   boundary_no_new = 0
+    ! else if (100 <= boundary_no .and. boundary_no <= 199) then
+    !   boundary_no_new = boundary_no
+    ! else if (200 <= boundary_no .and. boundary_no <= 299) then
+    !   boundary_no_new = boundary_no
+    ! else
+    !   print *, "Error: no Navier-Stokes+ku boundary to convert to"
+    !   print *, boundary_no
+    !   stop
+    ! end if
+
+    boundary_no_new = boundary_no
 
   end subroutine
 
@@ -57,12 +59,16 @@ module bcs_analytic_velocity
     real(db), intent(in)                         :: t
     integer, intent(in)                          :: element_region_id
 
-    real(db)                                  :: u1_xx, u1_yy, u2_xx, u2_yy, u1_t, u2_t, u, v, p
+    real(db)                                  :: u1_xx, u1_yy, u2_xx, u2_yy, u1_t, u2_t
     real(db), dimension(no_vars)              :: u_exact
     real(db), dimension(no_vars, problem_dim) :: grad_u_exact
     real(db)                                  :: x, y
     real(db)                                  :: time_coefficient, diffusion_coefficient, convection_coefficient, &
       reaction_coefficient, pressure_coefficient
+
+    ! real(db) :: re
+
+    ! re = 40.0_db
 
     x = global_point(1)
     y = global_point(2)
@@ -76,18 +82,28 @@ module bcs_analytic_velocity
     reaction_coefficient   = calculate_velocity_reaction_coefficient  (global_point, problem_dim, element_region_id)
     pressure_coefficient   = calculate_velocity_pressure_coefficient  (global_point, problem_dim, element_region_id)
 
-    u = -exp(-2.0_db*pi**2*t/diffusion_coefficient)*(y*cos(y)+sin(y))*exp(x)
-    v =  exp(-2.0_db*pi**2*t/diffusion_coefficient)*y*sin(y)*exp(x)
-    p =  exp(-2.0_db*pi**2*t/diffusion_coefficient)*2.0_db*exp(x)*sin(y)
+    ! u1_t = 0.0_db
+    ! u2_t = 0.0_db
 
-    u1_t =  2.0_db*pi**2*t/diffusion_coefficient*exp(-2.0_db*pi**2*t/diffusion_coefficient)*(y*cos(y)+sin(y))*exp(x)
-    u2_t = -2.0_db*pi**2*t/diffusion_coefficient*exp(-2.0_db*pi**2*t/diffusion_coefficient)*y*sin(y)*exp(x)
+    ! u1_xx = -(y*cos(y)+sin(y))*exp(x)
+    ! u1_yy = -(-3.0_db*sin(y)-y*cos(y))*exp(x)
 
-    u1_xx = -exp(-2.0_db*pi**2*t/diffusion_coefficient)*(y*cos(y)+sin(y))*exp(x)
-    u1_yy = -(-3.0_db*sin(y)-y*cos(y))*exp(x)*exp(-2.0_db*pi**2*t/diffusion_coefficient)
+    ! u2_xx = y*sin(y)*exp(x)
+    ! u2_yy = (-sin(y)*y+2.0_db*cos(y))*exp(x)
 
-    u2_xx = y*sin(y)*exp(x)*exp(-2.0_db*pi**2*t/diffusion_coefficient)
-    u2_yy = (-sin(y)*y+2.0_db*cos(y))*exp(x)*exp(-2.0_db*pi**2*t/diffusion_coefficient)
+    if (no_time_steps > 0) then
+      u1_t =  sin(t)*(y*cos(y)+sin(y))*exp(x)
+      u2_t = -sin(t)*y*sin(y)*exp(x)
+    else
+      u1_t = 0.0_db
+      u2_t = 0.0_db
+    end if
+
+    u1_xx = -cos(t)*(y*cos(y)+sin(y))*exp(x)
+    u1_yy = -cos(t)*(-3.0_db*sin(y)-y*cos(y))*exp(x)
+
+    u2_xx = cos(t)*y*sin(y)*exp(x)
+    u2_yy = cos(t)*(-sin(y)*y+2.0_db*cos(y))*exp(x)
 
     f(1) = 0.0_db + &
       time_coefficient*u1_t - &
@@ -103,13 +119,23 @@ module bcs_analytic_velocity
       reaction_coefficient*u_exact(2)
     f(3) = 0.0_db
 
+    ! u1_t = 2.0_db*pi**2*(y*cos(y)+sin(y))*exp(x)*exp(-2.0_db*pi**2*t/re)/re
+    ! u2_t = -2.0_db*pi**2*y*sin(y)*exp(x)*exp(-2.0_db*pi**2*t/re)/re
+
+    ! u1_xx = -(y*cos(y)+sin(y))*exp(x)*exp(-2.0_db*pi**2*t/re)
+    ! u1_yy = -(-3.0_db*sin(y)-y*cos(y))*exp(x)*exp(-2.0_db*pi**2*t/re)
+
+    ! u2_xx = y*sin(y)*exp(x)*exp(-2.0_db*pi**2*t/re)
+    ! u2_yy = (-sin(y)*y+2.0_db*cos(y))*exp(x)*exp(-2.0_db*pi**2*t/re)
+
+    ! f(1) = u1_t + dot_product(u_exact(1:2),grad_u_exact(1,:)) - (u1_xx+u1_yy)/re + grad_u_exact(3,1) + u_exact(1)
+    ! f(2) = u2_t + dot_product(u_exact(1:2),grad_u_exact(2,:)) - (u2_xx+u2_yy)/re + grad_u_exact(3,2) + u_exact(2)
+    ! f(3) = 0.0_db
+
   end subroutine
 
   subroutine analytic_2d_anal_soln_velocity(u, global_point, problem_dim, no_vars, boundary_no, t, element_region_id)
     use param
-    use problem_options
-    use problem_options_velocity
-    use problem_options_geometry
 
     implicit none
 
@@ -125,24 +151,31 @@ module bcs_analytic_velocity
     real(db) :: left, right
     real(db) :: amplitude
     real(db) :: global_time ! TODO: check relationship between local and global t
-    real(db) diffusion_coefficient
+
+    ! real(db) :: re
+
+    ! re = 40.0_db
 
     u = 0.0_db
 
     x = global_point(1)
     y = global_point(2)
 
-    diffusion_coefficient = calculate_velocity_diffusion_coefficient(global_point, problem_dim, element_region_id)
+    ! u(1) = -(y*cos(y)+sin(y))*exp(x)
+    ! u(2) =  y*sin(y)*exp(x)
+    ! u(3) =  2.0_db*exp(x)*sin(y)
 
-    u(1) = -exp(-2.0_db*pi**2*t/diffusion_coefficient)*(y*cos(y)+sin(y))*exp(x)
-    u(2) =  exp(-2.0_db*pi**2*t/diffusion_coefficient)*y*sin(y)*exp(x)
-    u(3) =  exp(-2.0_db*pi**2*t/diffusion_coefficient)*2.0_db*exp(x)*sin(y)
+    u(1) = -cos(t)*(y*cos(y)+sin(y))*exp(x)
+    u(2) =  cos(t)*y*sin(y)*exp(x)
+    u(3) =  cos(t)*2.0_db*exp(x)*sin(y)
+
+    ! u(1) = -(y*cos(y)+sin(y))*exp(x)*exp(-2.0_db*pi**2*t/re)
+    ! u(2) = y*sin(y)*exp(x)*exp(-2.0_db*pi**2*t/re)
+    ! u(3) = 2.0_db*exp(x)*sin(y)*exp(-2.0_db*pi**2*t/re)
   end subroutine
 
   subroutine analytic_2d_anal_soln_velocity_1(u_1, global_point, problem_dim, no_vars, t, element_region_id)
     use param
-    use problem_options
-    use problem_options_velocity
 
     implicit none
 
@@ -153,19 +186,41 @@ module bcs_analytic_velocity
     real(db), intent(in)                                   :: t
     integer, intent(in)                                    :: element_region_id
 
-    real(db) :: x,y
+    real(db) :: x, y
+
+    ! real(db) :: re
+
+    ! re = 40.0_db
 
     x = global_point(1)
     y = global_point(2)
 
-    u_1(1,1) = -(y*cos(y)+sin(y))*exp(x)
-    u_1(1,2) = -(2.0_db*cos(y)-y*sin(y))*exp(x)
+    ! u_1(1,1) = -(y*cos(y)+sin(y))*exp(x)
+    ! u_1(1,2) = -(2.0_db*cos(y)-y*sin(y))*exp(x)
 
-    u_1(2,1) = y*sin(y)*exp(x)
-    u_1(2,2) = (sin(y)+y*cos(y))*exp(x)
+    ! u_1(2,1) = y*sin(y)*exp(x)
+    ! u_1(2,2) = (sin(y)+y*cos(y))*exp(x)
 
-    u_1(3,1) = 2.0_db*exp(x)*sin(y)
-    u_1(3,2) = 2.0_db*exp(x)*cos(y)
+    ! u_1(3,1) = 2.0_db*exp(x)*sin(y)
+    ! u_1(3,2) = 2.0_db*exp(x)*cos(y)
+
+    u_1(1,1) = -cos(t)*(y*cos(y)+sin(y))*exp(x)
+    u_1(1,2) = -cos(t)*(2.0_db*cos(y)-y*sin(y))*exp(x)
+
+    u_1(2,1) = cos(t)*y*sin(y)*exp(x)
+    u_1(2,2) = cos(t)*(sin(y)+y*cos(y))*exp(x)
+
+    u_1(3,1) = cos(t)*2.0_db*exp(x)*sin(y)
+    u_1(3,2) = cos(t)*2.0_db*exp(x)*cos(y)
+
+    ! u_1(1,1) = -(y*cos(y)+sin(y))*exp(x)*exp(-2.0_db*pi**2*t/re)
+    ! u_1(1,2) = -(2.0_db*cos(y)-y*sin(y))*exp(x)*exp(-2.0_db*pi**2*t/re)
+
+    ! u_1(2,1) = y*sin(y)*exp(x)*exp(-2.0_db*pi**2*t/re)
+    ! u_1(2,2) = (sin(y)+y*cos(y))*exp(x)*exp(-2.0_db*pi**2*t/re)
+
+    ! u_1(3,1) = 2.0_db*exp(x)*sin(y)*exp(-2.0_db*pi**2*t/re)
+    ! u_1(3,2) = 2.0_db*exp(x)*cos(y)*exp(-2.0_db*pi**2*t/re)
   end subroutine
 
   subroutine analytic_2d_get_boundary_no_velocity(boundary_no, strongly_enforced_bcs, global_point, face_coords, no_face_vert,&
@@ -237,8 +292,8 @@ module bcs_analytic_velocity
     x = global_point(1)
     y = global_point(2)
 
-    call analytic_2d_anal_soln_velocity(u,global_point,problem_dim,problem_dim+1,0,0.0_db,element_region_id)
-    call analytic_2d_anal_soln_velocity_1(grad_u,global_point,problem_dim,problem_dim+1,0.0_db,element_region_id)
+    call analytic_2d_anal_soln_velocity(u,global_point,problem_dim,problem_dim+1,0,t,element_region_id)
+    call analytic_2d_anal_soln_velocity_1(grad_u,global_point,problem_dim,problem_dim+1,t,element_region_id)
 
     un(1) = dot_product(grad_u(1,:),normal)-u(problem_dim+1)*normal(1)
     un(2) = dot_product(grad_u(2,:),normal)-u(problem_dim+1)*normal(2)

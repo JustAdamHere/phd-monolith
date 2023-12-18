@@ -94,9 +94,9 @@ module jacobi_residual_nsb_ss
 
           do i = 1,no_dofs_per_variable(ieqn)
 
-            diffusion_terms = calculate_velocity_diffusion_coefficient(global_points_ele(:, qk), problem_dim, &
+            diffusion_terms = -calculate_velocity_diffusion_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
-              (-1.0_db) * dot_product(gradient_uh(ieqn,qk,:),grad_phi(ieqn,qk,:,i))
+              dot_product(gradient_uh(ieqn,qk,:),grad_phi(ieqn,qk,:,i))
 
             convection_terms = calculate_velocity_convection_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
