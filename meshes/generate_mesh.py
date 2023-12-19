@@ -4,12 +4,12 @@ def add_option(options, option, value):
 def generate_simple_mesh(simulation_no, geometry, mesh_resolution):
 	import subprocess
 
-	if (geometry == "square"):
+	if (geometry.startswith("square")):
 		geo_file = "square.geo"
 		# geo_file = "l-shape.geo"
 		dim = 2
 	else:
-		raise ValueError("geometry must be 'square'")
+		raise ValueError("geometry must be 'square*'")
 
 	mesh_command = [\
 		'/home/pmyambl/software/gmsh-4.11.1-Linux64/bin/gmsh',\

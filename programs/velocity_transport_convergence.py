@@ -4,7 +4,7 @@ def get_default_run_parameters():
 		'error_on_fail'                    : True,
 		'extra_text'                       : '',
 		'final_time'                       : 1.0,
-		'geometry'                         : 'square',
+		'geometry'                         : 'square_analytic',
 		'linear_solver'                    : 'mumps',
 		'mesh_resolution'                  : 1,
 		'moving_mesh'                      : False,
@@ -42,7 +42,7 @@ def run(simulation_no, p):
 	
 	assert(p["velocity_model" ] in ['nsb'        , 'ns-nsb'        , 'ns-b'     , 's-b'  ])
 	assert(p["run_type"       ] in ['serial'     , 'openmp'        , 'mpi'               ])
-	assert(p["geometry"       ] in ['placentone' , 'placentone-3d' , 'placenta', 'square'])
+	assert(p["geometry"       ] in ['placentone' , 'placentone-3d' , 'placenta', 'square_analytic', 'square_constant_up'])
 
 	from miscellaneous import output, output_timer
 	output.output( "##########################", p["terminal_output"])

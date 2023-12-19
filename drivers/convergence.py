@@ -14,6 +14,7 @@ velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile
 
 # Run the simulations.
 parameters["final_time"]      = 0.0
+parameters["geometry"]        = "square_constant_up"
 parameters["no_time_steps"]   = 0
 parameters["test_type"]       = "ss_velocity_space"
 parameters["mesh_resolution"] = 2
