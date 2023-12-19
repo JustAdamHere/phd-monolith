@@ -12,6 +12,7 @@ def get_default_run_parameters():
 		'central_cavity_transition'      : 0.12,
 		'central_cavity_width'           : 0.25,
 		'clean_files'                    : [False, False, False, False, False, False, False],
+		'compress_output'								 : False,
 		'compute_mri'                    : False,
 		'compute_permeability'           : True,
 		'compute_transport'              : True,
@@ -42,6 +43,8 @@ def get_default_run_parameters():
 		'rerun_with_reynold_steps'       : False,
 		'reynold_ramp_start_ratio'       : 0.1,
 		'reynold_ramp_step_base'         : 2,
+		'run_mesh_generation'						 : True,
+		'run_aptofem_simulation'         : True,
 		'run_type'                       : 'openmp',
 		'scaling_D'                      : 1.667e-09,
 		'scaling_L'                      : 0.04,
@@ -106,23 +109,25 @@ def run(simulation_no, p):
 		#################
 		# GENERATE MESH #
 		#################
-		output_timer.time(simulation_no, "mesh generation", p["terminal_output"], clear_existing=True)
-		generate_mesh.generate_mesh(simulation_no, p["geometry"], p["mesh_resolution"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["artery_length"], p["verbose_output"], p["basal_plate_vessels"], p["septal_veins"], p["marginal_sinus"], p["wall_height_ratio"], p["artery_width"], p["artery_width_sm"], p["no_placentones"], p["vessel_fillet_radius"], p["basal_plate_vessel_positions"], p["septal_wall_vein_positions"], p["equal_wall_heights"], p["generate_outline_mesh"])
-		output_timer.time(simulation_no, "mesh generation", p["terminal_output"])
+		if (p["run_mesh_generation"]):
+			output_timer.time(simulation_no, "mesh generation", p["terminal_output"], clear_existing=True)
+			generate_mesh.generate_mesh(simulation_no, p["geometry"], p["mesh_resolution"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["artery_length"], p["verbose_output"], p["basal_plate_vessels"], p["septal_veins"], p["marginal_sinus"], p["wall_height_ratio"], p["artery_width"], p["artery_width_sm"], p["no_placentones"], p["vessel_fillet_radius"], p["basal_plate_vessel_positions"], p["septal_wall_vein_positions"], p["equal_wall_heights"], p["generate_outline_mesh"])
+			output_timer.time(simulation_no, "mesh generation", p["terminal_output"])
 
 		##################
 		# RUN SIMULATION #
 		##################
-		output_timer.time(simulation_no, "AptoFEM simulation", p["terminal_output"], clear_existing=True)
-		result = aptofem_simulation(simulation_no, p["velocity_model"], p["geometry"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["pipe_transition"], p["artery_length"], p["artery_width_sm"], p["log_cavity_transition"], p["scaling_L"], p["scaling_U"], p["scaling_mu"], p["scaling_rho"], p["scaling_k"], p["scaling_D"], p["scaling_R"], p["velocity_space"], velocity_ss, p["velocity_ic_from_ss"], p["transport_ic_from_ss"], p["compute_velocity"], p["compute_transport"], p["compute_permeability"], p["compute_uptake"], p["large_boundary_v_penalisation"], p["moving_mesh"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_time_steps"], p["final_time"], p["no_placentones"], p["no_threads"], p["run_type"], p["no_reynold_ramp_steps"], p["reynold_ramp_start_ratio"], p["reynold_ramp_step_base"], p["linear_solver"], p["wall_height_ratio"], p["basal_plate_vessel_positions"], p["rerun_with_reynold_steps"])
-		if (result == False and p["rerun_with_reynold_steps"]):
-			output.output(f"!! Rerunning with more Reynold steps due to failure !!", p["terminal_output"])
-			p["no_reynold_ramp_steps"] *= 2
-			output.output(f"!! New number of Reynold ramp steps: {p['no_reynold_ramp_steps']} !!", p["terminal_output"])
-			continue
-		else:
-			aptofem_run_no, velocity_dofs, transport_dofs, newton_residual, newton_iterations, no_elements = result
-		output_timer.time(simulation_no, "AptoFEM simulation", p["terminal_output"], f".\n  aptofem_run_no = {aptofem_run_no}, no_elements = {no_elements:,}, velocity_dofs = {velocity_dofs:,}, newton_residual = {newton_residual:.4e}, transport_dofs = {transport_dofs:,}, newton_iterations = {newton_iterations}")
+		if (p["run_aptofem_simulation"]):
+			output_timer.time(simulation_no, "AptoFEM simulation", p["terminal_output"], clear_existing=True)
+			result = aptofem_simulation(simulation_no, p["velocity_model"], p["geometry"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["pipe_transition"], p["artery_length"], p["artery_width_sm"], p["log_cavity_transition"], p["scaling_L"], p["scaling_U"], p["scaling_mu"], p["scaling_rho"], p["scaling_k"], p["scaling_D"], p["scaling_R"], p["velocity_space"], velocity_ss, p["velocity_ic_from_ss"], p["transport_ic_from_ss"], p["compute_velocity"], p["compute_transport"], p["compute_permeability"], p["compute_uptake"], p["large_boundary_v_penalisation"], p["moving_mesh"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_time_steps"], p["final_time"], p["no_placentones"], p["no_threads"], p["run_type"], p["no_reynold_ramp_steps"], p["reynold_ramp_start_ratio"], p["reynold_ramp_step_base"], p["linear_solver"], p["wall_height_ratio"], p["basal_plate_vessel_positions"], p["rerun_with_reynold_steps"])
+			if (result == False and p["rerun_with_reynold_steps"]):
+				output.output(f"!! Rerunning with more Reynold steps due to failure !!", p["terminal_output"])
+				p["no_reynold_ramp_steps"] *= 2
+				output.output(f"!! New number of Reynold ramp steps: {p['no_reynold_ramp_steps']} !!", p["terminal_output"])
+				continue
+			else:
+				aptofem_run_no, velocity_dofs, transport_dofs, newton_residual, newton_iterations, no_elements = result
+			output_timer.time(simulation_no, "AptoFEM simulation", p["terminal_output"], f".\n  aptofem_run_no = {aptofem_run_no}, no_elements = {no_elements:,}, velocity_dofs = {velocity_dofs:,}, newton_residual = {newton_residual:.4e}, transport_dofs = {transport_dofs:,}, newton_iterations = {newton_iterations}")
 
 		from plotting import calculate_velocity_limits
 		from plotting import calculate_transport_limits
@@ -131,8 +136,8 @@ def run(simulation_no, p):
 		# WARN OF OSCILLATIONS #
 		########################
 		if (p["oscillation_detection"]):
-			velocity_oscillations  = calculate_velocity_limits .calculate_limits("dg_velocity",  p["geometry"], aptofem_run_no, p["velocity_oscillation_tolerance"],  p["terminal_output"])
-			transport_oscillations = calculate_transport_limits.calculate_limits("dg_transport", p["geometry"], aptofem_run_no, p["transport_oscillation_tolerance"], p["terminal_output"])
+			velocity_oscillations  = calculate_velocity_limits .calculate_limits("dg_velocity",  p["geometry"], simulation_no, p["velocity_oscillation_tolerance"],  p["terminal_output"])
+			transport_oscillations = calculate_transport_limits.calculate_limits("dg_transport", p["geometry"], simulation_no, p["transport_oscillation_tolerance"], p["terminal_output"])
 
 			if (p["rerun_on_oscillation"] and (velocity_oscillations or transport_oscillations)):
 				h /= 2
@@ -147,9 +152,6 @@ def run(simulation_no, p):
 	########
 	# PLOT #
 	########
-	from miscellaneous import get_current_run_no
-	aptofem_run_no = get_current_run_no.get_current_run_no("velocity-transport")
-
 	if p["plot"]:
 		output_timer.time(simulation_no, "plotting", p["terminal_output"])
 
@@ -162,31 +164,13 @@ def run(simulation_no, p):
 			mesh_no = '0'
 
 		if (p["compute_velocity"]):
-			plot_velocity.plot(simulation_no,  "dg_velocity",  p["geometry"], str(aptofem_run_no), mesh_no, '1', '24', '1', '1', p["geometry"], '24', '0.0', '0.01', 25, False, velocity_ss)
-			plot_velocity.plot(simulation_no,  "dg_velocity",  p["geometry"], str(aptofem_run_no), mesh_no, '0', '24', '1', '1', p["geometry"], '24', '0.0', '0.01', 25, False, velocity_ss)
+			plot_velocity.plot(simulation_no,  "dg_velocity",  p["geometry"], str(simulation_no), mesh_no, '1', '24', '1', '1', p["geometry"], '24', '0.0', '0.01', 25, False, velocity_ss)
+			plot_velocity.plot(simulation_no,  "dg_velocity",  p["geometry"], str(simulation_no), mesh_no, '0', '24', '1', '1', p["geometry"], '24', '0.0', '0.01', 25, False, velocity_ss)
 
 		if (p["compute_transport"]):
-			plot_transport.plot(simulation_no, "dg_transport", p["geometry"], str(aptofem_run_no), mesh_no, '0', '24', p["geometry"], '24', '0.0', '0.01', 25, False, transport_ss)
+			plot_transport.plot(simulation_no, "dg_transport", p["geometry"], str(simulation_no), mesh_no, '0', '24', p["geometry"], '24', '0.0', '0.01', 25, False, transport_ss)
 
 		output_timer.time(simulation_no, "plotting", p["terminal_output"])
-
-	from plotting import calculate_flux
-
-	# ##################
-	# # CALCULATE FLUX #
-	# ##################
-	# if (p["compute_transport"]):
-	# 	flux_uptake = calculate_flux.calculate_transport_flux(aptofem_run_no, p["geometry"])
-	# 	flux_cache.append(flux_uptake)
-
-	# ###############################
-	# # CALCULATE REACTION INTEGRAL #
-	# ###############################
-	# if (p["compute_transport"]):
-	# 	from miscellaneous import get_transport_reaction_integral
-
-	# 	reaction_integral = get_transport_reaction_integral.get_transport_reaction_integral(program, p["geometry"], aptofem_run_no)
-	# 	integral_cache.append(reaction_integral)
 
 	#################
 	# CALCULATE MRI #
@@ -196,7 +180,7 @@ def run(simulation_no, p):
 
 		from mri_code import calculate_mri
 
-		calculate_mri.calculate_mri(aptofem_run_no, p["geometry"], p["no_threads"])
+		calculate_mri.calculate_mri(simulation_no, p["geometry"], p["no_threads"])
 
 		output_timer.time(simulation_no, "MRI calculations", p["terminal_output"])
 
@@ -207,7 +191,7 @@ def run(simulation_no, p):
 		from miscellaneous import get_velocity_magnitude
 
 		output_timer.time(simulation_no, "average velocity computation", p["terminal_output"])
-		get_velocity_magnitude.calculate_average_velocity(aptofem_run_no, p["geometry"])
+		get_velocity_magnitude.calculate_average_velocity(simulation_no, p["geometry"])
 		output_timer.time(simulation_no, "average velocity computation", p["terminal_output"])
 
 	###########################
@@ -217,7 +201,7 @@ def run(simulation_no, p):
 		from miscellaneous import get_velocity_magnitude
 
 		output_timer.time(simulation_no, "velocity sample computation", p["terminal_output"])
-		get_velocity_magnitude.output_solution(aptofem_run_no, p["geometry"])
+		get_velocity_magnitude.output_solution(simulation_no, p["geometry"])
 		output_timer.time(simulation_no, "velocity sample computation", p["terminal_output"])
 
 	########################
@@ -239,6 +223,15 @@ def run(simulation_no, p):
 		clean_directory.clean_directory('./meshes/', file_extension='vtk',      mode='delete')
 	if (p["clean_files"][6]):
 		clean_directory.clean_directory('./images/', file_extension='png',      mode='delete')
+
+	if (p["compress_output"]):
+		from miscellaneous import compress_output
+		compress_output.compress(simulation_no)
+		
+		# clean_directory.clean_directory('./output/', file_extension='vtk',      mode='delete')
+		# clean_directory.clean_directory('./output/', file_extension='internal', mode='delete')
+		# clean_directory.clean_directory('./output/', file_extension='dat',      mode='delete')
+		# clean_directory.clean_directory('./output/', file_extension='txt',      mode='delete')
 
 	#######
 	# END #

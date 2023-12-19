@@ -43,11 +43,11 @@ parameters["mesh_resolution"] = 0.02
 
 # Simulation.
 parameters["compute_permeability"     ] = True
-parameters["compute_transport"        ] = False
-parameters["compute_uptake"           ] = False
+parameters["compute_transport"        ] = True
+parameters["compute_uptake"           ] = True
 parameters["compute_velocity"         ] = True
-parameters["compute_velocity_average" ] = False
-parameters["compute_velocity_sample"  ] = False
+parameters["compute_velocity_average" ] = True
+parameters["compute_velocity_sample"  ] = True
 
 # File handling.
 parameters["clean_files"][0] = False # Output VTKs.
@@ -66,6 +66,10 @@ parameters["rerun_with_reynold_steps"] = False
 parameters["run_type"]      = 'openmp'
 parameters["linear_solver"] = 'mumps'
 parameters["no_threads"]    = 20
+
+# What to run.
+parameters["run_mesh_generation"]    = False
+parameters["run_aptofem_simulation"] = False
 
 ##################
 # SIMULATION RUN #
