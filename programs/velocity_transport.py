@@ -43,8 +43,9 @@ def get_default_run_parameters():
 		'rerun_with_reynold_steps'       : False,
 		'reynold_ramp_start_ratio'       : 0.1,
 		'reynold_ramp_step_base'         : 2,
-		'run_mesh_generation'						 : True,
 		'run_aptofem_simulation'         : True,
+		'run_mesh_generation'						 : True,
+		'run_set_aptofem_parameters'     : True,
 		'run_type'                       : 'openmp',
 		'scaling_D'                      : 1.667e-09,
 		'scaling_L'                      : 0.04,
@@ -117,9 +118,14 @@ def run(simulation_no, p):
 		##################
 		# RUN SIMULATION #
 		##################
+		if (p["run_set_aptofem_parameters"]):
+			output_timer.time(simulation_no, "AptoFEM set parameters", p["terminal_output"], clear_existing=True)
+			set_aptofem_parameters(simulation_no, p["velocity_model"], p["geometry"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["pipe_transition"], p["artery_length"], p["artery_width_sm"], p["log_cavity_transition"], p["scaling_L"], p["scaling_U"], p["scaling_mu"], p["scaling_rho"], p["scaling_k"], p["scaling_D"], p["scaling_R"], p["velocity_space"], velocity_ss, p["velocity_ic_from_ss"], p["transport_ic_from_ss"], p["compute_velocity"], p["compute_transport"], p["compute_permeability"], p["compute_uptake"], p["large_boundary_v_penalisation"], p["moving_mesh"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_time_steps"], p["final_time"], p["no_placentones"], p["no_threads"], p["run_type"], p["no_reynold_ramp_steps"], p["reynold_ramp_start_ratio"], p["reynold_ramp_step_base"], p["linear_solver"], p["wall_height_ratio"], p["basal_plate_vessel_positions"], p["rerun_with_reynold_steps"])
+			output_timer.time(simulation_no, "AptoFEM set parameters", p["terminal_output"])
+
 		if (p["run_aptofem_simulation"]):
 			output_timer.time(simulation_no, "AptoFEM simulation", p["terminal_output"], clear_existing=True)
-			result = aptofem_simulation(simulation_no, p["velocity_model"], p["geometry"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["pipe_transition"], p["artery_length"], p["artery_width_sm"], p["log_cavity_transition"], p["scaling_L"], p["scaling_U"], p["scaling_mu"], p["scaling_rho"], p["scaling_k"], p["scaling_D"], p["scaling_R"], p["velocity_space"], velocity_ss, p["velocity_ic_from_ss"], p["transport_ic_from_ss"], p["compute_velocity"], p["compute_transport"], p["compute_permeability"], p["compute_uptake"], p["large_boundary_v_penalisation"], p["moving_mesh"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_time_steps"], p["final_time"], p["no_placentones"], p["no_threads"], p["run_type"], p["no_reynold_ramp_steps"], p["reynold_ramp_start_ratio"], p["reynold_ramp_step_base"], p["linear_solver"], p["wall_height_ratio"], p["basal_plate_vessel_positions"], p["rerun_with_reynold_steps"])
+			result = aptofem_simulation(simulation_no, p["velocity_model"], p["geometry"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_threads"], p["run_type"])
 			if (result == False and p["rerun_with_reynold_steps"]):
 				output.output(f"!! Rerunning with more Reynold steps due to failure !!", p["terminal_output"])
 				p["no_reynold_ramp_steps"] *= 2
@@ -209,6 +215,12 @@ def run(simulation_no, p):
 	########################
 	from miscellaneous import clean_directory
 
+	output_timer.time(simulation_no, "compressing and cleaning files", p["terminal_output"])
+
+	if (p["compress_output"]):
+		from miscellaneous import compress_output
+		compress_output.compress(simulation_no)
+
 	if (p["clean_files"][0]):
 		clean_directory.clean_directory('./output/', file_extension='vtk',      mode='delete')
 	if (p["clean_files"][1]):
@@ -224,14 +236,7 @@ def run(simulation_no, p):
 	if (p["clean_files"][6]):
 		clean_directory.clean_directory('./images/', file_extension='png',      mode='delete')
 
-	if (p["compress_output"]):
-		from miscellaneous import compress_output
-		compress_output.compress(simulation_no)
-		
-		# clean_directory.clean_directory('./output/', file_extension='vtk',      mode='delete')
-		# clean_directory.clean_directory('./output/', file_extension='internal', mode='delete')
-		# clean_directory.clean_directory('./output/', file_extension='dat',      mode='delete')
-		# clean_directory.clean_directory('./output/', file_extension='txt',      mode='delete')
+	output_timer.time(simulation_no, "compressing and cleaning files", p["terminal_output"])
 
 	#######
 	# END #
@@ -241,8 +246,62 @@ def run(simulation_no, p):
 
 	return True
 
-def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, artery_width_sm, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, compute_permeability, compute_uptake, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver, wall_height_ratio, basal_plate_vessel_positions, rerun_with_reynold_steps):
+def aptofem_simulation(simulation_no, velocity_model, geometry, terminal_output, verbose_output, error_on_fail, no_threads, run_type):
+	# Fixed parameters.
+	program           = f"velocity-transport"
+	program_directory = f"programs/velocity-transport/"
 
+	from miscellaneous import get_current_run_no, save_output, output, raise_error
+	import subprocess
+	import sys
+
+	# Run AptoFEM simulation.
+	run_no = get_current_run_no.get_current_run_no(program) + 1 # +1 as the program hasn't run yet.
+	run_commands = [f'./velocity-transport.out', f'{velocity_model}', f'{geometry}']
+	if (run_type == 'mpi'):
+		run_commands = ['mpirun', '-n', f'{no_threads}'] + run_commands
+	run_process = subprocess.Popen(run_commands, cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+	# Display last line of output to screen, and write lines to file.
+	line_truncation = 123
+	if (verbose_output):
+		end = '\r\n'
+	else:
+		end = '\r'
+	run_output = open(f"./output/{program}_{geometry}_{run_no}.txt", "w")
+	output.output("", terminal_output)
+	while run_process.poll() is None:
+		line = run_process.stdout.readline().decode('utf-8').rstrip('\r\n')
+		if (line != ""):
+			output.output(f">>> {line[:line_truncation]:<{line_truncation}}", terminal_output, end='')
+			if (len(line) > line_truncation):
+				output.output("...", terminal_output, end=end)
+			else:
+				output.output("", terminal_output, end=end)
+			run_output.write(line + '\n')
+	run_output.close()
+	if (verbose_output):
+		output.output("", terminal_output, end='\rStarting AptoFEM simulation... ')
+	else:
+		output.output("", terminal_output, end='\x1b[1A\rStarting AptoFEM simulation... ')
+
+	# Possibly return an error.
+	if (run_process.poll() != 0):
+		if (error_on_fail):
+			raise_error.raise_error(run_process.stderr.read())
+		else:
+			return False
+
+	# Get simulation DoFs and Newton results.
+	from miscellaneous import get_run_data
+	velocity_dofs, transport_dofs, newton_residual, newton_iteration, no_elements = get_run_data.get_run_data(program, geometry, run_no, 0)
+	
+	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration, no_elements
+
+# def convergence():
+# 	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration
+
+def set_aptofem_parameters(simulation_no, velocity_model, geometry, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, artery_width_sm, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, compute_permeability, compute_uptake, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver, wall_height_ratio, basal_plate_vessel_positions, rerun_with_reynold_steps):
 	# Programatically create coefficients. ##
 	#  Re 
 	velocity_convection_coefficient = scaling_rho*scaling_U*scaling_L/scaling_mu
@@ -413,56 +472,6 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, central_cavity_w
 	else:
 		raise ValueError(f"Unknown problem dimension: {problem_dim}")
 
-	from miscellaneous import get_current_run_no, save_output, output, raise_error
-	import subprocess
-	import sys
-
-	# Run AptoFEM simulation.
-	run_no = get_current_run_no.get_current_run_no(program) + 1 # +1 as the program hasn't run yet.
-	run_commands = [f'./velocity-transport.out', f'{velocity_model}', f'{geometry}']
-	if (run_type == 'mpi'):
-		run_commands = ['mpirun', '-n', f'{no_threads}'] + run_commands
-	run_process = subprocess.Popen(run_commands, cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-	# Display last line of output to screen, and write lines to file.
-	line_truncation = 123
-	if (verbose_output):
-		end = '\r\n'
-	else:
-		end = '\r'
-	run_output = open(f"./output/{program}_{geometry}_{run_no}.txt", "w")
-	output.output("", terminal_output)
-	while run_process.poll() is None:
-		line = run_process.stdout.readline().decode('utf-8').rstrip('\r\n')
-		if (line != ""):
-			output.output(f">>> {line[:line_truncation]:<{line_truncation}}", terminal_output, end='')
-			if (len(line) > line_truncation):
-				output.output("...", terminal_output, end=end)
-			else:
-				output.output("", terminal_output, end=end)
-			run_output.write(line + '\n')
-	run_output.close()
-	if (verbose_output):
-		output.output("", terminal_output, end='\rStarting AptoFEM simulation... ')
-	else:
-		output.output("", terminal_output, end='\x1b[1A\rStarting AptoFEM simulation... ')
-
-	# Possibly return an error.
-	if (run_process.poll() != 0):
-		if (error_on_fail):
-			raise_error.raise_error(run_process.stderr.read())
-		else:
-			return False
-
-	# Get simulation DoFs and Newton results.
-	from miscellaneous import get_run_data
-	velocity_dofs, transport_dofs, newton_residual, newton_iteration, no_elements = get_run_data.get_run_data(program, geometry, run_no, 0)
-	
-	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration, no_elements
-
-# def convergence():
-# 	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration
-
 def setup(clean, terminal_output, compile=True, compile_clean=True, run_type='openmp', verbose_output=False):
 	from miscellaneous import output
 
@@ -505,6 +514,15 @@ def setup(clean, terminal_output, compile=True, compile_clean=True, run_type='op
 
 	# Compile programs.
 	if (compile):
+		# Create object and module directories
+		from pathlib import Path
+		try:
+			Path(f'./programs/{program}/.obj').mkdir(exist_ok=True)
+			Path(f'./programs/{program}/.mod').mkdir(exist_ok=True)
+		except OSError as e:
+			print(f"Error: {e.strerror}.")
+			exit()
+
 		output_timer.time(0, "compilation", terminal_output)
 		choose_make_type.choose_make_type(run_type, program)
 

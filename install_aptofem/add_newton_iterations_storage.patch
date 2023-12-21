@@ -1,0 +1,25 @@
+diff --git a/source/aptofem_kernel/aptofem_newton_fe_solver.f90 b/source/aptofem_kernel/aptofem_newton_fe_solver.f90
+index cf25cdb..b998ffd 100644
+--- a/source/aptofem_kernel/aptofem_newton_fe_solver.f90
++++ b/source/aptofem_kernel/aptofem_newton_fe_solver.f90
+@@ -512,6 +512,7 @@ contains
+     end associate
+ 
+     scheme_user_data%newton_norm_residual = norm_residual
++    scheme_user_data%newton_itns          = itn
+     
+ 1000 format(i6,2x,'||Residual|| ',1PE10.3,2x,'Damping ',g10.3,2x,'Ratio ',g10.3,2x,'Conv Rate',g10.3,2x,'Res Calc ',i3)  
+ 
+diff --git a/source/aptofem_kernel/matrix_assembly_data_type.f90 b/source/aptofem_kernel/matrix_assembly_data_type.f90
+index 6cf8cf0..a1a9d4c 100644
+--- a/source/aptofem_kernel/matrix_assembly_data_type.f90
++++ b/source/aptofem_kernel/matrix_assembly_data_type.f90
+@@ -46,6 +46,8 @@ module matrix_assembly_data_type
+     real(db) :: newton_norm_residual = 0.0_db !< Norm of the residual vector after the Newton
+     !< algorithm has terminated
+     integer :: newton_itns_max = 0 !< Maximum number of Newton steps to be employed
++    integer :: newton_itns = 0 !< Number of Newton iterations after the Newton algorithm has 
++    !< terminated
+     real(db) :: newton_tolerance = 0.0_db!< Tolerance for convergence
+     real(db) :: newton_max_residual = 1.0d6 !< Maximum allowable residual within 
+     !< the Newton iteration

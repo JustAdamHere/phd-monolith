@@ -680,7 +680,8 @@ program velocity_transport
     tsvFormat = '(*(G0.6,:,"'//achar(9)//'"))'
     write(23111999, tsvFormat) 'Velocity DoFs', 'Transport DoFs', 'Newton residiual', 'Newton iterations', 'Number of elements'
     if (compute_velocity) then
-        write(23111999, tsvFormat) no_dofs_velocity, no_dofs_transport, scheme_data_velocity%newton_norm_residual, -1, no_eles
+        write(23111999, tsvFormat) no_dofs_velocity, no_dofs_transport, scheme_data_velocity%newton_norm_residual, &
+            scheme_data_velocity%newton_itns, no_eles
     else
         write(23111999, tsvFormat) -1, -1, -1.0_db, -1, no_eles
     end if
@@ -891,7 +892,8 @@ program velocity_transport
         !!!!!!!!!!!!!!!!!!!
         ! SIMULATION DATA !
         !!!!!!!!!!!!!!!!!!!
-        write(23111999, tsvFormat) no_dofs_velocity, no_dofs_transport, scheme_data_velocity%newton_norm_residual, -1, no_eles
+        write(23111999, tsvFormat) no_dofs_velocity, no_dofs_transport, scheme_data_velocity%newton_norm_residual, &
+            scheme_data_velocity%newton_itns, no_eles
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! CLEANUP PREVIOUS VELOCITY MESH AND SOLUTION !

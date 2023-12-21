@@ -39,16 +39,17 @@ parameters["scaling_R"]   = 1.667e-2 # m^2/s
 # Run type.
 parameters["run_type"]      = 'openmp'
 parameters["linear_solver"] = 'mumps'
-parameters["no_threads"]    = 20
+parameters["no_threads"]    = 12
 
 # File handling.
-parameters["clean_files"][0] = True  # Output VTKs.
-parameters["clean_files"][1] = True  # Output restarts.
-parameters["clean_files"][2] = False # Output data files.
-parameters["clean_files"][3] = False # Output log files.
-parameters["clean_files"][4] = True  # Mesh mshs.
-parameters["clean_files"][5] = True  # Mesh VTKs.
-parameters["clean_files"][6] = False # Images.
+parameters["compress_output"] = True
+parameters["clean_files"][0]  = True  # Output VTKs.
+parameters["clean_files"][1]  = True  # Output restarts.
+parameters["clean_files"][2]  = False # Output data files.
+parameters["clean_files"][3]  = False # Output log files.
+parameters["clean_files"][4]  = True  # Mesh mshs.
+parameters["clean_files"][5]  = True  # Mesh VTKs.
+parameters["clean_files"][6]  = False # Images.
 
 # Output.
 parameters["terminal_output"] = True

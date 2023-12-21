@@ -25,6 +25,15 @@ def calculate_average_velocity(aptofem_run_no, geometry):
   from miscellaneous import save_output, raise_error
 
   try:
+    # Create object and module directories
+    from pathlib import Path
+    try:
+      Path(f'./programs/evaluate-solution/.obj').mkdir(exist_ok=True)
+      Path(f'./programs/evaluate-solution/.mod').mkdir(exist_ok=True)
+    except OSError as e:
+      print(f"Error: {e.strerror}.")
+      exit()
+
     subprocess.run(['make'], cwd='./programs/evaluate-solution/', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
     run_output = subprocess.run(['./evaluate-solution_bb.out', 'nsb', geometry, 'dg_velocity-transport', str(aptofem_run_no), 'n', 'y', '250', '250'], cwd='./programs/evaluate-solution/', stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
     save_output.save_output(run_output, "average-velocity", geometry, aptofem_run_no)
@@ -47,6 +56,15 @@ def output_solution(aptofem_run_no, geometry):
   from miscellaneous import save_output, raise_error
 
   try:
+    # Create object and module directories
+    from pathlib import Path
+    try:
+      Path(f'./programs/evaluate-solution/.obj').mkdir(exist_ok=True)
+      Path(f'./programs/evaluate-solution/.mod').mkdir(exist_ok=True)
+    except OSError as e:
+      print(f"Error: {e.strerror}.")
+      exit()
+            
     subprocess.run(['make'], cwd='./programs/evaluate-solution/', stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, check=False)
     run_output = subprocess.run(['./evaluate-solution_bb.out', 'nsb', geometry, 'dg_velocity-transport', str(aptofem_run_no), 'y', 'n', '250', '250'], cwd='./programs/evaluate-solution/', stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True)
     save_output.save_output(run_output, "average-velocity", geometry, aptofem_run_no)

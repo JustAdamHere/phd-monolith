@@ -36,27 +36,32 @@ parameters["final_time"]    = 0.01
 # Output.
 parameters["terminal_output"] = True
 parameters["verbose_output"]  = True
-parameters["plot"]            = False
+parameters["plot"]            = True
 
 # Mesh resolution.
-parameters["mesh_resolution"] = 0.02
+parameters["mesh_resolution"] = 1#0.02
 
 # Simulation.
-parameters["compute_permeability"     ] = True
-parameters["compute_transport"        ] = True
-parameters["compute_uptake"           ] = True
-parameters["compute_velocity"         ] = True
-parameters["compute_velocity_average" ] = True
-parameters["compute_velocity_sample"  ] = True
+parameters["compute_permeability"       ] = True
+parameters["compute_transport"          ] = True
+parameters["compute_uptake"             ] = True
+parameters["compute_velocity"           ] = True
+parameters["compute_velocity_average"   ] = True
+parameters["compute_velocity_sample"    ] = True
+parameters["run_mesh_generation"        ] = True
+parameters["run_aptofem_simulation"     ] = True
+parameters["run_set_aptofem_parameters" ] = True
+parameters["oscillation_detection"      ] = True
 
 # File handling.
-parameters["clean_files"][0] = False # Output VTKs.
-parameters["clean_files"][1] = False # Output restarts.
-parameters["clean_files"][2] = False # Output data files.
-parameters["clean_files"][3] = False # Output log files.
-parameters["clean_files"][4] = False # Mesh mshs.
-parameters["clean_files"][5] = False # Mesh VTKs.
-parameters["clean_files"][6] = False # Images.
+parameters["compress_output"] = False
+parameters["clean_files"][0]  = False # Output VTKs.
+parameters["clean_files"][1]  = False # Output restarts.
+parameters["clean_files"][2]  = False # Output data files.
+parameters["clean_files"][3]  = False # Output log files.
+parameters["clean_files"][4]  = False # Mesh mshs.
+parameters["clean_files"][5]  = False # Mesh VTKs.
+parameters["clean_files"][6]  = False # Images.
 
 # Reruns.
 parameters["error_on_fail"           ] = True
@@ -67,17 +72,13 @@ parameters["run_type"]      = 'openmp'
 parameters["linear_solver"] = 'mumps'
 parameters["no_threads"]    = 20
 
-# What to run.
-parameters["run_mesh_generation"]    = False
-parameters["run_aptofem_simulation"] = False
-
 ##################
 # SIMULATION RUN #
 ##################
 import numpy as np
 
 # Clean and compile.
-velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True)
+velocity_transport.setup(clean=False, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True)
 
 # Run simulations.
 velocity_transport.run(1, parameters)

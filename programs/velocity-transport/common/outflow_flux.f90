@@ -1,7 +1,7 @@
 module outflow_flux
     use aptofem_kernel
 
-    real(db), dimension(:), allocatable :: outflow_fluxes
+    real(db), dimension(:), allocatable :: outflow_fluxes, pe_outflow_fluxes, ke_outflow_fluxes, one_integral
 
     contains
     !--------------------------------------------------------------------
@@ -116,29 +116,21 @@ module outflow_flux
 
         integer, intent(in)       :: largest_bdry_face_no
 
-        ! integer :: no_eles, no_nodes, no_faces, problem_dim, bdry_face_no, k, largest_bdry_face_no
-
-        ! call get_mesh_info(no_eles, no_nodes, no_faces, problem_dim, mesh_data)
-
-        ! largest_bdry_face_no = 0
-
-        ! do k = 1, no_faces
-        !     bdry_face_no = get_boundary_identifier(k, mesh_data)
-
-        !     if (bdry_face_no > largest_bdry_face_no) then
-        !         largest_bdry_face_no = bdry_face_no
-        !     end if
-        ! end do
-
-        allocate(outflow_fluxes(largest_bdry_face_no))
-        outflow_fluxes = 0.0_db
+        allocate(outflow_fluxes   (largest_bdry_face_no))
+        allocate(pe_outflow_fluxes(largest_bdry_face_no))
+        allocate(ke_outflow_fluxes(largest_bdry_face_no))
+        allocate(one_integral     (largest_bdry_face_no))
+        outflow_fluxes    = 0.0_db
+        pe_outflow_fluxes = 0.0_db
+        ke_outflow_fluxes = 0.0_db
+        one_integral      = 0.0_db
 
     end subroutine
 
     subroutine finalise_outflow_fluxes()
         implicit none
 
-        deallocate(outflow_fluxes)
+        deallocate(outflow_fluxes, pe_outflow_fluxes, ke_outflow_fluxes)
     end subroutine
 
     function sum_nonzero_fluxes()
@@ -155,6 +147,51 @@ module outflow_flux
             sum_nonzero_fluxes = sum_nonzero_fluxes + outflow_fluxes(i)
         end do
 
+    end function
+
+    function sum_nonzero_pe_fluxes()
+        use param
+
+        implicit none
+
+        real(db) :: sum_nonzero_pe_fluxes
+
+        integer :: i
+
+        sum_nonzero_pe_fluxes = 0.0_db
+        do i = 1, size(outflow_fluxes)
+            sum_nonzero_pe_fluxes = sum_nonzero_pe_fluxes + pe_outflow_fluxes(i)
+        end do
+    end function
+
+    function sum_nonzero_ke_fluxes()
+        use param
+
+        implicit none
+
+        real(db) :: sum_nonzero_ke_fluxes
+
+        integer :: i
+
+        sum_nonzero_ke_fluxes = 0.0_db
+        do i = 1, size(outflow_fluxes)
+            sum_nonzero_ke_fluxes = sum_nonzero_ke_fluxes + ke_outflow_fluxes(i)
+        end do
+    end function
+
+    function sum_nonzero_one()
+        use param
+
+        implicit none
+
+        real(db) :: sum_nonzero_one
+
+        integer :: i
+
+        sum_nonzero_one = 0.0_db
+        do i = 1, size(outflow_fluxes)
+            sum_nonzero_one = sum_nonzero_one + one_integral(i)
+        end do
     end function
 
     subroutine calculate_outflow_fluxes(mesh_data, flow_solution)
@@ -174,7 +211,7 @@ module outflow_flux
         integer, dimension(2) :: neighbours,loc_face_no
         integer, dimension(no_nodes_per_face_max) :: face_nodes
         integer, dimension(:,:), allocatable :: pvec
-        real(db) :: integral
+        real(db) :: integral, pe_integral, ke_integral, one_integral_temp
         real(db), dimension(:,:,:), allocatable :: inv_jacobi_mat,jacobi_mat
         real(db), dimension(:,:), allocatable :: local_points,global_points,face_normals
         real(db), dimension(:), allocatable :: quad_weights,face_jacobian,det_jacobi_mat, &
@@ -207,7 +244,10 @@ module outflow_flux
             bdry_face_no = get_boundary_identifier(k,mesh_data)
 
             if (bdry_face_no /= 0) then
-                integral = 0.0_db
+                integral          = 0.0_db
+                pe_integral       = 0.0_db
+                ke_integral       = 0.0_db
+                one_integral_temp = 0.0_db
 
                 call get_face_info(k,neighbours,loc_face_no,face_nodes, &
                     no_face_nodes,interior_face_boundary_no,mesh_data)
@@ -231,12 +271,26 @@ module outflow_flux
                         local_points(:,qk),global_points(:,qk),problem_dim,mesh_data,flow_solution)
 
                     integral = integral + &
-                        dot_product(uh_flow(1:problem_dim), face_normals(:,qk))*quad_weights(qk)*face_jacobian(qk)
+                        quad_weights(qk)*face_jacobian(qk)*dot_product(uh_flow(1:problem_dim), face_normals(:,qk))
+
+                    pe_integral = pe_integral + &
+                        quad_weights(qk)*face_jacobian(qk)*dot_product(uh_flow(1:problem_dim), face_normals(:,qk))* &
+                            uh_flow(problem_dim+1)
+
+                    ke_integral = ke_integral + &
+                        quad_weights(qk)*face_jacobian(qk)*dot_product(uh_flow(1:problem_dim), face_normals(:,qk))* &
+                            0.5_db*abs(dot_product(uh_flow(1:problem_dim), uh_flow(1:problem_dim)))
+                    
+                    one_integral_temp = one_integral_temp + &
+                        quad_weights(qk)*face_jacobian(qk)*1.0_db
                 end do
 
                 bdry_face_no = get_boundary_identifier(k,mesh_data)
 
-                outflow_fluxes(bdry_face_no) = outflow_fluxes(bdry_face_no) + integral
+                outflow_fluxes   (bdry_face_no) = outflow_fluxes   (bdry_face_no) + integral
+                pe_outflow_fluxes(bdry_face_no) = pe_outflow_fluxes(bdry_face_no) + pe_integral
+                ke_outflow_fluxes(bdry_face_no) = ke_outflow_fluxes(bdry_face_no) + ke_integral
+                one_integral     (bdry_face_no) = one_integral     (bdry_face_no) + one_integral_temp
             end if
         end do
 
