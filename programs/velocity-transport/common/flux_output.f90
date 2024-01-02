@@ -65,7 +65,7 @@ module flux_output
   'velocity-outflow-flux_292', &
   'velocity-outflow-flux_293', &
   ! Sum of all fluxes.
-  'velocity_sum-flux', &
+  'velocity-sum-flux', &
   !! TRANSPORT !!
   ! Inlet fluxes.
   'transport-outflow-flux_111', &
@@ -113,7 +113,151 @@ module flux_output
   'transport-outflow-flux_292', &
   'transport-outflow-flux_293', &
   ! Sum of all fluxes.
-  'transport_sum-flux'
+  'transport-sum-flux', &
+  !! TOTAL ENERGY (PRESSURE PART) !!
+  ! Inlet fluxes.
+  'pe-outflow-flux_111', &
+  'pe-outflow-flux_112', &
+  'pe-outflow-flux_113', &
+  'pe-outflow-flux_114', &
+  'pe-outflow-flux_115', &
+  'pe-outflow-flux_116', &
+  'pe-outflow-flux_117', &
+  ! Basal plate outlet fluxes.
+  'pe-outflow-flux_211', &
+  'pe-outflow-flux_212', &
+  'pe-outflow-flux_213', &
+  'pe-outflow-flux_214', &
+  'pe-outflow-flux_215', &
+  'pe-outflow-flux_216', &
+  'pe-outflow-flux_217', &
+  'pe-outflow-flux_218', &
+  'pe-outflow-flux_219', &
+  'pe-outflow-flux_220', &
+  'pe-outflow-flux_221', &
+  'pe-outflow-flux_222', &
+  'pe-outflow-flux_223', &
+  'pe-outflow-flux_224', &
+  ! Marginal sinus outlet fluxes.
+  'pe-outflow-flux_230', &
+  'pe-outflow-flux_231', &
+  ! Septal wall outlet fluxes.
+  'pe-outflow-flux_241', &
+  'pe-outflow-flux_242', &
+  'pe-outflow-flux_243', &
+  'pe-outflow-flux_251', &
+  'pe-outflow-flux_252', &
+  'pe-outflow-flux_253', &
+  'pe-outflow-flux_261', &
+  'pe-outflow-flux_262', &
+  'pe-outflow-flux_263', &
+  'pe-outflow-flux_271', &
+  'pe-outflow-flux_272', &
+  'pe-outflow-flux_273', &
+  'pe-outflow-flux_281', &
+  'pe-outflow-flux_282', &
+  'pe-outflow-flux_283', &
+  'pe-outflow-flux_291', &
+  'pe-outflow-flux_292', &
+  'pe-outflow-flux_293', &
+  ! Sum of all fluxes.
+  'pe-sum-flux', &
+  !! KINETIC ENERGY !!
+  ! Inlet fluxes.
+  'ke-outflow-flux_111', &
+  'ke-outflow-flux_112', &
+  'ke-outflow-flux_113', &
+  'ke-outflow-flux_114', &
+  'ke-outflow-flux_115', &
+  'ke-outflow-flux_116', &
+  'ke-outflow-flux_117', &
+  ! Basal plate outlet fluxes.
+  'ke-outflow-flux_211', &
+  'ke-outflow-flux_212', &
+  'ke-outflow-flux_213', &
+  'ke-outflow-flux_214', &
+  'ke-outflow-flux_215', &
+  'ke-outflow-flux_216', &
+  'ke-outflow-flux_217', &
+  'ke-outflow-flux_218', &
+  'ke-outflow-flux_219', &
+  'ke-outflow-flux_220', &
+  'ke-outflow-flux_221', &
+  'ke-outflow-flux_222', &
+  'ke-outflow-flux_223', &
+  'ke-outflow-flux_224', &
+  ! Marginal sinus outlet fluxes.
+  'ke-outflow-flux_230', &
+  'ke-outflow-flux_231', &
+  ! Septal wall outlet fluxes.
+  'ke-outflow-flux_241', &
+  'ke-outflow-flux_242', &
+  'ke-outflow-flux_243', &
+  'ke-outflow-flux_251', &
+  'ke-outflow-flux_252', &
+  'ke-outflow-flux_253', &
+  'ke-outflow-flux_261', &
+  'ke-outflow-flux_262', &
+  'ke-outflow-flux_263', &
+  'ke-outflow-flux_271', &
+  'ke-outflow-flux_272', &
+  'ke-outflow-flux_273', &
+  'ke-outflow-flux_281', &
+  'ke-outflow-flux_282', &
+  'ke-outflow-flux_283', &
+  'ke-outflow-flux_291', &
+  'ke-outflow-flux_292', &
+  'ke-outflow-flux_293', &
+  ! Sum of all fluxes.
+  'ke-sum-flux', &
+  !! ONE INTEGRAL (SIZES) !!
+  ! Inlet fluxes.
+  'one-outflow_111', &
+  'one-outflow_112', &
+  'one-outflow_113', &
+  'one-outflow_114', &
+  'one-outflow_115', &
+  'one-outflow_116', &
+  'one-outflow_117', &
+  ! Basal plate outlet fluxes.
+  'one-outflow_211', &
+  'one-outflow_212', &
+  'one-outflow_213', &
+  'one-outflow_214', &
+  'one-outflow_215', &
+  'one-outflow_216', &
+  'one-outflow_217', &
+  'one-outflow_218', &
+  'one-outflow_219', &
+  'one-outflow_220', &
+  'one-outflow_221', &
+  'one-outflow_222', &
+  'one-outflow_223', &
+  'one-outflow_224', &
+  ! Marginal sinus outlet fluxes.
+  'one-outflow_230', &
+  'one-outflow_231', &
+  ! Septal wall outlet fluxes.
+  'one-outflow_241', &
+  'one-outflow_242', &
+  'one-outflow_243', &
+  'one-outflow_251', &
+  'one-outflow_252', &
+  'one-outflow_253', &
+  'one-outflow_261', &
+  'one-outflow_262', &
+  'one-outflow_263', &
+  'one-outflow_271', &
+  'one-outflow_272', &
+  'one-outflow_273', &
+  'one-outflow_281', &
+  'one-outflow_282', &
+  'one-outflow_283', &
+  'one-outflow_291', &
+  'one-outflow_292', &
+  'one-outflow_293', &
+  ! Sum of all fluxes.
+  'one-sum'
 
   flush(file_no)
 
@@ -239,7 +383,151 @@ module flux_output
     outflow_transport_fluxes(292), &
     outflow_transport_fluxes(293), &
     ! Sum of all fluxes.
-    sum_nonzero_transport_fluxes()
+    sum_nonzero_transport_fluxes(), &
+    !! TOTAL ENERGY (PRESSURE PART) !!
+    ! Inlet fluxes.
+    pe_outflow_fluxes(111), &
+    pe_outflow_fluxes(112), &
+    pe_outflow_fluxes(113), &
+    pe_outflow_fluxes(114), &
+    pe_outflow_fluxes(115), &
+    pe_outflow_fluxes(116), &
+    pe_outflow_fluxes(117), &
+    ! Basal plate outlet fluxes.
+    pe_outflow_fluxes(211), &
+    pe_outflow_fluxes(212), &
+    pe_outflow_fluxes(213), &
+    pe_outflow_fluxes(214), &
+    pe_outflow_fluxes(215), &
+    pe_outflow_fluxes(216), &
+    pe_outflow_fluxes(217), &
+    pe_outflow_fluxes(218), &
+    pe_outflow_fluxes(219), &
+    pe_outflow_fluxes(220), &
+    pe_outflow_fluxes(221), &
+    pe_outflow_fluxes(222), &
+    pe_outflow_fluxes(223), &
+    pe_outflow_fluxes(224), &
+    ! Marginal sinus outlet fluxes.
+    pe_outflow_fluxes(230), &
+    pe_outflow_fluxes(231), &
+    ! Septal wall outlet fluxes.
+    pe_outflow_fluxes(241), &
+    pe_outflow_fluxes(242), &
+    pe_outflow_fluxes(243), &
+    pe_outflow_fluxes(251), &
+    pe_outflow_fluxes(252), &
+    pe_outflow_fluxes(253), &
+    pe_outflow_fluxes(261), &
+    pe_outflow_fluxes(262), &
+    pe_outflow_fluxes(263), &
+    pe_outflow_fluxes(271), &
+    pe_outflow_fluxes(272), &
+    pe_outflow_fluxes(273), &
+    pe_outflow_fluxes(281), &
+    pe_outflow_fluxes(282), &
+    pe_outflow_fluxes(283), &
+    pe_outflow_fluxes(291), &
+    pe_outflow_fluxes(292), &
+    pe_outflow_fluxes(293), &
+    ! Sum of all fluxes.
+    sum_nonzero_pe_fluxes(), &
+    !! KINETIC ENERGY !!
+    ! Inlet fluxes.
+    ke_outflow_fluxes(111), &
+    ke_outflow_fluxes(112), &
+    ke_outflow_fluxes(113), &
+    ke_outflow_fluxes(114), &
+    ke_outflow_fluxes(115), &
+    ke_outflow_fluxes(116), &
+    ke_outflow_fluxes(117), &
+    ! Basal plate outlet fluxes.
+    ke_outflow_fluxes(211), &
+    ke_outflow_fluxes(212), &
+    ke_outflow_fluxes(213), &
+    ke_outflow_fluxes(214), &
+    ke_outflow_fluxes(215), &
+    ke_outflow_fluxes(216), &
+    ke_outflow_fluxes(217), &
+    ke_outflow_fluxes(218), &
+    ke_outflow_fluxes(219), &
+    ke_outflow_fluxes(220), &
+    ke_outflow_fluxes(221), &
+    ke_outflow_fluxes(222), &
+    ke_outflow_fluxes(223), &
+    ke_outflow_fluxes(224), &
+    ! Marginal sinus outlet fluxes.
+    ke_outflow_fluxes(230), &
+    ke_outflow_fluxes(231), &
+    ! Septal wall outlet fluxes.
+    ke_outflow_fluxes(241), &
+    ke_outflow_fluxes(242), &
+    ke_outflow_fluxes(243), &
+    ke_outflow_fluxes(251), &
+    ke_outflow_fluxes(252), &
+    ke_outflow_fluxes(253), &
+    ke_outflow_fluxes(261), &
+    ke_outflow_fluxes(262), &
+    ke_outflow_fluxes(263), &
+    ke_outflow_fluxes(271), &
+    ke_outflow_fluxes(272), &
+    ke_outflow_fluxes(273), &
+    ke_outflow_fluxes(281), &
+    ke_outflow_fluxes(282), &
+    ke_outflow_fluxes(283), &
+    ke_outflow_fluxes(291), &
+    ke_outflow_fluxes(292), &
+    ke_outflow_fluxes(293), &
+    ! Sum of all fluxes.
+    sum_nonzero_ke_fluxes(), &
+    !! ONE INTEGRAL (SIZES) !!
+    ! Inlet fluxes.
+    one_integral(111), &
+    one_integral(112), &
+    one_integral(113), &
+    one_integral(114), &
+    one_integral(115), &
+    one_integral(116), &
+    one_integral(117), &
+    ! Basal plate outlet fluxes.
+    one_integral(211), &
+    one_integral(212), &
+    one_integral(213), &
+    one_integral(214), &
+    one_integral(215), &
+    one_integral(216), &
+    one_integral(217), &
+    one_integral(218), &
+    one_integral(219), &
+    one_integral(220), &
+    one_integral(221), &
+    one_integral(222), &
+    one_integral(223), &
+    one_integral(224), &
+    ! Marginal sinus outlet fluxes.
+    one_integral(230), &
+    one_integral(231), &
+    ! Septal wall outlet fluxes.
+    one_integral(241), &
+    one_integral(242), &
+    one_integral(243), &
+    one_integral(251), &
+    one_integral(252), &
+    one_integral(253), &
+    one_integral(261), &
+    one_integral(262), &
+    one_integral(263), &
+    one_integral(271), &
+    one_integral(272), &
+    one_integral(273), &
+    one_integral(281), &
+    one_integral(282), &
+    one_integral(283), &
+    one_integral(291), &
+    one_integral(292), &
+    one_integral(293), &
+    ! Sum of all fluxes.
+    sum_nonzero_one()
 
     flush(file_no)
 

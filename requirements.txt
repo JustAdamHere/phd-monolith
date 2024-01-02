@@ -6,3 +6,4 @@ vtk
 scipy
 jsbeautifier
 tabulate
+zipfile
