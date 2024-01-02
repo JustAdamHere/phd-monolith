@@ -89,7 +89,7 @@ compute_permeability .true.
 compute_uptake .true.
 large_boundary_v_penalisation .false.
 moving_mesh .false.
-no_reynold_ramp_steps 10
+no_reynold_ramp_steps 1
 reynold_ramp_start_ratio 0.1
 reynold_ramp_step_base 2.0
 

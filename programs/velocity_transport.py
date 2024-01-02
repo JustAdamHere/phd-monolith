@@ -85,6 +85,8 @@ def run(simulation_no, p):
 
 	program = "velocity-transport"
 
+	original_no_reynold_ramp_steps = p["no_reynold_ramp_steps"]
+
 	if (p["no_time_steps"] == 0):
 		velocity_ss                 = True
 		transport_ss                = True
@@ -243,6 +245,9 @@ def run(simulation_no, p):
 	#######
 	from miscellaneous import run_no
 	run_no.set_completed_run_no(simulation_no)
+
+	# Reset no_reynold_ramp_steps in case they've been changed.
+	p["no_reynold_ramp_steps"] = original_no_reynold_ramp_steps
 
 	return True
 
