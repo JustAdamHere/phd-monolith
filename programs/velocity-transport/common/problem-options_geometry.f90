@@ -11,123 +11,22 @@ module problem_options_geometry
     real(db), dimension(:, :, :), allocatable :: vessel_tops, cavity_tops, cavity_sides, placentone_sides, wall_tops, artery_sides
     real(db), dimension(:, :), allocatable    :: vessel_angles, left_marginal_sinus_tops, right_marginal_sinus_tops
     !real(db), dimension(:), allocatable       :: central_cavity_widths, central_cavity_heights
+
+    abstract interface
+        function if_calculate_mesh_velocity(coord, problem_dim, mesh_time)
+            use param
+            implicit none
+            
+            integer, intent(in)                          :: problem_dim
+            real(db), dimension(problem_dim), intent(in) :: coord
+            real(db), intent(in)                         :: mesh_time
+            real(db), dimension(problem_dim)             :: if_calculate_mesh_velocity
+        end function
+    end interface
+
+    procedure(if_calculate_mesh_velocity), pointer :: calculate_mesh_velocity => null()
     
     contains
-    
-    ! subroutine initialise_geometry(control_file, no_placentones)
-    !     use aptofem_kernel
-
-    !     implicit none
-        
-    !     character(len=20), intent(in) :: control_file
-    !     integer, intent(in)           :: no_placentones
-        
-    !     integer :: i, j, problem_dim, no_vessels
-        
-    !     ! TODO: THIS NEEDS TO CHANGE BASED ON USER INPUT.
-    !     placentone_width = 1.0_db                        ! 40 mm
-    !     artery_length   = 0.25_db*placentone_width       ! 10mm
-    !     if (trim(control_file) == 'placenta') then
-    !         wall_width       = 0.075_db*placentone_width ! 3  mm
-    !         placenta_width   = 5.5_db                    ! 220mm
-    !         placenta_height  = 0.9065_db                 ! 36.26mm
-    !         wall_height      = 0.6_db*placentone_width   ! 24 mm
-    !         ms_pipe_width   = 0.075_db                   ! 3mm
-            
-    !         x_centre = placenta_width/2
-    !         y_centre = (placenta_height - ms_pipe_width)/2.0_db + x_centre**2/(2.0_db*(placenta_height - ms_pipe_width))
-            
-    !         boundary_radius = y_centre
-            
-    !         ! Store placentone widths.
-    !         allocate(placentone_widths(no_placentones))
-    !         allocate(cumulative_placentone_widths(no_placentones))
-            
-    !         if (no_placentones == 6) then
-    !             placentone_widths(1) = 0.716209_db
-    !             placentone_widths(2) = 0.846291_db
-    !             placentone_widths(3) = 1.000000_db
-    !             placentone_widths(4) = 1.000000_db
-    !             placentone_widths(5) = 0.846291_db
-    !             placentone_widths(6) = 0.716209_db
-    !         else if (no_placentones == 7) then
-    !             placentone_widths(1) = 0.543255_db
-    !             placentone_widths(2) = 0.665787_db
-    !             placentone_widths(3) = 0.815958_db
-    !             placentone_widths(4) = 1.000000_db
-    !             placentone_widths(5) = 0.815958_db
-    !             placentone_widths(6) = 0.665787_db
-    !             placentone_widths(7) = 0.543255_db
-    !         else
-    !             print *, "Error: no_placentones not supported", no_placentones
-    !             error stop
-    !         end if
-            
-    !         cumulative_placentone_widths(1) = 0.0_db
-    !         do i = 2, no_placentones
-    !             cumulative_placentone_widths(i) = cumulative_placentone_widths(i-1) + placentone_widths(i-1) + wall_width
-    !         end do
-            
-    !         ! Stores coordinates of the tops of arteries and veins.
-    !         no_vessels = 3
-    !         problem_dim = 2
-    !         allocate(vessel_tops(no_placentones, no_vessels, problem_dim))
-    !         allocate(vessel_angles(no_placentones, no_vessels))
-            
-    !         do i = 1, no_placentones
-    !             do j = 1, no_vessels
-    !                 vessel_tops(i, j, 1) = cumulative_placentone_widths(i) + vessel_locations(i, j)*placentone_widths(i)
-    !                 vessel_tops(i, j, 2) = y_centre - (boundary_radius**2 - (vessel_tops(i, j, 1) - x_centre)**2)**0.5
-    !                 vessel_angles(i, j) = -atan2((vessel_tops(i, j, 2)-y_centre), (vessel_tops(i, j, 1)-x_centre))
-    !             end do
-    !         end do            
-
-    !     else if (trim(control_file) == 'placentone') then
-    !         ! Stores coordinates of the tops of arteries and veins.
-    !         no_vessels = 3
-    !         problem_dim = 2
-    !         allocate(vessel_tops(1, no_vessels, problem_dim))
-    !         allocate(vessel_angles(1, no_vessels))
-
-    !         do j = 1, no_vessels
-    !             vessel_tops(1, j, 1) = vessel_locations(1, j)
-    !             vessel_tops(1, j, 2) = 0.0_db
-    !             vessel_angles(1, j)  = 0.0_db
-    !         end do
-    !     else
-    !         call write_message(io_err, "Geometry not supported: " // control_file)
-    !         error stop
-    !     end if
-
-    !     ! Store ratio between central cavity height and widths.
-    !     allocate(central_cavity_ratios(no_placentones))
-    !     do i = 1, no_placentones
-    !         central_cavity_ratios(i) = central_cavity_heights(i)/central_cavity_widths(i)
-    !     end do
-
-    !     ! Stores top of central cavities in each placentone.
-    !     !  cavity_tops(:, 1, :) = lower cavity top
-    !     !  cavity_tops(:, 2, :) = middle cavity top
-    !     !  cavity_tops(:, 3, :) = upper cavity top
-    !     allocate(cavity_tops(no_placentones, 3, problem_dim))
-    !     do i = 1, no_placentones
-    !         cavity_tops(i, 1, 1) = vessel_tops(i, 2, 1) - &
-    !             (central_cavity_heights(i)/2 - central_cavity_transition*central_cavity_ratios(i)/2)*cos(vessel_angles(i, 2))
-    !         cavity_tops(i, 1, 2) = vessel_tops(i, 2, 2) + &
-    !             (central_cavity_heights(i)/2 - central_cavity_transition*central_cavity_ratios(i)/2)*sin(vessel_angles(i, 2))
-    !         cavity_tops(i, 2, 1) = vessel_tops(i, 2, 1) - &
-    !             (central_cavity_heights(i)/2                                                       )*cos(vessel_angles(i, 2))
-    !         cavity_tops(i, 2, 2) = vessel_tops(i, 2, 2) + &
-    !             (central_cavity_heights(i)/2                                                       )*sin(vessel_angles(i, 2))
-    !         cavity_tops(i, 3, 1) = vessel_tops(i, 3, 1) - &
-    !             (central_cavity_heights(i)/2 + central_cavity_transition*central_cavity_ratios(i)/2)*cos(vessel_angles(i, 2))
-    !         cavity_tops(i, 3, 2) = vessel_tops(i, 3, 2) + &
-    !             (central_cavity_heights(i)/2 + central_cavity_transition*central_cavity_ratios(i)/2)*sin(vessel_angles(i, 2))
-    !     end do
-
-    !     ! Inflation ratio.
-    !     ! inflation_ratio = 1.0_db
-    ! end subroutine
 
     subroutine initialise_simple_geometry(problem_dim)
         implicit none
@@ -136,6 +35,14 @@ module problem_options_geometry
 
         allocate (move_mesh_centre(problem_dim))
         move_mesh_centre = 0.5_db
+
+        if (trim(mesh_velocity_type) == 'zero') then
+            calculate_mesh_velocity => calculate_mesh_velocity_zero
+        else if (trim(mesh_velocity_type) == 'constant_up') then
+            calculate_mesh_velocity => calculate_mesh_constant_up
+        else if (trim(mesh_velocity_type) == 'oscillating_sine') then
+            calculate_mesh_velocity => calculate_mesh_velocity_oscillating_sine
+        end if
     end subroutine
 
     subroutine initialise_geometry(control_file)
@@ -147,6 +54,8 @@ module problem_options_geometry
         
         integer  :: i, j, problem_dim, no_vessels
         real(db) :: x, y, r
+
+        calculate_mesh_velocity => calculate_mesh_velocity_oscillating_sine
         
         ! TODO: THIS NEEDS TO CHANGE BASED ON USER INPUT.
         placentone_width = 1.0_db                        ! 40 mm
@@ -516,8 +425,8 @@ module problem_options_geometry
             mesh_data%coords(:, i) = mesh_data%coords(:, i) + mesh_velocity*time_step
         end do
     end subroutine
-    
-    function calculate_mesh_velocity(coord, problem_dim, mesh_time)
+
+    function calculate_mesh_velocity_zero(coord, problem_dim, mesh_time)
         use param
         
         implicit none
@@ -525,15 +434,44 @@ module problem_options_geometry
         integer, intent(in)                          :: problem_dim
         real(db), dimension(problem_dim), intent(in) :: coord
         real(db), intent(in)                         :: mesh_time
-        real(db), dimension(problem_dim)             :: calculate_mesh_velocity
+        real(db), dimension(problem_dim)             :: calculate_mesh_velocity_zero
+        
+        calculate_mesh_velocity_zero = 0.0_db
+        
+    end function
+
+    function calculate_mesh_constant_up(coord, problem_dim, mesh_time)
+        use param
+        
+        implicit none
+        
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: coord
+        real(db), intent(in)                         :: mesh_time
+        real(db), dimension(problem_dim)             :: calculate_mesh_constant_up
+        
+        calculate_mesh_constant_up(1) = 0.0_db
+        calculate_mesh_constant_up(2) = 1.0_db
+        
+    end function
+    
+    function calculate_mesh_velocity_oscillating_sine(coord, problem_dim, mesh_time)
+        use param
+        
+        implicit none
+        
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: coord
+        real(db), intent(in)                         :: mesh_time
+        real(db), dimension(problem_dim)             :: calculate_mesh_velocity_oscillating_sine
         
         real(db) :: x, y
 
         x = coord(1) - move_mesh_centre(1)
         y = coord(2) - move_mesh_centre(2)
         
-        calculate_mesh_velocity(1) = x*sin(2.0_db*pi*mesh_time)
-        calculate_mesh_velocity(2) = y*sin(2.0_db*pi*mesh_time)
+        calculate_mesh_velocity_oscillating_sine(1) = x*sin(2.0_db*pi*mesh_time)
+        calculate_mesh_velocity_oscillating_sine(2) = y*sin(2.0_db*pi*mesh_time)
         
     end function
 

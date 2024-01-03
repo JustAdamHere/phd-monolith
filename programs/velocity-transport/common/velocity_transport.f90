@@ -86,7 +86,7 @@ program velocity_transport
 
     !! DELETE ME !!
     type(solution) :: solution_difference
-    !! DELETE ME !!    
+    !! DELETE ME !! 
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! COMMAND LINE ARGUMENTS !!
@@ -94,7 +94,7 @@ program velocity_transport
     no_command_line_arguments = command_argument_count()
     if (no_command_line_arguments /= 2) then
         print *, "ERROR: Incorrect number of command line arguments."
-        print *, "       Usage: ./velocity-transport.out <nsb|ns-b|ns-nsb|s-b> <placentone|placenta|placentone-3d>"
+        print *, "       Usage: ./velocity-transport.out <nsb|ns-b|ns-nsb|s-b> <placentone|placenta|placentone-3d|square*>"
         error stop
     end if
     call get_command_argument(1, assembly_name)
@@ -103,8 +103,9 @@ program velocity_transport
         error stop
     end if
     call get_command_argument(2, geometry_name)
-    if (geometry_name /= 'placentone' .and. geometry_name /= 'placenta' .and. geometry_name /= 'placentone-3d') then
-        call write_message(io_err, 'Error: geometry_name should be placentone or placenta or placentone-3d.')
+    if (geometry_name /= 'placentone' .and. geometry_name /= 'placenta' .and. geometry_name /= 'placentone-3d' .and. &
+            geometry_name(1:6) /= 'square') then
+        call write_message(io_err, 'Error: geometry_name should be placentone or placenta or placentone-3d or square*.')
         error stop
     end if
 
@@ -118,7 +119,11 @@ program velocity_transport
     call get_user_data_velocity ('user_data', aptofem_stored_keys)
     call get_user_data_transport('user_data', aptofem_stored_keys)
     call set_space_type_velocity(aptofem_stored_keys)
-    call initialise_geometry    (geometry_name)
+    if (geometry_name(1:6) == "square") then
+        call initialise_simple_geometry(mesh_data%problem_dim)
+    else
+        call initialise_geometry(geometry_name)
+    end if
 
     !!!!!!!!!!!!!!!!!
     !! REFINE MESH !!
@@ -955,7 +960,11 @@ program velocity_transport
     end if
     
     call delete_mesh       (mesh_data)
-    call finalise_geometry (geometry_name)
+    if (geometry_name(1:6) == "square") then
+        call finalise_simple_geometry()
+    else
+        call finalise_geometry(geometry_name)
+    end if
     call finalise_user_data()
     call AptoFEM_finalize  (aptofem_stored_keys)
 end program

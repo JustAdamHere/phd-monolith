@@ -124,56 +124,56 @@ contains
 
         steepness = 0.999_db
 
-        if (trim(geometry_name) == 'placentone') then
-            if (300 <= element_region_id .and. element_region_id <= 399) then
-                calculate_transport_reaction_coefficient = transport_reaction_coefficient* &
-                    1.0_db
-            else if (element_region_id == 412) then
-                calculate_transport_reaction_coefficient = &
-                    0.0_db
-            else if (400 <= element_region_id .and. element_region_id <= 499) then
-                calculate_transport_reaction_coefficient = transport_reaction_coefficient* &
-                    calculate_placentone_pipe_transition(global_point, problem_dim, element_region_id, steepness)
-            else if (500 <= element_region_id .and. element_region_id <= 599) then
-                calculate_transport_reaction_coefficient = transport_reaction_coefficient* &
-                    calculate_placentone_cavity_transition(global_point, problem_dim, element_region_id, steepness, 1)
-            else
-                print *, "Error in calculate_transport_reaction_coefficient. Missed case."
-                print *, "element_region_id = ", element_region_id
-                stop
-            end if
-
-        else if (trim(geometry_name) == 'placenta') then
-            if (300 <= element_region_id .and. element_region_id <= 399) then
-                calculate_transport_reaction_coefficient = transport_reaction_coefficient* &
-                    1.0_db
-            else if (element_region_id == 412 .or. element_region_id == 422 .or. element_region_id == 432 .or. &
-                     element_region_id == 442 .or. element_region_id == 452 .or. element_region_id == 462) then
-                calculate_transport_reaction_coefficient = &
-                    0.0_db
-            else if (400 <= element_region_id .and. element_region_id <= 499) then
+        if (400 <= element_region_id .and. element_region_id <= 599) then
+            if (trim(geometry_name) == 'placentone') then
+                translated_point = global_point
+            else if (trim(geometry_name) == 'placenta') then
                 translated_point = translate_placenta_to_placentone_point(problem_dim, global_point, element_region_id)
+            else if (trim(geometry_name) == 'placentone-3d') then
+                translated_point = translate_placentone_3d_to_placentone_point(problem_dim, global_point, element_region_id)
+            else if (geometry_name(1:6) == 'square') then
+                translated_point = 0.0_db
+            else
+                print *, "Error in calculate_velocity_reaction_coefficient. Missed case."
+                print *, "geometry_name = ", geometry_name
+                error stop
+            end if
+        else
+            translated_point = 0.0_db
+        end if
 
+        if (geometry_name(1:6) == 'square') then
+            calculate_transport_reaction_coefficient = transport_reaction_coefficient
+        else
+            ! IVS.
+            if (300 <= element_region_id .and. element_region_id <= 399) then
+                calculate_transport_reaction_coefficient = transport_reaction_coefficient* &
+                    1.0_db
+            ! Arteries.
+            else if (element_region_id == 412 .or. element_region_id == 422 .or. element_region_id == 432 .or. &
+                    element_region_id == 442 .or. element_region_id == 452 .or. element_region_id == 462 .or. &
+                    element_region_id == 472) then
+                calculate_transport_reaction_coefficient = &
+                    0.0_db
+            ! Veins.
+            else if (400 <= element_region_id .and. element_region_id <= 499) then
                 calculate_transport_reaction_coefficient = transport_reaction_coefficient* &
                     calculate_placentone_pipe_transition(translated_point, problem_dim, element_region_id, steepness)
-
-            else if (500 <= element_region_id .and. element_region_id <= 599) then
-                placentone_no    = mod(element_region_id, 10)
-                translated_point = translate_placenta_to_placentone_point(problem_dim, global_point, element_region_id)
-
+            ! Cavities.
+            else if (500 <= element_region_id .and. element_region_id <= 509) then
+                calculate_transport_reaction_coefficient = &
+                    0.0_db
+            ! Cavity transitions.
+            else if (510 <= element_region_id .and. element_region_id <= 527) then
+                placentone_no = mod(element_region_id, 10)
                 calculate_transport_reaction_coefficient = transport_reaction_coefficient* &
                     calculate_placentone_cavity_transition(translated_point, problem_dim, element_region_id, steepness, &
                         placentone_no)
-
             else
-                print *, "Error in calculate_nsku_reaction_coefficient. Missed case."
+                print *, "Error in calculate_transport_reaction_coefficient. Missed case."
                 print *, "element_region_id = ", element_region_id
-                stop
+                error stop
             end if
-        else
-            print *, "Error in calculate_transport_reaction_coefficient. Missed case."
-            print *, "geometry_name = ", trim(geometry_name)
-            stop
         end if
     end function
 

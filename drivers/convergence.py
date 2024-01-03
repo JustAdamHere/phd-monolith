@@ -13,8 +13,9 @@ parameters["velocity_diffusion_coefficient"] = 1.0
 velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True, compile_entry='velocity-transport_convergence')
 
 # Run the simulations.
+parameters["geometry"] = "square_constant_up"
+
 parameters["final_time"]      = 0.0
-parameters["geometry"]        = "square_constant_up"
 parameters["no_time_steps"]   = 0
 parameters["test_type"]       = "ss_velocity_space"
 parameters["mesh_resolution"] = 2

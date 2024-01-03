@@ -21,8 +21,8 @@ Plane Surface(1) = {1};
 // Physical Curve(102) = {4}; // Left.
 
 Physical Curve(101) = {1}; // Bottom.
-Physical Curve(202) = {2}; // Right.
+Physical Curve(102) = {2}; // Right.
 Physical Curve(103) = {3}; // Top.
-Physical Curve(204) = {4}; // Left.
+Physical Curve(104) = {4}; // Left.
 
 Physical Surface(300) = {1}; // The whole domain.
