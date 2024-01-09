@@ -12,26 +12,30 @@ parameters["run_type"]      = 'openmp'
 parameters["linear_solver"] = 'mumps'
 parameters["no_threads"]    = 1
 
+parameters["moving_mesh"]   = True
+parameters["no_time_steps"] = 10
+parameters["final_time"]    = 1.0
+
 velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True, compile_entry='velocity-transport')
 
 ##################
 # SIMULATION RUN #
 ##################
-parameters["geometry"] = "square_zero"
-parameters["mesh_velocity_type"] = "zero"
-velocity_transport.run(1, parameters)
+# parameters["geometry"] = "square_zero"
+# parameters["mesh_velocity_type"] = "zero"
+# velocity_transport.run(1, parameters)
 
-parameters["geometry"] = "square_constant_up"
-parameters["mesh_velocity_type"] = "zero"
-velocity_transport.run(2, parameters)
+# parameters["geometry"] = "square_constant_up"
+# parameters["mesh_velocity_type"] = "zero"
+# velocity_transport.run(2, parameters)
 
-parameters["geometry"] = "square_constant_diagonal"
-parameters["mesh_velocity_type"] = "zero"
-velocity_transport.run(3, parameters)
+# parameters["geometry"] = "square_constant_diagonal"
+# parameters["mesh_velocity_type"] = "zero"
+# velocity_transport.run(3, parameters)
 
-parameters["geometry"] = "square_poiseuille"
-parameters["mesh_velocity_type"] = "zero"
-velocity_transport.run(4, parameters)
+# parameters["geometry"] = "square_poiseuille"
+# parameters["mesh_velocity_type"] = "zero"
+# velocity_transport.run(4, parameters)
 
 # parameters["geometry"] = "square_zero"
 # parameters["mesh_velocity_type"] = "interior"
@@ -42,23 +46,52 @@ velocity_transport.run(4, parameters)
 # velocity_transport.run(6, parameters)
 
 # parameters["geometry"] = "square_constant_diagonal"
-# # MOVING MESH: only interior, see paper's MH sent
+# parameters["mesh_velocity_type"] = "interior"
 # velocity_transport.run(7, parameters)
 
 # parameters["geometry"] = "square_poiseuille"
-# # MOVING MESH: only interior, see paper's MH sent
+# parameters["mesh_velocity_type"] = "interior"
 # velocity_transport.run(8, parameters)
 
-parameters["geometry"] = "square_zero"
-parameters["mesh_velocity_type"] = "constant_up"
-parameters["moving_mesh"] = True
-parameters["no_time_steps"] = 10
-parameters["final_time"] = 1.0
-velocity_transport.run(9, parameters)
+# parameters["geometry"] = "square_zero"
+# parameters["mesh_velocity_type"] = "constant_up"
+# velocity_transport.run(9, parameters)
+
+# parameters["geometry"] = "square_constant_up"
+# parameters["mesh_velocity_type"] = "constant_up"
+# velocity_transport.run(10, parameters)
+
+# parameters["geometry"] = "square_constant_diagonal"
+# parameters["mesh_velocity_type"] = "constant_up"
+# velocity_transport.run(11, parameters)
+
+
 
 parameters["geometry"] = "square_zero"
+parameters["mesh_velocity_type"] = "shear"
+velocity_transport.run(13, parameters)
+
+parameters["geometry"] = "square_constant_up"
+parameters["mesh_velocity_type"] = "shear"
+velocity_transport.run(14, parameters)
+
+
+
+
+# parameters["geometry"] = "square_poiseuille"
+# parameters["mesh_velocity_type"] = "constant_up"
+# velocity_transport.run(12, parameters)
+
+# parameters["geometry"] = "square_zero"
+# parameters["mesh_velocity_type"] = "constant_up"
+# parameters["moving_mesh"] = True
+# parameters["no_time_steps"] = 10
+# parameters["final_time"] = 1.0
+# velocity_transport.run(9, parameters)
+
+# parameters["geometry"] = "square_zero"
 # MOVING MESH: BOTH interior and BOUNDARY, see paper's MH sent
-velocity_transport.run(9, parameters)
+# velocity_transport.run(9, parameters)
 
 # parameters["geometry"] = "square_constant_up"
 # # MOVING MESH: BOTH interior and BOUNDARY, see paper's MH sent

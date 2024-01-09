@@ -739,6 +739,14 @@ program velocity_transport
             ! TODO: Make a copy of the mesh (or at least do something appropriate so you can store fe_basis_info_old).
             call move_mesh(mesh_data, problem_dim, current_time + time_step, time_step)
             call update_geometry(current_time + time_step, time_step, geometry_name)
+
+            if (compute_velocity) then
+                call project_dirichlet_boundary_values(solution_velocity, mesh_data)
+            end if
+    
+            if (compute_transport) then
+                call project_dirichlet_boundary_values(solution_transport, mesh_data)
+            end if
         end if
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!

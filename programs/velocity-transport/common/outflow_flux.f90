@@ -130,7 +130,7 @@ module outflow_flux
     subroutine finalise_outflow_fluxes()
         implicit none
 
-        deallocate(outflow_fluxes, pe_outflow_fluxes, ke_outflow_fluxes)
+        deallocate(outflow_fluxes, pe_outflow_fluxes, ke_outflow_fluxes, one_integral)
     end subroutine
 
     function sum_nonzero_fluxes()

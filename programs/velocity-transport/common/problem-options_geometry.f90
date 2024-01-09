@@ -38,8 +38,12 @@ module problem_options_geometry
 
         if (trim(mesh_velocity_type) == 'zero') then
             calculate_mesh_velocity => calculate_mesh_velocity_zero
+        else if (trim(mesh_velocity_type) == 'interior') then
+            calculate_mesh_velocity => calculate_mesh_velocity_interior
+        else if (trim(mesh_velocity_type) == 'shear') then
+            calculate_mesh_velocity => calculate_mesh_velocity_shear
         else if (trim(mesh_velocity_type) == 'constant_up') then
-            calculate_mesh_velocity => calculate_mesh_constant_up
+            calculate_mesh_velocity => calculate_mesh_velocity_constant_up
         else if (trim(mesh_velocity_type) == 'oscillating_sine') then
             calculate_mesh_velocity => calculate_mesh_velocity_oscillating_sine
         end if
@@ -440,7 +444,7 @@ module problem_options_geometry
         
     end function
 
-    function calculate_mesh_constant_up(coord, problem_dim, mesh_time)
+    function calculate_mesh_velocity_interior(coord, problem_dim, mesh_time)
         use param
         
         implicit none
@@ -448,10 +452,59 @@ module problem_options_geometry
         integer, intent(in)                          :: problem_dim
         real(db), dimension(problem_dim), intent(in) :: coord
         real(db), intent(in)                         :: mesh_time
-        real(db), dimension(problem_dim)             :: calculate_mesh_constant_up
+        real(db), dimension(problem_dim)             :: calculate_mesh_velocity_interior
+
+        real(db) :: x, y
+
+        x = coord(1)
+        y = coord(2)
         
-        calculate_mesh_constant_up(1) = 0.0_db
-        calculate_mesh_constant_up(2) = 1.0_db
+        ! calculate_mesh_velocity_interior(1) =  sin(2.0_db*pi*mesh_time)*y*(1.0_db - y)
+        ! calculate_mesh_velocity_interior(2) = -sin(2.0_db*pi*mesh_time)*x*(1.0_db - x)
+        ! calculate_mesh_velocity_interior(1) =  y*(1.0_db - y)*x*(1.0_db - x)
+        ! calculate_mesh_velocity_interior(2) = -y*(1.0_db - y)*x*(1.0_db - x)
+        ! calculate_mesh_velocity_interior(1) =  sin(2.0_db*pi*x*y)*(0.5_db - x)*(0.5_db - y)
+        ! calculate_mesh_velocity_interior(2) = -sin(2.0_db*pi*x*y)*(0.5_db - x)*(0.5_db - y)
+        ! calculate_mesh_velocity_interior(1) =  sin(2.0_db*pi*x*y)*sin(2.0_db*pi*(1.0_db-x)*(1.0_db-y))
+        ! calculate_mesh_velocity_interior(2) = -sin(2.0_db*pi*x*y)*sin(2.0_db*pi*(1.0_db-x)*(1.0_db-y))
+
+        ! Mesh velocity that only moves within the interior (is zero on the boundary).
+        calculate_mesh_velocity_interior(1) = 5.0_db*sin(2.0_db*pi*mesh_time)*x*(x-1.0_db)*y*(y-1.0_db)
+        calculate_mesh_velocity_interior(2) = 5.0_db*sin(2.0_db*pi*mesh_time)*x*(x-1.0_db)*y*(y-1.0_db)
+
+        ! [Etienne, 2009]
+        ! calculate_mesh_velocity_interior(1) = mesh_time*(1.0_db-x**2)*(y+1.0_db)/32.0_db
+        ! calculate_mesh_velocity_interior(2) = mesh_time*(1.0_db-y**2)*(x+mesh_time*(1.0_db-x**2)/32.0_db + 1.0_db)/32.0_db
+        
+    end function
+
+    function calculate_mesh_velocity_shear(coord, problem_dim, mesh_time)
+        use param
+        
+        implicit none
+        
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: coord
+        real(db), intent(in)                         :: mesh_time
+        real(db), dimension(problem_dim)             :: calculate_mesh_velocity_shear
+        
+        calculate_mesh_velocity_shear(1) = 0.0_db
+        calculate_mesh_velocity_shear(2) = coord(1)
+        
+    end function
+
+    function calculate_mesh_velocity_constant_up(coord, problem_dim, mesh_time)
+        use param
+        
+        implicit none
+        
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: coord
+        real(db), intent(in)                         :: mesh_time
+        real(db), dimension(problem_dim)             :: calculate_mesh_velocity_constant_up
+        
+        calculate_mesh_velocity_constant_up(1) = 0.0_db
+        calculate_mesh_velocity_constant_up(2) = 1.0_db
         
     end function
     
