@@ -11,6 +11,7 @@ def plot(simulations, simulation_bins, parameter_values, parameter_name, paramet
   # SVP: Slow Velocity Percentage
   # FVP: Fast Velocity Percentage
   # CFF: Cross Flow Flux
+  # OFF: Out Flow Flux
   fig_tri           , ax_tri            = setup_plots.setup(1)
   fig_vmi           , ax_vmi            = setup_plots.setup(2)
   fig_svp_ivs       , ax_svp_ivs        = setup_plots.setup(3)
@@ -19,6 +20,10 @@ def plot(simulations, simulation_bins, parameter_values, parameter_name, paramet
   fig_fvp_dellschaft, ax_fvp_dellschaft = setup_plots.setup(6)
   fig_vel_cff       , ax_vel_cff        = setup_plots.setup(8)
   fig_tra_cff       , ax_tra_cff        = setup_plots.setup(9)
+  fig_vel_off       , ax_vel_off        = setup_plots.setup(10)
+  fig_tra_off       , ax_tra_off        = setup_plots.setup(11)
+  fig_te_off        , ax_te_off         = setup_plots.setup(12)
+  fig_ke_off        , ax_ke_off         = setup_plots.setup(13)
 
   # Get data to plot.
   data_tri, data_vmi, data_svp_ivs, data_svp_everywhere, data_svp_dellschaft, data_fvp_dellschaft, data_vel_cff, data_tra_cff, avg_tri, avg_vmi, avg_svp_ivs, avg_svp_everywhere, avg_svp_dellschaft, avg_fvp_dellschaft, avg_vel_cff, avg_tra_cff = setup_plots.get_data(no_bins, simulation_bins, simulations)
