@@ -48,39 +48,50 @@ parameters["no_threads"]    = 20
 # SIMULATION RUN #
 ##################
 # Clean and compile.
-velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True)
+velocity_transport.setup(clean=False, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True)
 
 # Run simulations.
 parameters["velocity_model"] = "s-b"
+parameters["no_placentones"] = 1
 parameters["geometry"]       = "placentone"
 velocity_transport.run(1, parameters)
 
 parameters["velocity_model"] = "ns-b"
+parameters["no_placentones"] = 1
 parameters["geometry"]       = "placentone"
 velocity_transport.run(2, parameters)
 
 parameters["velocity_model"] = "ns-nsb"
+parameters["no_placentones"] = 1
 parameters["geometry"]       = "placentone"
 velocity_transport.run(3, parameters)
 
 parameters["velocity_model"] = "nsb"
+parameters["no_placentones"] = 1
 parameters["geometry"]       = "placentone"
 velocity_transport.run(4, parameters)
 
 parameters["velocity_model"] = "s-b"
+parameters["no_placentones"] = 6
 parameters["geometry"]       = "placenta"
 velocity_transport.run(5, parameters)
 
-parameters["velocity_model"] = "ns-b"
-parameters["geometry"]       = "placenta"
+parameters["velocity_model"]        = "ns-b"
+parameters["no_placentones"]        = 6
+parameters["geometry"]              = "placenta"
+parameters["no_reynold_ramp_steps"] = 3
 velocity_transport.run(6, parameters)
 
-parameters["velocity_model"] = "ns-nsb"
-parameters["geometry"]       = "placenta"
+parameters["velocity_model"]        = "ns-nsb"
+parameters["no_placentones"]        = 6
+parameters["geometry"]              = "placenta"
+parameters["no_reynold_ramp_steps"] = 3
 velocity_transport.run(7, parameters)
 
-parameters["velocity_model"] = "nsb"
-parameters["geometry"]       = "placenta"
+parameters["velocity_model"]        = "nsb"
+parameters["no_placentones"]        = 6
+parameters["geometry"]              = "placenta"
+parameters["no_reynold_ramp_steps"] = 1
 velocity_transport.run(8, parameters)
 
 # Save output.

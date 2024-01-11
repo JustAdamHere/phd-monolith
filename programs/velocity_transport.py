@@ -476,6 +476,19 @@ def set_aptofem_parameters(simulation_no, velocity_model, geometry, central_cavi
 		set_parameter.set_parameter("velocity-transport", 229, f"variable_4 p")
 	else:
 		raise ValueError(f"Unknown problem dimension: {problem_dim}")
+	
+	# Set geometry name.
+	set_parameter.set_parameter("velocity-transport", 180, f"write_rhs_filename dg_velocity_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 181, f"write_matrix_filename dg_velocity_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 199, f"write_rhs_filename dg_transport_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 200, f"write_matrix_filename dg_transport_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 209, f"append_filename dg_velocity_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 221, f"append_filename dg_re_velocity_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 233, f"append_filename dg_transport_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 242, f"append_filename dg_permeability_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 251, f"append_filename dg_uptake_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 262, f"append_filename dg_velocity_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 266, f"append_filename dg_velocity_{geometry}_uniform-refinement")
 
 def setup(clean, terminal_output, compile=True, compile_clean=True, run_type='openmp', verbose_output=False):
 	from miscellaneous import output
