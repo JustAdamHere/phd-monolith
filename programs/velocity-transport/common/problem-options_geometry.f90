@@ -4,6 +4,7 @@ module problem_options_geometry
     
     save
     
+    type(solution)                         :: solution_moving_mesh
     real(db)                               :: placentone_width, wall_width, placenta_width, placenta_height, &
         artery_length, ms_pipe_width, x_centre, y_centre, boundary_radius, inflation_ratio
     real(db), dimension(:), allocatable    :: placentone_widths, cumulative_placentone_widths, central_cavity_ratios, wall_angles, &
@@ -28,11 +29,15 @@ module problem_options_geometry
     
     contains
 
-    subroutine initialise_simple_geometry(problem_dim)
+    subroutine initialise_simple_geometry(mesh_data, aptofem_stored_keys)
         implicit none
 
-        integer, intent(in) :: problem_dim
+        type(mesh), intent(inout)   :: mesh_data
+        type(aptofem_keys), pointer :: aptofem_stored_keys
 
+        integer :: problem_dim
+
+        problem_dim = mesh_data%problem_dim
         allocate (move_mesh_centre(problem_dim))
         move_mesh_centre = 0.5_db
 
@@ -47,19 +52,27 @@ module problem_options_geometry
         else if (trim(mesh_velocity_type) == 'oscillating_sine') then
             calculate_mesh_velocity => calculate_mesh_velocity_oscillating_sine
         end if
+
+        call create_fe_solution(solution_moving_mesh, mesh_data, 'fe_projection_moving_mesh', aptofem_stored_keys, &
+            anal_soln_moving_mesh, get_boundary_no_moving_mesh)
     end subroutine
 
-    subroutine initialise_geometry(control_file)
+    subroutine initialise_geometry(control_file, mesh_data, aptofem_stored_keys)
         use aptofem_kernel
 
         implicit none
         
         character(len=20), intent(in) :: control_file
+        type(mesh), intent(inout)     :: mesh_data
+        type(aptofem_keys), pointer   :: aptofem_stored_keys
         
         integer  :: i, j, problem_dim, no_vessels
         real(db) :: x, y, r
 
         calculate_mesh_velocity => calculate_mesh_velocity_oscillating_sine
+
+        call create_fe_solution(solution_moving_mesh, mesh_data, 'fe_projection_moving_mesh', aptofem_stored_keys, &
+            anal_soln_moving_mesh, get_boundary_no_moving_mesh)
         
         ! TODO: THIS NEEDS TO CHANGE BASED ON USER INPUT.
         placentone_width = 1.0_db                        ! 40 mm
@@ -394,6 +407,7 @@ module problem_options_geometry
 
     subroutine finalise_simple_geometry()
         deallocate(move_mesh_centre)
+        call delete_solution(solution_moving_mesh)
     end subroutine
     
     subroutine finalise_geometry(control_file)
@@ -407,27 +421,92 @@ module problem_options_geometry
         end if
         deallocate(vessel_tops, vessel_angles, cavity_tops, cavity_sides, central_cavity_ratios, move_mesh_centre, &
             placentone_sides, placentone_widths, cumulative_placentone_widths, artery_sides)
+
+        call delete_solution(solution_moving_mesh)
     end subroutine
     
-    subroutine move_mesh(mesh_data, problem_dim, mesh_time, time_step)
+    subroutine move_mesh(mesh_data, mesh_data_orig, problem_dim, mesh_time, time_step)
         use param
         
         implicit none
         
-        type(mesh), intent(inout) :: mesh_data
+        type(mesh), intent(inout) :: mesh_data, mesh_data_orig
         integer, intent(in)       :: problem_dim
         real(db), intent(in)      :: mesh_time, time_step
         
-        integer                          :: no_nodes, i
+        integer                          :: no_nodes, i, element_number
         real(db), dimension(problem_dim) :: mesh_velocity
+        type(linkedlistint), pointer     :: element
         
         no_nodes = mesh_data%no_nodes
+
+        call project_function(solution_moving_mesh, mesh_data_orig, project_mesh_velocity)
         
         do i = 1, no_nodes
-            mesh_velocity = calculate_mesh_velocity(mesh_data%coords(:, i), problem_dim, mesh_time)
+            ! mesh_velocity = calculate_mesh_velocity(mesh_data%coords(:, i), problem_dim, mesh_time)
+            element => mesh_data%node_eles(i)
+            element_number = element%value ! Doesn't matter which element we choose, as the solution is continuous.
+            call compute_uh_glob_pt(mesh_velocity, problem_dim, element_number, mesh_data%coords(:, i), problem_dim, &
+                mesh_data_orig, solution_moving_mesh)
             
             mesh_data%coords(:, i) = mesh_data%coords(:, i) + mesh_velocity*time_step
         end do
+    end subroutine
+
+    subroutine anal_soln_moving_mesh(u, global_point, problem_dim, no_vars, boundary_no, t)
+        use param
+    
+        implicit none
+    
+        real(db), dimension(no_vars), intent(out)    :: u
+        real(db), dimension(problem_dim), intent(in) :: global_point
+        integer, intent(in)                          :: problem_dim
+        integer, intent(in)                          :: no_vars
+        integer, intent(in)                          :: boundary_no
+        real(db), intent(in)                         :: t
+
+        u = calculate_mesh_velocity(global_point, problem_dim, t)
+
+    end subroutine
+
+    subroutine get_boundary_no_moving_mesh(boundary_no, strongly_enforced_bcs, global_point, face_coords, no_face_vert, &
+            problem_dim, mesh_data)
+        use param
+        use fe_mesh
+
+        implicit none
+
+        integer, intent(inout)                                     :: boundary_no
+        character(len=nvmax), intent(out)                          :: strongly_enforced_bcs
+        real(db), dimension(problem_dim), intent(in)               :: global_point
+        real(db), dimension(no_face_vert, problem_dim), intent(in) :: face_coords
+        integer, intent(in)                                        :: no_face_vert
+        integer, intent(in)                                        :: problem_dim
+        type(mesh), intent(in)                                     :: mesh_data
+
+        if (problem_dim == 2) then
+            strongly_enforced_bcs = '11'
+        else
+            print *, "Error: get_boundary_no_moving_mesh not implemented for problem_dim /= 2"
+            error stop
+        end if
+
+    end subroutine
+
+    subroutine project_mesh_velocity(u, global_point, problem_dim, no_vars, boundary_no, t)
+        use fe_mesh
+
+        implicit none
+
+        real(db), dimension(no_vars), intent(out)    :: u
+        real(db), dimension(problem_dim), intent(in) :: global_point
+        integer, intent(in)                          :: problem_dim
+        integer, intent(in)                          :: no_vars
+        integer, intent(in)                          :: boundary_no
+        real(db), intent(in)                         :: t
+
+        u = calculate_mesh_velocity(global_point, problem_dim, t)
+
     end subroutine
 
     function calculate_mesh_velocity_zero(coord, problem_dim, mesh_time)
@@ -471,6 +550,10 @@ module problem_options_geometry
         ! Mesh velocity that only moves within the interior (is zero on the boundary).
         calculate_mesh_velocity_interior(1) = 5.0_db*sin(2.0_db*pi*mesh_time)*x*(x-1.0_db)*y*(y-1.0_db)
         calculate_mesh_velocity_interior(2) = 5.0_db*sin(2.0_db*pi*mesh_time)*x*(x-1.0_db)*y*(y-1.0_db)
+
+        ! A nicer velocity...
+        ! calculate_mesh_velocity_interior(1) = -0.1_db*sin(2.0_db*pi*mesh_time)*sin(2*pi*x)*sin(2*pi*y)
+        ! calculate_mesh_velocity_interior(2) = -0.1_db*sin(2.0_db*pi*mesh_time)*sin(2*pi*x)*sin(2*pi*y)
 
         ! [Etienne, 2009]
         ! calculate_mesh_velocity_interior(1) = mesh_time*(1.0_db-x**2)*(y+1.0_db)/32.0_db

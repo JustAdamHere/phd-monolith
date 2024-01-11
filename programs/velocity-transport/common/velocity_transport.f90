@@ -77,7 +77,7 @@ program velocity_transport
 
     integer :: no_command_line_arguments
 
-    real(db) :: current_time, time_step
+    real(db) :: current_time, previous_time, time_step
 
     integer :: thread_no
 
@@ -120,9 +120,26 @@ program velocity_transport
     call get_user_data_transport('user_data', aptofem_stored_keys)
     call set_space_type_velocity(aptofem_stored_keys)
     if (geometry_name(1:6) == "square") then
-        call initialise_simple_geometry(mesh_data%problem_dim)
+        call initialise_simple_geometry(mesh_data, aptofem_stored_keys)
     else
-        call initialise_geometry(geometry_name)
+        call initialise_geometry(geometry_name, mesh_data, aptofem_stored_keys)
+    end if
+
+    if (moving_mesh) then
+#ifdef OPENMP        
+!$OMP PARALLEL PRIVATE(thread_no)
+        thread_no = omp_get_thread_num()
+        if (thread_no == 0) then
+            call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, 0, mesh_data, solution_moving_mesh)
+        end if
+!$OMP END PARALLEL
+#elif MPI
+        if (processor_no == 0) then
+            call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, 0, mesh_data, solution_moving_mesh)
+        end if
+#else
+        call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, 0, mesh_data, solution_moving_mesh)
+#endif
     end if
 
     !!!!!!!!!!!!!!!!!
@@ -694,7 +711,8 @@ program velocity_transport
     !! TIMESTEPPING !!
     !!!!!!!!!!!!!!!!!!
     do time_step_no = 1, no_time_steps
-        current_time = current_time + time_step
+        previous_time = current_time
+        current_time  = current_time + time_step
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! SETUP FOR NEXT TRANSPORT TIMESTEP !
@@ -734,11 +752,33 @@ program velocity_transport
         ! MOVE MESH !
         !!!!!!!!!!!!!
         if (moving_mesh) then
-            ! Plus dt since t has not yet been updated.
-            ! TODO: Is this right?! ^^
-            ! TODO: Make a copy of the mesh (or at least do something appropriate so you can store fe_basis_info_old).
-            call move_mesh(mesh_data, problem_dim, current_time + time_step, time_step)
-            call update_geometry(current_time + time_step, time_step, geometry_name)
+            call set_current_time(solution_moving_mesh, previous_time)
+
+            mesh_data_orig = mesh_data
+            call move_mesh(mesh_data, mesh_data_orig, problem_dim, previous_time, time_step)
+            call delete_mesh(mesh_data_orig)
+
+            call update_geometry(previous_time, time_step, geometry_name)
+
+            call set_current_time(solution_moving_mesh, current_time)
+
+#ifdef OPENMP        
+!$OMP PARALLEL PRIVATE(thread_no)
+            thread_no = omp_get_thread_num()
+            if (thread_no == 0) then
+                call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, time_step_no, mesh_data, &
+                    solution_moving_mesh)
+            end if
+!$OMP END PARALLEL
+#elif MPI
+            if (processor_no == 0) then
+                call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, time_step_no, mesh_data, &
+                    solution_moving_mesh)
+            end if
+#else
+            call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, time_step_no, mesh_data, &
+                solution_moving_mesh)
+#endif
 
             if (compute_velocity) then
                 call project_dirichlet_boundary_values(solution_velocity, mesh_data)
@@ -829,6 +869,11 @@ program velocity_transport
                 aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, dirk_scheme_velocity, &
                 scheme_data_velocity%current_time, scheme_data_velocity%time_step, no_dofs_velocity, time_step_no, .false., &
                 norm_diff_u)
+
+            if (ifail) then
+                call write_message(io_msg, "ERROR: Newton solver failed to converge.")
+                error stop
+            end if
 
             call set_current_time(solution_velocity, solution_velocity%current_time + &
                 scheme_data_velocity%time_step)

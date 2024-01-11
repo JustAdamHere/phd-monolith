@@ -4,7 +4,7 @@
 from programs import velocity_transport
 parameters = velocity_transport.get_default_run_parameters()
 
-parameters["verbose_output"] = False
+parameters["verbose_output"] = True
 
 parameters["mesh_resolution"] = 0.1
 
@@ -15,6 +15,8 @@ parameters["no_threads"]    = 1
 parameters["moving_mesh"]   = True
 parameters["no_time_steps"] = 10
 parameters["final_time"]    = 1.0
+
+parameters["error_on_fail"] = True
 
 velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True, compile_entry='velocity-transport')
 
@@ -37,13 +39,13 @@ velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile
 # parameters["mesh_velocity_type"] = "zero"
 # velocity_transport.run(4, parameters)
 
-# parameters["geometry"] = "square_zero"
-# parameters["mesh_velocity_type"] = "interior"
-# velocity_transport.run(5, parameters)
+parameters["geometry"] = "square_zero"
+parameters["mesh_velocity_type"] = "interior"
+velocity_transport.run(5, parameters)
 
-# parameters["geometry"] = "square_constant_up"
-# parameters["mesh_velocity_type"] = "interior"
-# velocity_transport.run(6, parameters)
+parameters["geometry"] = "square_constant_up"
+parameters["mesh_velocity_type"] = "interior"
+velocity_transport.run(6, parameters)
 
 # parameters["geometry"] = "square_constant_diagonal"
 # parameters["mesh_velocity_type"] = "interior"
