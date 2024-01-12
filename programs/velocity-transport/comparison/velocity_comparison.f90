@@ -172,17 +172,17 @@ program velocity_transport
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! SAVE VELOCITY AND RAW SOLUTION !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 0, mesh_data, solution_velocity(1))
-    call write_solution_for_restart(solution_velocity(1), mesh_data, 0, 'dg_velocity-transport_velocity_' &
+    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 1, mesh_data, solution_velocity(1))
+    call write_solution_for_restart(solution_velocity(1), mesh_data, 1, 'dg_velocity-transport_velocity_' &
         // trim(geometry_name), '../../output/')
-    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 1, mesh_data, solution_velocity(2))
-    call write_solution_for_restart(solution_velocity(2), mesh_data, 1, 'dg_velocity-transport_velocity_' &
+    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 2, mesh_data, solution_velocity(2))
+    call write_solution_for_restart(solution_velocity(2), mesh_data, 2, 'dg_velocity-transport_velocity_' &
         // trim(geometry_name), '../../output/')
-    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 2, mesh_data, solution_velocity(3))
-    call write_solution_for_restart(solution_velocity(3), mesh_data, 2, 'dg_velocity-transport_velocity_' &
+    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 3, mesh_data, solution_velocity(3))
+    call write_solution_for_restart(solution_velocity(3), mesh_data, 3, 'dg_velocity-transport_velocity_' &
         // trim(geometry_name), '../../output/')
-    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 3, mesh_data, solution_velocity(4))
-    call write_solution_for_restart(solution_velocity(4), mesh_data, 3, 'dg_velocity-transport_velocity_' &
+    call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, 4, mesh_data, solution_velocity(4))
+    call write_solution_for_restart(solution_velocity(4), mesh_data, 4, 'dg_velocity-transport_velocity_' &
         // trim(geometry_name), '../../output/')
 
     !!!!!!!!!!!!!!!!!!!!!!

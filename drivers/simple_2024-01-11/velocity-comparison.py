@@ -5,7 +5,7 @@ from programs import velocity_comparison, velocity_transport
 
 parameters = velocity_transport.get_default_run_parameters()
 
-parameters["verbose_output"] = True
+parameters["verbose_output"] = False
 parameters["no_placentones"] = 1
 parameters["geometry"]       = 'placentone'
 

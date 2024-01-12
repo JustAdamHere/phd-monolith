@@ -54,7 +54,7 @@ def run(simulation_no, p):
 				plot_velocity.plot(10*i + j, "dg_velocity", p["geometry"], '1', str(10*i + j), '1', '24', '0', '0', p["geometry"], '0', '0', '0', 0, False, True)
 				plot_velocity.plot(10*i + j, "dg_velocity", p["geometry"], '1', str(10*i + j), '0', '24', '0', '0', p["geometry"], '0', '0', '0', 0, False, True)
 
-		for i in range (0, 4):
+		for i in range (1, 5):
 			plot_velocity.plot(i, "dg_velocity", p["geometry"], '1', str(i) + '.vtk', '1', '24', '1', '1', p["geometry"], '0', '0', '0', 0, False, True)
 			plot_velocity.plot(i, "dg_velocity", p["geometry"], '1', str(i) + '.vtk', '0', '24', '1', '1', p["geometry"], '0', '0', '0', 0, False, True)
 
