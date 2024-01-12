@@ -97,7 +97,8 @@ module placentone_2d_bcs_velocity
 
     if (boundary_no == 111) then
         r    = sqrt((x - vessel_locations(1, 2))**2 + (0.0_db - 0.0_db)**2)
-        u(2) = current_velocity_amplitude * calculate_poiseuille_flow(r, artery_width_sm/2)
+        ! u(2) = current_velocity_amplitude * calculate_poiseuille_flow(r, artery_width_sm/2)
+        u(2) = 1.0_db * calculate_poiseuille_flow(r, artery_width_sm/2)
 
         if (u(2) <= -1e-5) then
           print *, "Error: inflow velocity negative"

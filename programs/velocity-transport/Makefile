@@ -22,6 +22,9 @@ bcs = bcs_transport.f90 2d-bcs_velocity_placenta.f90 2d-bcs_velocity_placentone.
 SOURCES = $(storage) $(fluxes) $(problem_options) $(bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) velocity_transport.f90
 OBJECTS = $(patsubst %.f90,./.obj/%.o,$(SOURCES))
 
+COMPARISON_SOURCES = $(storage) $(problem_options) $(bcs) $(velocity_assembly) velocity_comparison.f90
+COMPARISON_OBJECTS = $(patsubst %.f90,./.obj/%.o,$(COMPARISON_SOURCES))
+
 #FFLAGS = -O3 -fallow-argument-mismatch -cpp -DARPACK -DMETIS_5_64 -DMUMPS -DSPARSKIT -DOPENMP -DLAPACK -fopenmp
 #FFLAGS = -O -Wno-argument-mismatch -cpp -DARPACK -DMETIS_5_64 -DMUMPS -DSPARSKIT -DOPENMP -DLAPACK -fopenmp
 #FFLAGS += -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow -fcheck=all
@@ -50,17 +53,25 @@ $(OBJ_DIR)/%.o: ../../matrix_rhs/%.f90
 	@echo "Compiling $<... "
 	@($(FC) $(FFLAGS) $(MODFLAGS) -J$(MOD_DIR) -c $< -o $@ $(AptoFEM) -lpthread)
 
+$(OBJ_DIR)/%.o: ./comparison/%.f90
+	@echo "Compiling $<... "
+	@($(FC) $(FFLAGS) $(MODFLAGS) -J$(MOD_DIR) -c $< -o $@ $(AptoFEM) -lpthread)
+
 velocity-transport :: $(OBJECTS)
 	@echo "Linking $@... "
 	@($(FC) $(FFLAGS) $(MODFLAGS) -I$(MOD_DIR) -o $(BIN_DIR)/$@.out $(OBJECTS) $(AptoFEM) -lpthread)
 
-velocity-comparison_placentone ::
-	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
-		./common/program-name_placentone.f90 ./common/problem-options.f90 ./common/problem-options_velocity.f90 $(placentone_bcs) $(velocity_assembly) ./comparison/velocity-comparison.f90 $(AptoFEM) -lpthread)
+velocity-comparison :: $(COMPARISON_OBJECTS)
+	@echo "Linking $@... "
+	@($(FC) $(FFLAGS) $(MODFLAGS) -I$(MOD_DIR) -o $(BIN_DIR)/$@.out $(COMPARISON_OBJECTS) $(AptoFEM) -lpthread)
 
-velocity-comparison_placenta ::
-	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
-		./common/program-name_placenta.f90 ./common/problem-options.f90 ./common/problem-options_velocity.f90 $(placenta_bcs) $(velocity_assembly) ./comparison/velocity-comparison.f90 $(AptoFEM) -lpthread)
+# velocity-comparison_placentone ::
+# 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
+# 		./common/program-name_placentone.f90 ./common/problem-options.f90 ./common/problem-options_velocity.f90 $(placentone_bcs) $(velocity_assembly) ./comparison/velocity-comparison.f90 $(AptoFEM) -lpthread)
+
+# velocity-comparison_placenta ::
+# 	($(FC) $(FFLAGS) $(MODFLAGS) -o $@.out \
+# 		./common/program-name_placenta.f90 ./common/problem-options.f90 ./common/problem-options_velocity.f90 $(placenta_bcs) $(velocity_assembly) ./comparison/velocity-comparison.f90 $(AptoFEM) -lpthread)
 
 cleanall ::
 	(rm -f *.out)

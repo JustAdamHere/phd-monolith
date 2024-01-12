@@ -396,8 +396,8 @@ def set_aptofem_parameters(simulation_no, velocity_model, geometry, central_cavi
 
 	# Naive Mesh refinement.
 	set_parameter.set_parameter("velocity-transport", 79, f"no_uniform_refinements_inlet 0")
-	set_parameter.set_parameter("velocity-transport", 81, f"no_uniform_refinements_cavity 0")
-	set_parameter.set_parameter("velocity-transport", 82, f"no_uniform_refinements_everywhere 0")
+	set_parameter.set_parameter("velocity-transport", 80, f"no_uniform_refinements_cavity 0")
+	set_parameter.set_parameter("velocity-transport", 81, f"no_uniform_refinements_everywhere 0")
 
 	# Type of problem.
 	set_parameter.set_parameter("velocity-transport", 83, f"velocity_ss .{str(velocity_ss).lower()}.")
