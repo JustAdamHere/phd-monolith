@@ -36,12 +36,12 @@ class class_run_data:
     self.velocity_magnitude_integral_everywhere = U*vmi[1]/one[1]
 
     # Slow velocity percentage.
-    self.slow_velocity_percentage_ivs               = svp[0]/one[0]
-    self.slow_velocity_percentage_everywhere        = svp[1]/one[1]
-    self.slow_velocity_percentage_dellschaft        = svp[2]/one[1]
-    self.fast_velocity_percentage_dellschaft        = svp[3]/one[1]
-    self.slow_velocity_perctange_nominal_ivs        = svp[4]/one[0] # <-- This uses 0.0026, which is probably wrong.
-    self.slow_velocity_perctange_nominal_everywhere = svp[5]/one[1]
+    self.slow_velocity_percentage_ivs                = svp[0]/one[0]
+    self.slow_velocity_percentage_everywhere         = svp[1]/one[1]
+    self.slow_velocity_percentage_dellschaft         = svp[2]/one[1]
+    self.fast_velocity_percentage_dellschaft         = svp[3]/one[1]
+    self.slow_velocity_percentage_nominal_ivs        = svp[4]/one[0] # <-- This uses 0.0026, which is probably wrong.
+    self.slow_velocity_percentage_nominal_everywhere = svp[5]/one[1]
 
     # Transport reaction integral.
     self.transport_reaction_integral = tri # <-- Already multiplied by the reaction coefficient.
