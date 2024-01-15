@@ -121,6 +121,7 @@ class class_run_data:
     self.transport_flux = U * (transport_in - transport_out)
 
     # print("\n")
+    # print (f"Scaling U:                   {U}"                                          )
     # print (f"Average velocity IVS:        {self.average_velocity_ivs}"                  )
     # print (f"Average velocity everywhere: {self.average_velocity_everywhere}"           )
     # print (f"VMI IVS:                     {self.velocity_magnitude_integral_ivs}"       )
@@ -135,6 +136,7 @@ class class_run_data:
     # print (f"VCF:                         {self.abs_velocity_cross_flow_flux}"          )
     # print (f"TF:                          {self.transport_flux}"                        )
     # print (                                                                             )
+    # exit()
     
   def get_file_contents(self, name, extension="dat"):
     file = open(f"./output/{name}_{self.sim_no}.{extension}", "r")
