@@ -7,53 +7,134 @@ class class_run_data:
   def read_data(self):
     from miscellaneous import get_transport_reaction_integral, get_velocity_magnitude, get_run_data, parameters_io, get_flux
 
-    self.parameters                    = parameters_io.load_parameters("velocity-transport", "placenta", self.sim_no)
+    self.parameters = parameters_io.load_parameters("velocity-transport", "placenta", self.sim_no)
 
-    U = self.parameters["scaling_U"]
-    C = 7.3 # mol/m^3 [Serov, 2015]
-    L = self.parameters["scaling_L"]
-    R = self.parameters["scaling_R"]
+    U   = self.parameters["scaling_U"]
+    #C   = 7.3 # mol/m^3 [Serov, 2015]
+    C   = 1.0 # If C is a concentration.
+    L   = self.parameters["scaling_L"]
+    R   = self.parameters["scaling_R"]
+    rho = self.parameters["scaling_rho"]
 
-    vmi                                         = get_velocity_magnitude.get_velocity_magnitude_integral("velocity-transport", "placenta", self.sim_no)
-    self.velocity_magnitude_integral_ivs        = U*vmi[0]
-    self.velocity_magnitude_integral_everywhere = U*vmi[1]
-    self.transport_reaction_integral            = C*get_transport_reaction_integral.get_transport_reaction_integral("velocity-transport", "placenta", self.sim_no)
-    av                                          = get_velocity_magnitude.get_average_velocity("velocity-transport", "placenta", self.sim_no)
+    ## GATHER DATA ##
+    vmi  = get_velocity_magnitude.get_velocity_magnitude_integral("velocity-transport", "placenta", self.sim_no)
+    tri  = get_transport_reaction_integral.get_transport_reaction_integral("velocity-transport", "placenta", self.sim_no)
+    av   = get_velocity_magnitude.get_average_velocity("velocity-transport", "placenta", self.sim_no)
+    svp  = get_velocity_magnitude.get_slow_velocity_percentage("velocity-transport", "placenta", self.sim_no)
+    flux = get_flux.get_fluxes("velocity-transport", "placenta", self.sim_no, self.parameters["no_placentones"])
+    one  = get_velocity_magnitude.get_one_integral("velocity-transport", "placenta", self.sim_no)
+    
+    self.run_data = get_run_data.get_run_data("velocity-transport", "placenta", self.sim_no, 0)
+
+    ## QUANTITIES WE'LL DIRECTLY USE ##
+    # Average velocity.
     self.average_velocity_ivs                   = U*av[0]
     self.average_velocity_everywhere            = U*av[1]
-    # self.slow_velocity_percentage_ivs           = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, self.average_velocity_ivs       , 520          )
-    # self.slow_velocity_percentage_everywhere    = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, self.average_velocity_everywhere, 500          )
-    # self.slow_velocity_percentage_dellschaft    = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, 0.0005                          , 500, U       )
-    # self.fast_velocity_percentage_dellschaft    = get_velocity_magnitude.get_slow_velocity_percentage("dg_velocity-transport", self.sim_no, 0.001                           , 500, U, False)
-    svp                                         = get_velocity_magnitude.get_slow_velocity_percentage("velocity-transport", "placenta", self.sim_no)
-    self.slow_velocity_percentage_ivs           = svp[0]
-    self.slow_velocity_percentage_everywhere    = svp[1]
-    self.slow_velocity_percentage_dellschaft    = svp[2]
-    self.fast_velocity_percentage_dellschaft    = svp[3]
-    self.slow_velocity_perctange_nominal_ivs    = svp[4]
-    self.slow_velocity_perctange_nominal_everywhere = svp[5]
-    self.run_data                               = get_run_data.get_run_data("velocity-transport", "placenta", self.sim_no, 0)
 
-    flux_data                                   = get_flux.get_fluxes("velocity-transport", "placenta", self.sim_no, self.parameters["no_placentones"])
-    self.velocity_cross_flow_fluxes             = flux_data[2]
-    self.velocity_inlet_fluxes                  = flux_data[3]
-    self.velocity_bp_outlet_fluxes              = flux_data[4]
-    self.velocity_sw_outlet_fluxes              = flux_data[5]
-    self.velocity_ms_outlet_fluxes              = flux_data[6]
-    self.sum_velocity_flux                      = flux_data[7]
-    self.transport_cross_flow_fluxes            = flux_data[8]
-    self.transport_inlet_fluxes                 = flux_data[9]
-    self.transport_bp_outlet_fluxes             = flux_data[10]
-    self.transport_sw_outlet_fluxes             = flux_data[11]
-    self.transport_ms_outlet_fluxes             = flux_data[12]
-    self.sum_transport_flux                     = flux_data[13]
+    # Velocity magnitude integral.
+    self.velocity_magnitude_integral_ivs        = U*vmi[0]/one[0]
+    self.velocity_magnitude_integral_everywhere = U*vmi[1]/one[1]
 
-    # print(f"\nAverage velocity: {self.average_velocity_ivs}")
-    # print(f"VMI IVS: {self.velocity_magnitude_integral_ivs}")
-    # print(f"VMI everywhere: {self.velocity_magnitude_integral_everywhere}")
-    # print(f"SVP IVS: {self.slow_velocity_percentage_ivs}")
-    # print(f"SVP everywhere: {self.slow_velocity_percentage_everywhere}")
-    # print()
+    # Slow velocity percentage.
+    self.slow_velocity_percentage_ivs               = svp[0]/one[0]
+    self.slow_velocity_percentage_everywhere        = svp[1]/one[1]
+    self.slow_velocity_percentage_dellschaft        = svp[2]/one[1]
+    self.fast_velocity_percentage_dellschaft        = svp[3]/one[1]
+    self.slow_velocity_perctange_nominal_ivs        = svp[4]/one[0] # <-- This uses 0.0026, which is probably wrong.
+    self.slow_velocity_perctange_nominal_everywhere = svp[5]/one[1]
+
+    # Transport reaction integral.
+    self.transport_reaction_integral = tri # <-- Already multiplied by the reaction coefficient.
+
+    # Kinetic energy flux.
+    ke_in  = 0.0
+    for i in range(self.parameters["no_placentones"]):
+      if self.parameters["basal_plate_vessels"][i][1] == 1:
+        ke_in -= flux['ke_inlet_fluxes'][i]/flux['one_inlet'][i]
+    ke_out = 0.0
+    for i in range(self.parameters["no_placentones"]):
+      if self.parameters["basal_plate_vessels"][i][0] == 1:
+        ke_out += flux['ke_bp_outlet_fluxes'][i][0]/flux['one_bp_outlet'][i][0]
+      if self.parameters["basal_plate_vessels"][i][2] == 1:
+        ke_out += flux['ke_bp_outlet_fluxes'][i][1]/flux['one_bp_outlet'][i][1]
+    for i in range(self.parameters["no_placentones"]-1):
+      if self.parameters["septal_veins"][i][0] == 1:
+        ke_out += flux['ke_sw_outlet_fluxes'][i][0]/flux['one_sw_outlet'][i][0]
+      if self.parameters["septal_veins"][i][1] == 1:
+        ke_out += flux['ke_sw_outlet_fluxes'][i][1]/flux['one_sw_outlet'][i][1]
+      if self.parameters["septal_veins"][i][2] == 1:
+        ke_out += flux['ke_sw_outlet_fluxes'][i][2]/flux['one_sw_outlet'][i][2]
+    for i in range(2):
+      ke_out += flux['ke_ms_outlet_fluxes'][i]/flux['one_ms_outlet'][i]
+    self.kinetic_energy_flux = 1.0/rho * (ke_in - ke_out)
+
+    # Total energy flux (pressure energy + kinetic energy).
+    pe_in  = 0.0
+    for i in range(self.parameters["no_placentones"]):
+      if self.parameters["basal_plate_vessels"][i][1] == 1:
+        pe_in -= flux['pe_inlet_fluxes'][i]/flux['one_inlet'][i]
+    pe_out = 0.0
+    for i in range(self.parameters["no_placentones"]):
+      if self.parameters["basal_plate_vessels"][i][0] == 1:
+        pe_out += flux['pe_bp_outlet_fluxes'][i][0]/flux['one_bp_outlet'][i][0]
+      if self.parameters["basal_plate_vessels"][i][2] == 1:
+        pe_out += flux['pe_bp_outlet_fluxes'][i][1]/flux['one_bp_outlet'][i][1]
+    for i in range(self.parameters["no_placentones"]-1):
+      if self.parameters["septal_veins"][i][0] == 1:
+        pe_out += flux['pe_sw_outlet_fluxes'][i][0]/flux['one_sw_outlet'][i][0]
+      if self.parameters["septal_veins"][i][1] == 1:
+        pe_out += flux['pe_sw_outlet_fluxes'][i][1]/flux['one_sw_outlet'][i][1]
+      if self.parameters["septal_veins"][i][2] == 1:
+        pe_out += flux['pe_sw_outlet_fluxes'][i][2]/flux['one_sw_outlet'][i][2]
+    for i in range(2):
+      pe_out += flux['pe_ms_outlet_fluxes'][i]/flux['one_ms_outlet'][i]
+
+    self.total_energy_flux = self.kinetic_energy_flux + (pe_in - pe_out)
+
+    # Velocity cross flow flux.
+    self.velocity_cross_flow_flux     = flux['velocity_cross_flow_fluxes']
+    self.abs_velocity_cross_flow_flux = 0
+    for i in range(self.parameters["no_placentones"]-1):
+      self.velocity_cross_flow_flux[i] *= U
+      self.abs_velocity_cross_flow_flux += abs(self.velocity_cross_flow_flux[i])
+
+    # Transport flux.
+    transport_in  = 0.0
+    for i in range(self.parameters["no_placentones"]):
+      if self.parameters["basal_plate_vessels"][i][1] == 1:
+        transport_in -= flux['transport_inlet_fluxes'][i]/flux['one_inlet'][i]
+    transport_out = 0.0
+    for i in range(self.parameters["no_placentones"]):
+      if self.parameters["basal_plate_vessels"][i][0] == 1:
+        transport_out += flux['transport_bp_outlet_fluxes'][i][0]/flux['one_bp_outlet'][i][0]
+      if self.parameters["basal_plate_vessels"][i][2] == 1:
+        transport_out += flux['transport_bp_outlet_fluxes'][i][1]/flux['one_bp_outlet'][i][1]
+    for i in range(self.parameters["no_placentones"]-1):
+      if self.parameters["septal_veins"][i][0] == 1:
+        transport_out += flux['transport_sw_outlet_fluxes'][i][0]/flux['one_sw_outlet'][i][0]
+      if self.parameters["septal_veins"][i][1] == 1:
+        transport_out += flux['transport_sw_outlet_fluxes'][i][1]/flux['one_sw_outlet'][i][1]
+      if self.parameters["septal_veins"][i][2] == 1:
+        transport_out += flux['transport_sw_outlet_fluxes'][i][2]/flux['one_sw_outlet'][i][2]
+    for i in range(2):
+      transport_out += flux['transport_ms_outlet_fluxes'][i]/flux['one_ms_outlet'][i]
+    self.transport_flux = U * (transport_in - transport_out)
+
+    # print("\n")
+    # print (f"Average velocity IVS:        {self.average_velocity_ivs}"                  )
+    # print (f"Average velocity everywhere: {self.average_velocity_everywhere}"           )
+    # print (f"VMI IVS:                     {self.velocity_magnitude_integral_ivs}"       )
+    # print (f"VMI everywhere:              {self.velocity_magnitude_integral_everywhere}")
+    # print (f"SVP IVS:                     {self.slow_velocity_percentage_ivs}"          )
+    # print (f"SVP everywhere:              {self.slow_velocity_percentage_everywhere}"   )
+    # print (f"SVP Dellschaft:              {self.slow_velocity_percentage_dellschaft}"   )
+    # print (f"FVP Dellschaft:              {self.fast_velocity_percentage_dellschaft}"   )
+    # print (f"TRI:                         {self.transport_reaction_integral}"           )
+    # print (f"KE flux:                     {self.kinetic_energy_flux}"                   )
+    # print (f"TE flux:                     {self.total_energy_flux}"                     )
+    # print (f"VCF:                         {self.abs_velocity_cross_flow_flux}"          )
+    # print (f"TF:                          {self.transport_flux}"                        )
+    # print (                                                                             )
     
   def get_file_contents(self, name, extension="dat"):
     file = open(f"./output/{name}_{self.sim_no}.{extension}", "r")
