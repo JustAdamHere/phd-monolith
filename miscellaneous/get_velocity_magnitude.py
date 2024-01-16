@@ -1,7 +1,10 @@
-def get_velocity_magnitude_integral(program, geometry, run_no):
+def get_velocity_magnitude_integral(program, geometry, run_no, subfolder=None):
   import pandas as pd
 
-  integral_data = pd.read_csv(f'./output/velocity-magnitude-integral_{program}_{geometry}_{run_no}.dat', sep='\t', header=[0])
+  if subfolder is None:
+    integral_data = pd.read_csv(f'./output/velocity-magnitude-integral_{program}_{geometry}_{run_no}.dat', sep='\t', header=[0])
+  else:
+    integral_data = pd.read_csv(f'./output/{subfolder}/velocity-magnitude-integral_{program}_{geometry}_{run_no}.dat', sep='\t', header=[0])
 
   time_step           = integral_data.iloc[0]['Time step']
   integral_ivs        = integral_data.iloc[0]['Integral velocity magnitude (IVS)']
@@ -9,10 +12,13 @@ def get_velocity_magnitude_integral(program, geometry, run_no):
 
   return integral_ivs, integral_everywhere
 
-def get_one_integral(program, geometry, run_no):
+def get_one_integral(program, geometry, run_no, subfolder=None):
   import pandas as pd
 
-  integral_data = pd.read_csv(f'./output/one-integral_{program}_{geometry}_{run_no}.dat', sep='\t', header=[0])
+  if subfolder is None:
+    integral_data = pd.read_csv(f'./output/one-integral_{program}_{geometry}_{run_no}.dat', sep='\t', header=[0])
+  else:
+    integral_data = pd.read_csv(f'./output/{subfolder}/one-integral_{program}_{geometry}_{run_no}.dat', sep='\t', header=[0])
 
   time_step           = integral_data.iloc[0]['Time step']
   integral_ivs        = integral_data.iloc[0]['Integral one (IVS)']
@@ -45,9 +51,9 @@ def calculate_average_velocity(aptofem_run_no, geometry):
 
   return True
 
-def get_average_velocity(program, geometry, run_no):
-  vmi_ivs, vmi_everywhere = get_velocity_magnitude_integral(program, geometry, run_no)
-  one_ivs, one_everywhere = get_one_integral               (program, geometry, run_no)
+def get_average_velocity(program, geometry, run_no, subfolder=None):
+  vmi_ivs, vmi_everywhere = get_velocity_magnitude_integral(program, geometry, run_no, subfolder)
+  one_ivs, one_everywhere = get_one_integral               (program, geometry, run_no, subfolder)
 
   return vmi_ivs/one_ivs, vmi_everywhere/one_everywhere
 
@@ -76,10 +82,13 @@ def output_solution(aptofem_run_no, geometry):
 
   return True
 
-def get_solution(program, run_no):
+def get_solution(program, run_no, subfolder=None):
   import pandas as pd
 
-  solution_data = pd.read_csv(f'./output/mri-solution_{program}_{run_no}.dat', delim_whitespace=True, skiprows=[0], on_bad_lines='skip', header=None)
+  if subfolder is None:
+    solution_data = pd.read_csv(f'./output/mri-solution_{program}_{run_no}.dat', delim_whitespace=True, skiprows=[0], on_bad_lines='skip', header=None)
+  else:
+    solution_data = pd.read_csv(f'./output/{subfolder}/mri-solution_{program}_{run_no}.dat', delim_whitespace=True, skiprows=[0], on_bad_lines='skip', header=None)
 
   u           = solution_data[0]
   v           = solution_data[1]
@@ -92,10 +101,13 @@ def get_solution(program, run_no):
 
   return no_points, u, v, x, y, element_nos
 
-def get_slow_velocity_percentage(program, geometry, run_no):
+def get_slow_velocity_percentage(program, geometry, run_no, subfolder=None):
   import pandas as pd
 
-  integral_data = pd.read_csv(f'./output/slow-velocity-integral_{program}_{geometry}_{run_no}.dat', sep='\t', header=[0])
+  if subfolder is None:
+    integral_data = pd.read_csv(f'./output/slow-velocity-integral_{program}_{geometry}_{run_no}.dat', sep='\t', header=[0])
+  else:
+    integral_data = pd.read_csv(f'./output/{subfolder}/slow-velocity-integral_{program}_{geometry}_{run_no}.dat', sep='\t', header=[0])
 
   time_step              = integral_data.iloc[0]['Time step']
   svp_ivs                = integral_data.iloc[0]['Integral slow velocity (IVS)']
@@ -105,6 +117,6 @@ def get_slow_velocity_percentage(program, geometry, run_no):
   svp_nominal_ivs        = integral_data.iloc[0]['Integral slow velocity (IVS, nominal)']
   svp_nominal_everywhere = integral_data.iloc[0]['Integral slow velocity (everywhere, nominal)']
 
-  one_ivs, one_everywhere = get_one_integral(program, geometry, run_no)
+  one_ivs, one_everywhere = get_one_integral(program, geometry, run_no, subfolder)
 
   return 100*svp_ivs/one_ivs, 100*svp_everywhere/one_everywhere, 100*svp_dellschaft/one_everywhere, 100*fvp_dellschaft/one_everywhere, 100*svp_nominal_ivs/one_ivs, 100*svp_nominal_everywhere/one_everywhere

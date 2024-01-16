@@ -1,7 +1,10 @@
-def get_fluxes(program, geometry, run_no, no_placentones):
+def get_fluxes(program, geometry, run_no, no_placentones, subfolder=None):
   import pandas as pd
 
-  flux_data = pd.read_csv(f'./output/flux_{program}_{geometry}_{run_no}.dat', sep='\t', header=[0])
+  if subfolder == None:
+    flux_data = pd.read_csv(f'./output/flux_{program}_{geometry}_{run_no}.dat', sep='\t', header=[0])
+  else:
+    flux_data = pd.read_csv(f'./output/{subfolder}/flux_{program}_{geometry}_{run_no}.dat', sep='\t', header=[0])
 
   time_step = flux_data.iloc[0]['timestep_no']
   time      = flux_data.iloc[0]['current_time']

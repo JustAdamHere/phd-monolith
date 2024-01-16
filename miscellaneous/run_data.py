@@ -1,13 +1,13 @@
 class class_run_data:
-  def __init__(self, sim_no):
+  def __init__(self, sim_no, subfolder):
     self.sim_no = sim_no
 
-    self.read_data()
+    self.read_data(subfolder)
 
-  def read_data(self):
+  def read_data(self, subfolder):
     from miscellaneous import get_transport_reaction_integral, get_velocity_magnitude, get_run_data, parameters_io, get_flux
 
-    self.parameters = parameters_io.load_parameters("velocity-transport", "placenta", self.sim_no)
+    self.parameters = parameters_io.load_parameters("velocity-transport", "placenta", self.sim_no, subfolder)
 
     U   = self.parameters["scaling_U"]
     #C   = 7.3 # mol/m^3 [Serov, 2015]
@@ -17,20 +17,15 @@ class class_run_data:
     rho = self.parameters["scaling_rho"]
 
     ## GATHER DATA ##
-    vmi  = get_velocity_magnitude.get_velocity_magnitude_integral("velocity-transport", "placenta", self.sim_no)
-    tri  = get_transport_reaction_integral.get_transport_reaction_integral("velocity-transport", "placenta", self.sim_no)
-    av   = get_velocity_magnitude.get_average_velocity("velocity-transport", "placenta", self.sim_no)
-    svp  = get_velocity_magnitude.get_slow_velocity_percentage("velocity-transport", "placenta", self.sim_no)
-    flux = get_flux.get_fluxes("velocity-transport", "placenta", self.sim_no, self.parameters["no_placentones"])
-    one  = get_velocity_magnitude.get_one_integral("velocity-transport", "placenta", self.sim_no)
+    vmi  = get_velocity_magnitude         .get_velocity_magnitude_integral("velocity-transport", "placenta", self.sim_no                                   , subfolder)
+    tri  = get_transport_reaction_integral.get_transport_reaction_integral("velocity-transport", "placenta", self.sim_no                                   , subfolder)
+    svp  = get_velocity_magnitude         .get_slow_velocity_percentage   ("velocity-transport", "placenta", self.sim_no                                   , subfolder)
+    flux = get_flux                       .get_fluxes                     ("velocity-transport", "placenta", self.sim_no, self.parameters["no_placentones"], subfolder)
+    one  = get_velocity_magnitude         .get_one_integral               ("velocity-transport", "placenta", self.sim_no                                   , subfolder)
     
-    self.run_data = get_run_data.get_run_data("velocity-transport", "placenta", self.sim_no, 0)
+    self.run_data = get_run_data.get_run_data("velocity-transport", "placenta", self.sim_no, 0, subfolder)
 
     ## QUANTITIES WE'LL DIRECTLY USE ##
-    # Average velocity.
-    self.average_velocity_ivs                   = U*av[0]
-    self.average_velocity_everywhere            = U*av[1]
-
     # Velocity magnitude integral.
     self.velocity_magnitude_integral_ivs        = U*vmi[0]/one[0]
     self.velocity_magnitude_integral_everywhere = U*vmi[1]/one[1]
@@ -40,7 +35,7 @@ class class_run_data:
     self.slow_velocity_percentage_everywhere         = svp[1]/one[1]
     self.slow_velocity_percentage_dellschaft         = svp[2]/one[1]
     self.fast_velocity_percentage_dellschaft         = svp[3]/one[1]
-    self.slow_velocity_percentage_nominal_ivs        = svp[4]/one[0] # <-- This uses 0.0026, which is probably wrong.
+    self.slow_velocity_percentage_nominal_ivs        = svp[4]/one[0]
     self.slow_velocity_percentage_nominal_everywhere = svp[5]/one[1]
 
     # Transport reaction integral.
@@ -170,11 +165,11 @@ class class_run_data:
 
     return no_arteries
   
-def import_simulations(max_run_no):
+def import_simulations(max_run_no, subfolder=None):
   simulations = []
   for run_no in range(1, max_run_no+1):
     print(f"\rImporting simulation {run_no}/{max_run_no}...", end="")
-    simulations.append(class_run_data(run_no))
+    simulations.append(class_run_data(run_no, subfolder))
   print(f"\rImporting simulation {max_run_no}/{max_run_no}... Done.", end="\r\n")
 
   return simulations

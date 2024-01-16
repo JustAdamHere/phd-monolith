@@ -1,7 +1,10 @@
-def get_run_data(program, geometry, run_no, time_step):
+def get_run_data(program, geometry, run_no, time_step, subfolder):
   import os
 
-  filename = f'./output/simulation-data_{program}_{run_no}.dat'
+  if (subfolder == None):
+    filename = f'./output/simulation-data_{program}_{run_no}.dat'
+  else:
+    filename = f'./output/{subfolder}/simulation-data_{program}_{run_no}.dat'
 
   with open(filename, 'r') as file:
     content = file.readlines()
