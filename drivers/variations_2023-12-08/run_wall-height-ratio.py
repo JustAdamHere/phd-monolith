@@ -91,8 +91,7 @@ import numpy as np
 sim_no = run_no.get_completed_run_no()
 set_run_numbers.set_run_numbers(sim_no, program="velocity-transport")
 
-run_simulations = True
-while(run_simulations):
+while(sim_no < 1000):
   # Update run number.
   sim_no += 1
 
@@ -104,7 +103,7 @@ while(run_simulations):
   parameters["wall_height_ratio"] = np.random.uniform((vein_width+2*fillet_radius)/0.1725 + epsilon_padding, 2.0)
 
   # Read in number of threads.
-  parameters["no_threads"] = select_no_threads.read_no_threads(12)
+  parameters["no_threads"] = select_no_threads.read_no_threads(4)
 
   # Run the simulation.
   velocity_transport.run(sim_no, parameters)

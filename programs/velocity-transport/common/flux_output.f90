@@ -19,6 +19,18 @@ module flux_output
   'velocity-crossflow-flux_304-305', &
   'velocity-crossflow-flux_305-306', &
   'velocity-crossflow-flux_306-307', &
+  'velocity-crossflow-flux_301-302_positive', &
+  'velocity-crossflow-flux_302-303_positive', &
+  'velocity-crossflow-flux_303-304_positive', &
+  'velocity-crossflow-flux_304-305_positive', &
+  'velocity-crossflow-flux_305-306_positive', &
+  'velocity-crossflow-flux_306-307_positive', &
+  'velocity-crossflow-flux_301-302_negative', &
+  'velocity-crossflow-flux_302-303_negative', &
+  'velocity-crossflow-flux_303-304_negative', &
+  'velocity-crossflow-flux_304-305_negative', &
+  'velocity-crossflow-flux_305-306_negative', &
+  'velocity-crossflow-flux_306-307_negative', &
   ! Inlet fluxes.
   'velocity-outflow-flux_111', &
   'velocity-outflow-flux_112', &
@@ -289,6 +301,18 @@ module flux_output
     calculate_crossflow_flux(mesh_data, solution_velocity, 304, 305), &
     calculate_crossflow_flux(mesh_data, solution_velocity, 305, 306), &
     calculate_crossflow_flux(mesh_data, solution_velocity, 306, 307), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 301, 302, 'positive'), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 302, 303, 'positive'), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 303, 304, 'positive'), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 304, 305, 'positive'), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 305, 306, 'positive'), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 306, 307, 'positive'), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 301, 302, 'negative'), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 302, 303, 'negative'), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 303, 304, 'negative'), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 304, 305, 'negative'), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 305, 306, 'negative'), &
+    calculate_crossflow_flux(mesh_data, solution_velocity, 306, 307, 'negative'), &
     ! Inlet fluxes.
     outflow_fluxes(111), &
     outflow_fluxes(112), &

@@ -91,8 +91,7 @@ from random import uniform
 sim_no = run_no.get_completed_run_no()
 set_run_numbers.set_run_numbers(sim_no, program="velocity-transport")
 
-run_simulations = True
-while(run_simulations):
+while(sim_no < 1000):
   # Update run number.
   sim_no += 1
 

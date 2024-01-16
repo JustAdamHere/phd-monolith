@@ -621,7 +621,7 @@ program velocity_transport
             velocity_average_everywhere)
         svp_0_0005_everywhere   = calculate_integral_slow_velocity(mesh_data, solution_velocity, .false., 0.35_db, 0.0005_db)
         fvp_0_001_everywhere    = calculate_integral_fast_velocity(mesh_data, solution_velocity, .false., 0.35_db, 0.001_db)
-        svp_nominal_ivs         = calculate_integral_slow_velocity(mesh_data, solution_velocity, .true.,  0.35_db, 0.0026_db)
+        svp_nominal_ivs         = calculate_integral_slow_velocity(mesh_data, solution_velocity, .true.,  0.35_db, 0.0018_db)
         svp_nominal_everywhere  = calculate_integral_slow_velocity(mesh_data, solution_velocity, .false., 0.35_db, 0.0026_db)
 
         write(aptofem_run_number_string, '(i10)') aptofem_run_number

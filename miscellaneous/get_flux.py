@@ -13,6 +13,14 @@ def get_fluxes(program, geometry, run_no, no_placentones):
   for i in range(no_placentones-1):
     velocity_cross_flow_fluxes.append(flux_data.iloc[0][f'velocity-crossflow-flux_30{i+1}-30{i+2}'])
 
+  velocity_cross_flow_positive_fluxes = []
+  for i in range(no_placentones-1):
+    velocity_cross_flow_positive_fluxes.append(flux_data.iloc[0][f'velocity-crossflow-flux_30{i+1}-30{i+2}_positive'])
+
+  velocity_cross_flow_negative_fluxes = []
+  for i in range(no_placentones-1):
+    velocity_cross_flow_negative_fluxes.append(flux_data.iloc[0][f'velocity-crossflow-flux_30{i+1}-30{i+2}_negative'])
+
   velocity_inlet_fluxes = []
   for i in range(no_placentones):
     velocity_inlet_fluxes.append(flux_data.iloc[0][f'velocity-outflow-flux_11{i+1}'])
@@ -135,38 +143,40 @@ def get_fluxes(program, geometry, run_no, no_placentones):
   sum_one = flux_data.iloc[0][f'one-sum']
 
   output_dictionary = {
-    'time_step'                   : time_step                   ,
-    'time'                        : time                        ,
-    'velocity_cross_flow_fluxes'  : velocity_cross_flow_fluxes  ,
-    'velocity_inlet_fluxes'       : velocity_inlet_fluxes       ,
-    'velocity_bp_outlet_fluxes'   : velocity_bp_outlet_fluxes   ,
-    'velocity_sw_outlet_fluxes'   : velocity_sw_outlet_fluxes   ,
-    'velocity_ms_outlet_fluxes'   : velocity_ms_outlet_fluxes   ,
-    'sum_velocity_flux'           : sum_velocity_flux           ,
-    'transport_cross_flow_fluxes' : transport_cross_flow_fluxes,
-    'transport_inlet_fluxes'      : transport_inlet_fluxes      ,
-    'transport_bp_outlet_fluxes'  : transport_bp_outlet_fluxes  ,
-    'transport_sw_outlet_fluxes'  : transport_sw_outlet_fluxes  ,
-    'transport_ms_outlet_fluxes'  : transport_ms_outlet_fluxes  ,
-    'sum_transport_flux'          : sum_transport_flux          ,
-    'pe_cross_flow_fluxes'        : pe_cross_flow_fluxes        ,
-    'pe_inlet_fluxes'             : pe_inlet_fluxes             ,
-    'pe_bp_outlet_fluxes'         : pe_bp_outlet_fluxes         ,
-    'pe_sw_outlet_fluxes'         : pe_sw_outlet_fluxes         ,
-    'pe_ms_outlet_fluxes'         : pe_ms_outlet_fluxes         ,
-    'sum_pe_flux'                 : sum_pe_flux                 ,
-    'ke_cross_flow_fluxes'        : ke_cross_flow_fluxes        ,
-    'ke_inlet_fluxes'             : ke_inlet_fluxes             ,
-    'ke_bp_outlet_fluxes'         : ke_bp_outlet_fluxes         ,
-    'ke_sw_outlet_fluxes'         : ke_sw_outlet_fluxes         ,
-    'ke_ms_outlet_fluxes'         : ke_ms_outlet_fluxes         ,
-    'sum_ke_flux'                 : sum_ke_flux                 ,
-    'one_cross_flow'              : one_cross_flow              ,
-    'one_inlet'                   : one_inlet                   ,
-    'one_bp_outlet'               : one_bp_outlet               ,
-    'one_sw_outlet'               : one_sw_outlet               ,
-    'one_ms_outlet'               : one_ms_outlet               ,
-    'sum_one'                     : sum_one
+    'time_step'                           : time_step                           ,
+    'time'                                : time                                ,
+    'velocity_cross_flow_fluxes'          : velocity_cross_flow_fluxes          ,
+    'velocity_cross_flow_positive_fluxes' : velocity_cross_flow_positive_fluxes ,
+    'velocity_cross_flow_negative_fluxes' : velocity_cross_flow_negative_fluxes ,
+    'velocity_inlet_fluxes'               : velocity_inlet_fluxes               ,
+    'velocity_bp_outlet_fluxes'           : velocity_bp_outlet_fluxes           ,
+    'velocity_sw_outlet_fluxes'           : velocity_sw_outlet_fluxes           ,
+    'velocity_ms_outlet_fluxes'           : velocity_ms_outlet_fluxes           ,
+    'sum_velocity_flux'                   : sum_velocity_flux                   ,
+    'transport_cross_flow_fluxes'         : transport_cross_flow_fluxes         ,
+    'transport_inlet_fluxes'              : transport_inlet_fluxes              ,
+    'transport_bp_outlet_fluxes'          : transport_bp_outlet_fluxes          ,
+    'transport_sw_outlet_fluxes'          : transport_sw_outlet_fluxes          ,
+    'transport_ms_outlet_fluxes'          : transport_ms_outlet_fluxes          ,
+    'sum_transport_flux'                  : sum_transport_flux                  ,
+    'pe_cross_flow_fluxes'                : pe_cross_flow_fluxes                ,
+    'pe_inlet_fluxes'                     : pe_inlet_fluxes                     ,
+    'pe_bp_outlet_fluxes'                 : pe_bp_outlet_fluxes                 ,
+    'pe_sw_outlet_fluxes'                 : pe_sw_outlet_fluxes                 ,
+    'pe_ms_outlet_fluxes'                 : pe_ms_outlet_fluxes                 ,
+    'sum_pe_flux'                         : sum_pe_flux                         ,
+    'ke_cross_flow_fluxes'                : ke_cross_flow_fluxes                ,
+    'ke_inlet_fluxes'                     : ke_inlet_fluxes                     ,
+    'ke_bp_outlet_fluxes'                 : ke_bp_outlet_fluxes                 ,
+    'ke_sw_outlet_fluxes'                 : ke_sw_outlet_fluxes                 ,
+    'ke_ms_outlet_fluxes'                 : ke_ms_outlet_fluxes                 ,
+    'sum_ke_flux'                         : sum_ke_flux                         ,
+    'one_cross_flow'                      : one_cross_flow                      ,
+    'one_inlet'                           : one_inlet                           ,
+    'one_bp_outlet'                       : one_bp_outlet                       ,
+    'one_sw_outlet'                       : one_sw_outlet                       ,
+    'one_ms_outlet'                       : one_ms_outlet                       ,
+    'sum_one'                             : sum_one
   }
 
   return output_dictionary

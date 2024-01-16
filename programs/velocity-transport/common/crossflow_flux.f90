@@ -11,25 +11,8 @@ module crossflow_flux
     !! Date created
     !!   24-06-2022
     !--------------------------------------------------------------------
-    function calculate_crossflow_flux(mesh_data, flow_solution, region_1, region_2)
+    function calculate_crossflow_flux(mesh_data, flow_solution, region_1, region_2, flux_type)
     !--------------------------------------------------------------------
-        ! Loop over all faces.
-            ! Loop over neighbours.
-                ! Check neighbours lie in the two regions.
-
-        !bdry_face_no = get_boundary_identifier(k,mesh_data)
-
-        !get_interior_face_boundary_no(face_no,mesh_data)
-        !  0 by default
-        !  normal is outward normal to the first face
-        !compute_interior_face_boundary_no(element_region_id_1,element_region_id_2)
-        ! Look at DG error routine for inspiration
-
-        ! Crossflow as array??
-
-
-
-
         use param
         use fe_mesh
         use fe_solution
@@ -41,6 +24,7 @@ module crossflow_flux
         type(mesh), intent(inout) :: mesh_data !< FE mesh
         type(solution), intent(in) :: flow_solution !< Flow solution
         integer, intent(in) :: region_1, region_2
+        character(len=8), optional :: flux_type
 
         ! Local variables
         integer :: no_eles, no_nodes, no_faces, problem_dim, dim_soln_coeff, k, npinc, no_quad_points_volume_max, &
@@ -53,7 +37,7 @@ module crossflow_flux
         character(len=aptofem_length_key_def) :: control_parameter
         type(basis_storage) :: fe_basis_info
 
-        real(db) :: integrand1, integrand2
+        real(db) :: integrand1, integrand2, integrand_average
         integer :: intr_face_no, region_face_no
 
         call get_mesh_info(no_eles, no_nodes, no_faces, problem_dim, mesh_data)
@@ -91,34 +75,44 @@ module crossflow_flux
                     global_dof_numbers1, no_dofs_per_variable1, bdry_face, global_dof_numbers2, no_dofs_per_variable2, &
                     fe_basis_info)
 
+                ! Always give a rightward-pointing normal.
                 if (face_normals(1, 1) >= 0) then
                     normals(:, :) = face_normals(:, :)
                 else
                     normals(:, :) = -face_normals(:, :)
                 end if
 
-                integrand1 = 0.0_db
-                integrand2 = 0.0_db
-
                 do qk = 1, no_quad_points
                     uh1 = uh_face1(fe_basis_info, dim_soln_coeff, qk)
                     uh2 = uh_face2(fe_basis_info, dim_soln_coeff, qk)
 
-                    integrand1 = integrand1 + &
-                        dot_product(uh1(1:problem_dim), normals(1:problem_dim, qk))*quad_weights_face(qk)*face_jacobian(qk)
+                    integrand1 = dot_product(uh1(1:problem_dim), normals(1:problem_dim, qk))
+                    integrand2 = dot_product(uh2(1:problem_dim), normals(1:problem_dim, qk))
 
-                    integrand2 = integrand2 + &
-                        dot_product(uh2(1:problem_dim), normals(1:problem_dim, qk))*quad_weights_face(qk)*face_jacobian(qk)
+                    integrand_average = (integrand1 + integrand2)/2.0_db
+
+                    if (present(flux_type)) then
+                        if (flux_type == 'positive') then
+                            if (integrand_average > 0.0_db) then
+                                calculate_crossflow_flux = calculate_crossflow_flux + &
+                                    integrand_average*quad_weights_face(qk)*face_jacobian(qk)       
+                            end if
+                        else if (flux_type == 'negative') then
+                            if (integrand_average < 0.0_db) then
+                                calculate_crossflow_flux = calculate_crossflow_flux + &
+                                    integrand_average*quad_weights_face(qk)*face_jacobian(qk)
+                            end if
+                        else
+                            write(*,*) 'Error: flux_type must be either positive or negative'
+                            error stop
+                        end if
+                    else
+                        calculate_crossflow_flux = calculate_crossflow_flux + &
+                            integrand_average*quad_weights_face(qk)*face_jacobian(qk)
+                    end if
                 end do
-
-                calculate_crossflow_flux = calculate_crossflow_flux + (integrand1 + integrand2)/2
-
-                !print *, k
             end if
         end do
-        ! print *, region_1
-        ! print *, region_2
-        ! print *, ""
 
         deallocate(global_points_face, face_jacobian, face_normals, quad_weights_face, global_dof_numbers1, global_dof_numbers2, &
             no_dofs_per_variable1, no_dofs_per_variable2, normals, uh1, uh2)

@@ -86,8 +86,7 @@ from miscellaneous import run_no, select_no_threads, set_run_numbers
 sim_no = run_no.get_completed_run_no()
 set_run_numbers.set_run_numbers(sim_no, program="velocity-transport")
 
-run_simulations = True
-while(run_simulations):
+while(sim_no < 1000):
   # Update run number.
   sim_no += 1
 
@@ -103,9 +102,59 @@ while(run_simulations):
   parameters["basal_plate_vessel_positions"], parameters["septal_wall_vein_positions"] = choose_vessels.calculate_vessel_positions(parameters["basal_plate_vessels"], parameters["septal_veins"], parameters["no_placentones"], artery_padding, vein_padding, epsilon_padding)
 
   # Read in number of threads.
-  parameters["no_threads"] = select_no_threads.read_no_threads(12)
+  parameters["no_threads"] = select_no_threads.read_no_threads(4)
 
   # Run the simulation.
+  velocity_transport.run(sim_no, parameters)
+
+## MANUALLY DO EXTRA SIMULATIONS ##
+# 27 veins.
+for i in range(100):
+  sim_no += 1
+  no_veins                = 27#choose_vessels.calculate_no_veins   (parameters["no_placentones"])
+  no_marginal_sinus_veins = 2
+  no_arteries             = choose_vessels.calculate_no_arteries(parameters["no_placentones"])
+
+  parameters["basal_plate_vessels"], parameters["marginal_sinus"], parameters["septal_veins"] = choose_vessels.calculate_vessel_enabled(no_veins, no_arteries, no_marginal_sinus_veins, parameters["no_placentones"])
+  parameters["basal_plate_vessel_positions"], parameters["septal_wall_vein_positions"] = choose_vessels.calculate_vessel_positions(parameters["basal_plate_vessels"], parameters["septal_veins"], parameters["no_placentones"], artery_padding, vein_padding, epsilon_padding)
+  parameters["no_threads"] = select_no_threads.read_no_threads(4)
+
+  velocity_transport.run(sim_no, parameters)
+# 1 vein.
+for i in range(100):
+  sim_no += 1
+  no_veins                = 1#choose_vessels.calculate_no_veins   (parameters["no_placentones"])
+  no_marginal_sinus_veins = 2
+  no_arteries             = choose_vessels.calculate_no_arteries(parameters["no_placentones"])
+
+  parameters["basal_plate_vessels"], parameters["marginal_sinus"], parameters["septal_veins"] = choose_vessels.calculate_vessel_enabled(no_veins, no_arteries, no_marginal_sinus_veins, parameters["no_placentones"])
+  parameters["basal_plate_vessel_positions"], parameters["septal_wall_vein_positions"] = choose_vessels.calculate_vessel_positions(parameters["basal_plate_vessels"], parameters["septal_veins"], parameters["no_placentones"], artery_padding, vein_padding, epsilon_padding)
+  parameters["no_threads"] = select_no_threads.read_no_threads(4)
+
+  velocity_transport.run(sim_no, parameters)
+# 6 arteries.
+for i in range(100):
+  sim_no += 1
+  no_veins                = choose_vessels.calculate_no_veins   (parameters["no_placentones"])
+  no_marginal_sinus_veins = 2
+  no_arteries             = 6#choose_vessels.calculate_no_arteries(parameters["no_placentones"])
+
+  parameters["basal_plate_vessels"], parameters["marginal_sinus"], parameters["septal_veins"] = choose_vessels.calculate_vessel_enabled(no_veins, no_arteries, no_marginal_sinus_veins, parameters["no_placentones"])
+  parameters["basal_plate_vessel_positions"], parameters["septal_wall_vein_positions"] = choose_vessels.calculate_vessel_positions(parameters["basal_plate_vessels"], parameters["septal_veins"], parameters["no_placentones"], artery_padding, vein_padding, epsilon_padding)
+  parameters["no_threads"] = select_no_threads.read_no_threads(4)
+
+  velocity_transport.run(sim_no, parameters)
+# 1 artery.
+for i in range(100):
+  sim_no += 1
+  no_veins                = choose_vessels.calculate_no_veins   (parameters["no_placentones"])
+  no_marginal_sinus_veins = 2
+  no_arteries             = 1#choose_vessels.calculate_no_arteries(parameters["no_placentones"])
+
+  parameters["basal_plate_vessels"], parameters["marginal_sinus"], parameters["septal_veins"] = choose_vessels.calculate_vessel_enabled(no_veins, no_arteries, no_marginal_sinus_veins, parameters["no_placentones"])
+  parameters["basal_plate_vessel_positions"], parameters["septal_wall_vein_positions"] = choose_vessels.calculate_vessel_positions(parameters["basal_plate_vessels"], parameters["septal_veins"], parameters["no_placentones"], artery_padding, vein_padding, epsilon_padding)
+  parameters["no_threads"] = select_no_threads.read_no_threads(4)
+
   velocity_transport.run(sim_no, parameters)
 
 # Save output.
