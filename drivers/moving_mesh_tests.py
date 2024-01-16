@@ -48,10 +48,12 @@ parameters["geometry"] = "square_constant_up"
 parameters["mesh_velocity_type"] = "interior"
 velocity_transport.run(6, parameters)
 
+# Issue here ->
 parameters["geometry"] = "square_constant_diagonal"
 parameters["mesh_velocity_type"] = "interior"
 velocity_transport.run(7, parameters)
 
+# Issue here ->
 parameters["geometry"] = "square_poiseuille"
 parameters["mesh_velocity_type"] = "interior"
 velocity_transport.run(8, parameters)
@@ -67,6 +69,10 @@ velocity_transport.run(10, parameters)
 parameters["geometry"] = "square_constant_diagonal"
 parameters["mesh_velocity_type"] = "constant_up"
 velocity_transport.run(11, parameters)
+
+parameters["geometry"] = "square_poiseuille"
+parameters["mesh_velocity_type"] = "constant_up"
+velocity_transport.run(12, parameters)
 
 parameters["geometry"] = "square_zero"
 parameters["mesh_velocity_type"] = "shear"
