@@ -752,13 +752,13 @@ program velocity_transport
         ! MOVE MESH !
         !!!!!!!!!!!!!
         if (moving_mesh) then
-            call set_current_time(solution_moving_mesh, previous_time)
+            call set_current_time(solution_moving_mesh, current_time)
 
             mesh_data_orig = mesh_data
-            call move_mesh(mesh_data, mesh_data_orig, problem_dim, previous_time, time_step)
+            call move_mesh(mesh_data, mesh_data_orig, problem_dim, current_time, time_step)
             call delete_mesh(mesh_data_orig)
 
-            call update_geometry(previous_time, time_step, geometry_name)
+            call update_geometry(current_time, time_step, geometry_name)
 
             call set_current_time(solution_moving_mesh, current_time)
 

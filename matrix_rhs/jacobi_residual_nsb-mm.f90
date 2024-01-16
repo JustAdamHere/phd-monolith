@@ -1347,14 +1347,14 @@ module jacobi_residual_nsb_mm
 
           call anal_soln_velocity(uloc(:,qk),global_points_face(:,qk),problem_dim,no_pdes,0,current_time, &
             face_element_region_ids(1))
+          ! mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! We pass neighbours(1) because this solution is continuous.
+          call compute_uh_glob_pt(mesh_velocity, problem_dim, neighbours(1), global_points_face(:, qk), problem_dim, &
+            mesh_data, solution_moving_mesh)
           call compute_boundary_condition(interpolant_uh2(:,qk), &
             interpolant_uh1(:,qk),uloc(:,qk),abs(bdry_face),problem_dim,no_pdes)
             alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
             face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
-          ! mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
-            ! We pass neighbours(1) because this solution is continuous.
-          call compute_uh_glob_pt(mesh_velocity, problem_dim, neighbours(1), global_points_face(:, qk), problem_dim, &
-          mesh_data, solution_moving_mesh)
           call jacobian_convective_fluxes(interpolant_uh1(:,qk), &
             fluxes_prime1(:,:,:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh2(:,qk), &
