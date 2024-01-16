@@ -73,4 +73,4 @@ def plot(simulations, simulation_bins, parameter_values, parameter_name, paramet
   from tabulate import tabulate
   no_per_bin = [len(simulation_bins[i]) for i in range(0, no_bins)]
   no_simulations = sum(no_per_bin)
-  print(tabulate([[parameter_name, no_simulations, np.mean(no_per_bin), np.median(no_per_bin), np.std(no_per_bin), np.min(no_per_bin), np.max(no_per_bin), no_per_bin]], headers=["Name", "#Simulations", "Mean", "Median", "Std", "Minimum", "Maximum", "Number per bin"], tablefmt="rounded_outline", floatfmt=".2f"))
+  print(tabulate([[parameter_name, no_simulations, np.mean(no_per_bin), np.median(no_per_bin), np.std(no_per_bin), np.min(no_per_bin), np.max(no_per_bin), no_per_bin]], headers=["Name", "#", "Mean", "Median", "Std", "Minimum", "Maximum", "Number per bin"], tablefmt="rounded_outline", floatfmt=".2f"))
