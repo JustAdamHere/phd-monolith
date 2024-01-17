@@ -49,6 +49,8 @@ module problem_options_geometry
             calculate_mesh_velocity => calculate_mesh_velocity_shear
         else if (trim(mesh_velocity_type) == 'constant_up') then
             calculate_mesh_velocity => calculate_mesh_velocity_constant_up
+        else if (trim(mesh_velocity_type) == 'circular') then
+            calculate_mesh_velocity => calculate_mesh_velocity_circular
         else if (trim(mesh_velocity_type) == 'oscillating_sine') then
             calculate_mesh_velocity => calculate_mesh_velocity_oscillating_sine
         end if
@@ -588,6 +590,21 @@ module problem_options_geometry
         
         calculate_mesh_velocity_constant_up(1) = 0.0_db
         calculate_mesh_velocity_constant_up(2) = 1.0_db
+        
+    end function
+
+    function calculate_mesh_velocity_circular(coord, problem_dim, mesh_time)
+        use param
+        
+        implicit none
+        
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: coord
+        real(db), intent(in)                         :: mesh_time
+        real(db), dimension(problem_dim)             :: calculate_mesh_velocity_circular
+        
+        calculate_mesh_velocity_circular(1) = -cos(2.0_db*pi*mesh_time)
+        calculate_mesh_velocity_circular(2) =  sin(2.0_db*pi*mesh_time)
         
     end function
     
