@@ -44,9 +44,9 @@ velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile
 # velocity_transport.run(5, parameters)
 
 # Issues here ->
-parameters["geometry"] = "square_constant_up"
-parameters["mesh_velocity_type"] = "interior"
-velocity_transport.run(6, parameters)
+# parameters["geometry"] = "square_constant_up"
+# parameters["mesh_velocity_type"] = "interior"
+# velocity_transport.run(6, parameters)
 
 # # Issue here ->
 # parameters["geometry"] = "square_constant_diagonal"
@@ -122,21 +122,37 @@ parameters["geometry"] = "square_poiseuille"
 parameters["mesh_velocity_type"] = "incompressible"
 velocity_transport.run(24, parameters)
 
+parameters["geometry"] = "square_zero"
+parameters["mesh_velocity_type"] = "incompressible2"
+velocity_transport.run(25, parameters)
+
+parameters["geometry"] = "square_constant_up"
+parameters["mesh_velocity_type"] = "incompressible2"
+velocity_transport.run(26, parameters)
+
+parameters["geometry"] = "square_constant_diagonal"
+parameters["mesh_velocity_type"] = "incompressible2"
+velocity_transport.run(27, parameters)
+
+parameters["geometry"] = "square_poiseuille"
+parameters["mesh_velocity_type"] = "incompressible2"
+velocity_transport.run(28, parameters)
+
 # parameters["geometry"] = "square_zero"
 # parameters["mesh_velocity_type"] = "oscillating_sine"
-# velocity_transport.run(25, parameters)
+# velocity_transport.run(29, parameters)
 
 # parameters["geometry"] = "square_constant_up"
 # parameters["mesh_velocity_type"] = "oscillating_sine"
-# velocity_transport.run(26, parameters)
+# velocity_transport.run(30, parameters)
 
 # parameters["geometry"] = "square_constant_diagonal"
 # parameters["mesh_velocity_type"] = "oscillating_sine"
-# velocity_transport.run(27, parameters)
+# velocity_transport.run(31, parameters)
 
 # parameters["geometry"] = "square_poiseuille"
 # parameters["mesh_velocity_type"] = "oscillating_sine"
-# velocity_transport.run(28, parameters)
+# velocity_transport.run(32, parameters)
 
 
 

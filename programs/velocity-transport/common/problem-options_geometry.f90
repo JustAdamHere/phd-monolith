@@ -647,6 +647,21 @@ module problem_options_geometry
         calculate_mesh_velocity_incompressible(2) = -coord(2)
         
     end function
+
+    function calculate_mesh_velocity_incompressible2(coord, problem_dim, mesh_time)
+        use param
+        
+        implicit none
+        
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: coord
+        real(db), intent(in)                         :: mesh_time
+        real(db), dimension(problem_dim)             :: calculate_mesh_velocity_incompressible2
+
+        calculate_mesh_velocity_incompressible2(1) =  coord(1)**2*coord(2)
+        calculate_mesh_velocity_incompressible2(2) = -coord(2)**2*coord(1)
+        
+    end function
     
     function calculate_mesh_velocity_oscillating_sine(coord, problem_dim, mesh_time)
         use param
