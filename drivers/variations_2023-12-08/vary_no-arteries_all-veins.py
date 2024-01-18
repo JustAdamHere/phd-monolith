@@ -3,7 +3,7 @@ import numpy as np
 import copy
 
 # Import all data from completed runs.
-max_run_no  = 100#run_no.get_completed_run_no()
+max_run_no  = 1000#run_no.get_completed_run_no()
 #output_location = None
 output_location = "output_2024-01-16 154829 (before fixing avg flow and adding signed cross flow)"
 images_location = "images_2024-01-16 154830 (before fixing avg flow and adding signed cross flow)"
