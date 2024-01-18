@@ -931,7 +931,7 @@ module jacobi_residual_nsb_mm
             face_element_region_ids(1))
           call compute_boundary_condition(interpolant_uh2(:,qk), &
             interpolant_uh1(:,qk),uloc(:,qk),abs(bdry_face),problem_dim,no_pdes)
-            alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
+          alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
             face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh1(:,qk), &
             fluxes_prime1(:,:,:,qk),problem_dim,no_pdes, mesh_velocity)
@@ -969,8 +969,9 @@ module jacobi_residual_nsb_mm
 
                     if (ieqn <= problem_dim .and. ivar <= problem_dim) then
                       convective_flux_1 = 0.5_db*dot_product( &
-                      fluxes_prime1(1:problem_dim,ieqn,ivar,qk), &
-                      face_normals(1:problem_dim,qk))
+                        fluxes_prime1(1:problem_dim,ieqn,ivar,qk), &
+                        face_normals(1:problem_dim,qk)&
+                      )
                       if (ieqn == ivar) then
                         convective_flux_1 = convective_flux_1+0.5_db*alpha(qk)
                       endif
