@@ -45,6 +45,8 @@ module problem_options_geometry
             calculate_mesh_velocity => calculate_mesh_velocity_zero
         else if (trim(mesh_velocity_type) == 'interior') then
             calculate_mesh_velocity => calculate_mesh_velocity_interior
+        else if (trim(mesh_velocity_type) == 'interior_ti') then
+            calculate_mesh_velocity => calculate_mesh_velocity_interior_ti
         else if (trim(mesh_velocity_type) == 'shear') then
             calculate_mesh_velocity => calculate_mesh_velocity_shear
         else if (trim(mesh_velocity_type) == 'constant_up') then
@@ -560,6 +562,27 @@ module problem_options_geometry
         ! [Etienne, 2009]
         ! calculate_mesh_velocity_interior(1) = mesh_time*(1.0_db-x**2)*(y+1.0_db)/32.0_db
         ! calculate_mesh_velocity_interior(2) = mesh_time*(1.0_db-y**2)*(x+mesh_time*(1.0_db-x**2)/32.0_db + 1.0_db)/32.0_db
+        
+    end function
+
+    function calculate_mesh_velocity_interior_ti(coord, problem_dim, mesh_time)
+        use param
+        
+        implicit none
+        
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: coord
+        real(db), intent(in)                         :: mesh_time
+        real(db), dimension(problem_dim)             :: calculate_mesh_velocity_interior_ti
+
+        real(db) :: x, y
+
+        x = coord(1)
+        y = coord(2)
+
+        ! Mesh velocity that only moves within the interior (is zero on the boundary).
+        calculate_mesh_velocity_interior_ti(1) = 5.0_db*x*(x-1.0_db)*y*(y-1.0_db)
+        calculate_mesh_velocity_interior_ti(2) = 5.0_db*x*(x-1.0_db)*y*(y-1.0_db)
         
     end function
 
