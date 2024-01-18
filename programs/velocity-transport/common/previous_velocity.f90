@@ -41,6 +41,8 @@ module previous_velocity
 
   subroutine finalise_previous_velocity()
     ! call delete_fe_basis_storage(prev_fe_basis_info)
+    call delete_solution(prev_solution_velocity_data)
+    call delete_mesh(prev_mesh_data)
   end subroutine
 
 end module
