@@ -1,4 +1,4 @@
-def plot(simulations, simulation_bins, parameter_values, parameter_name, parameter_safe_name):
+def plot(simulations, simulation_bins, parameter_values, parameter_name, parameter_safe_name, subfolder=None):
   print(f"\rPlotting simulations...", end="")
   no_bins = len(simulation_bins)
 
@@ -53,18 +53,24 @@ def plot(simulations, simulation_bins, parameter_values, parameter_name, paramet
   setup_plots.style(fig_velocity_cross_flow_flux                    , ax_velocity_cross_flow_flux                    , parameter_name, r"$E_{\text{c}}(\Omega_i \cap \Omega_{i+1})$"                         , y_scilimits=[-2  , -     2  ])
   setup_plots.style(fig_transport_flux                              , ax_transport_flux                              , parameter_name, r"$E_{\text{F}}(\Gamma_\text{in}) - E_{\text{F}}(\Gamma_\text{out})$" , y_scilimits=[-1  , -     1  ])
 
+  # Decide where to save plots.
+  if subfolder == None:
+    images_folder = "images"
+  else:
+    images_folder = f"images/{subfolder}"
+
   # Save plots.
-  fig_velocity_magnitude_integral                 .savefig(f"images/velocity-magnitude-integral_{parameter_safe_name}.png"                 , dpi=300)
-  fig_slow_velocity_percentage_ivs                .savefig(f"images/slow-velocity-percentage_IVS_{parameter_safe_name}.png"                , dpi=300)
-  fig_slow_velocity_percentage_everywhere         .savefig(f"images/slow-velocity-percentage_everywhere_{parameter_safe_name}.png"         , dpi=300)
-  fig_slow_velocity_percentage_dellschaft         .savefig(f"images/slow-velocity-percentage_Dellschaft_{parameter_safe_name}.png"         , dpi=300)
-  fig_fast_velocity_percentage_dellschaft         .savefig(f"images/fast-velocity-percentage_Dellschaft_{parameter_safe_name}.png"         , dpi=300)
-  fig_slow_velocity_percentage_nominal_everywhere .savefig(f"images/slow-velocity-percentage_nominal-everywhere_{parameter_safe_name}.png" , dpi=300)
-  fig_transport_reaction_integral                 .savefig(f"images/transport-reaction-integral_{parameter_safe_name}.png"                 , dpi=300)
-  fig_kinetic_energy_flux                         .savefig(f"images/kinetic-energy-flux_{parameter_safe_name}.png"                         , dpi=300)
-  fig_total_energy_flux                           .savefig(f"images/total-energy-flux_{parameter_safe_name}.png"                           , dpi=300)
-  fig_velocity_cross_flow_flux                    .savefig(f"images/velocity-cross-flow-flux_{parameter_safe_name}.png"                    , dpi=300)
-  fig_transport_flux                              .savefig(f"images/transport-flux_{parameter_safe_name}.png"                              , dpi=300)
+  fig_velocity_magnitude_integral                 .savefig(f"{images_folder}/velocity-magnitude-integral_{parameter_safe_name}.png"                 , dpi=300)
+  fig_slow_velocity_percentage_ivs                .savefig(f"{images_folder}/slow-velocity-percentage_IVS_{parameter_safe_name}.png"                , dpi=300)
+  fig_slow_velocity_percentage_everywhere         .savefig(f"{images_folder}/slow-velocity-percentage_everywhere_{parameter_safe_name}.png"         , dpi=300)
+  fig_slow_velocity_percentage_dellschaft         .savefig(f"{images_folder}/slow-velocity-percentage_Dellschaft_{parameter_safe_name}.png"         , dpi=300)
+  fig_fast_velocity_percentage_dellschaft         .savefig(f"{images_folder}/fast-velocity-percentage_Dellschaft_{parameter_safe_name}.png"         , dpi=300)
+  fig_slow_velocity_percentage_nominal_everywhere .savefig(f"{images_folder}/slow-velocity-percentage_nominal-everywhere_{parameter_safe_name}.png" , dpi=300)
+  fig_transport_reaction_integral                 .savefig(f"{images_folder}/transport-reaction-integral_{parameter_safe_name}.png"                 , dpi=300)
+  fig_kinetic_energy_flux                         .savefig(f"{images_folder}/kinetic-energy-flux_{parameter_safe_name}.png"                         , dpi=300)
+  fig_total_energy_flux                           .savefig(f"{images_folder}/total-energy-flux_{parameter_safe_name}.png"                           , dpi=300)
+  fig_velocity_cross_flow_flux                    .savefig(f"{images_folder}/velocity-cross-flow-flux_{parameter_safe_name}.png"                    , dpi=300)
+  fig_transport_flux                              .savefig(f"{images_folder}/transport-flux_{parameter_safe_name}.png"                              , dpi=300)
 
   # Done.
   print(f"\rPlotting simulations... Done.", end="\r\n")
