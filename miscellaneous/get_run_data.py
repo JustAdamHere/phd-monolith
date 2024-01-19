@@ -1,4 +1,4 @@
-def get_run_data(program, geometry, run_no, time_step, subfolder):
+def get_run_data(program, geometry, run_no, time_step, subfolder=None):
   import os
 
   if (subfolder == None):

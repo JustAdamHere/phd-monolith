@@ -53,6 +53,13 @@ def get_data(no_bins, simulation_bins, simulations):
   velocity_cross_flow_flux = [[] for i in range(no_bins)]
   # 7
   transport_flux = [[] for i in range(no_bins)]
+  # 8 
+  velocity_percentage_basal_plate     = [[] for i in range(no_bins)]
+  velocity_percentage_septal_wall     = [[] for i in range(no_bins)]
+  velocity_percentage_marginal_sinus  = [[] for i in range(no_bins)]
+  transport_percentage_basal_plate    = [[] for i in range(no_bins)]
+  transport_percentage_septal_wall    = [[] for i in range(no_bins)]
+  transport_percentage_marginal_sinus = [[] for i in range(no_bins)]
 
   # Averages.
   average_velocity_magnitude_integral                 = []
@@ -65,7 +72,14 @@ def get_data(no_bins, simulation_bins, simulations):
   average_kinetic_energy_flux                         = []
   average_total_energy_flux                           = []
   average_velocity_cross_flow_flux                    = []
-  average_transport_flux                       = []
+  average_transport_flux                              = []
+  average_velocity_percentage_basal_plate             = []
+  average_velocity_percentage_septal_wall             = []
+  average_velocity_percentage_marginal_sinus          = []
+  average_transport_percentage_basal_plate            = []
+  average_transport_percentage_septal_wall            = []
+  average_transport_percentage_marginal_sinus         = []
+
   for i in range(0, no_bins):
     for j in range(0, len(simulation_bins[i])):
       run_no = simulation_bins[i][j]
@@ -81,6 +95,12 @@ def get_data(no_bins, simulation_bins, simulations):
       total_energy_flux                           [i].append(simulations[run_no-1].total_energy_flux                           )
       velocity_cross_flow_flux                    [i].append(simulations[run_no-1].abs_velocity_cross_flow_flux                )
       transport_flux                              [i].append(simulations[run_no-1].transport_flux                              )
+      velocity_percentage_basal_plate             [i].append(simulations[run_no-1].velocity_percentage_basal_plate             )
+      velocity_percentage_septal_wall             [i].append(simulations[run_no-1].velocity_percentage_septal_wall             )
+      velocity_percentage_marginal_sinus          [i].append(simulations[run_no-1].velocity_percentage_marginal_sinus          )
+      transport_percentage_basal_plate            [i].append(simulations[run_no-1].transport_percentage_basal_plate            )
+      transport_percentage_septal_wall            [i].append(simulations[run_no-1].transport_percentage_septal_wall            )
+      transport_percentage_marginal_sinus         [i].append(simulations[run_no-1].transport_percentage_marginal_sinus         )
 
     if (len(simulation_bins[i]) > 0):
       average_velocity_magnitude_integral                 .append(np.mean(velocity_magnitude_integral                 [i]))
@@ -94,6 +114,12 @@ def get_data(no_bins, simulation_bins, simulations):
       average_total_energy_flux                           .append(np.mean(total_energy_flux                           [i]))
       average_velocity_cross_flow_flux                    .append(np.mean(velocity_cross_flow_flux                    [i]))
       average_transport_flux                              .append(np.mean(transport_flux                              [i]))
+      average_velocity_percentage_basal_plate             .append(np.mean(velocity_percentage_basal_plate             [i]))
+      average_velocity_percentage_septal_wall             .append(np.mean(velocity_percentage_septal_wall             [i]))
+      average_velocity_percentage_marginal_sinus          .append(np.mean(velocity_percentage_marginal_sinus          [i]))
+      average_transport_percentage_basal_plate            .append(np.mean(transport_percentage_basal_plate            [i]))
+      average_transport_percentage_septal_wall            .append(np.mean(transport_percentage_septal_wall            [i]))
+      average_transport_percentage_marginal_sinus         .append(np.mean(transport_percentage_marginal_sinus         [i]))
     else:
       average_velocity_magnitude_integral                 .append(float('nan'))
       average_slow_velocity_percentage_ivs                .append(float('nan'))
@@ -106,6 +132,12 @@ def get_data(no_bins, simulation_bins, simulations):
       average_total_energy_flux                           .append(float('nan'))
       average_velocity_cross_flow_flux                    .append(float('nan'))
       average_transport_flux                              .append(float('nan'))
+      average_velocity_percentage_basal_plate             .append(float('nan'))
+      average_velocity_percentage_septal_wall             .append(float('nan'))
+      average_velocity_percentage_marginal_sinus          .append(float('nan'))
+      average_transport_percentage_basal_plate            .append(float('nan'))
+      average_transport_percentage_septal_wall            .append(float('nan'))
+      average_transport_percentage_marginal_sinus         .append(float('nan'))
 
   output = {
     'data' : {
@@ -119,7 +151,13 @@ def get_data(no_bins, simulation_bins, simulations):
       'kinetic_energy_flux'                         : kinetic_energy_flux                         ,
       'total_energy_flux'                           : total_energy_flux                           ,
       'velocity_cross_flow_flux'                    : velocity_cross_flow_flux                    ,
-      'transport_flux'                              : transport_flux
+      'transport_flux'                              : transport_flux                              ,
+      'velocity_percentage_basal_plate'             : velocity_percentage_basal_plate             ,
+      'velocity_percentage_septal_wall'             : velocity_percentage_septal_wall             ,
+      'velocity_percentage_marginal_sinus'          : velocity_percentage_marginal_sinus          ,
+      'transport_percentage_basal_plate'            : transport_percentage_basal_plate            ,
+      'transport_percentage_septal_wall'            : transport_percentage_septal_wall            ,
+      'transport_percentage_marginal_sinus'         : transport_percentage_marginal_sinus
     },
     'averages' : {
       'velocity_magnitude_integral'                 : average_velocity_magnitude_integral                 ,
@@ -132,7 +170,13 @@ def get_data(no_bins, simulation_bins, simulations):
       'kinetic_energy_flux'                         : average_kinetic_energy_flux                         ,
       'total_energy_flux'                           : average_total_energy_flux                           ,
       'velocity_cross_flow_flux'                    : average_velocity_cross_flow_flux                    ,
-      'transport_flux'                              : average_transport_flux
+      'transport_flux'                              : average_transport_flux                              ,
+      'velocity_percentage_basal_plate'             : average_velocity_percentage_basal_plate             ,
+      'velocity_percentage_septal_wall'             : average_velocity_percentage_septal_wall             ,
+      'velocity_percentage_marginal_sinus'          : average_velocity_percentage_marginal_sinus          ,
+      'transport_percentage_basal_plate'            : average_transport_percentage_basal_plate            ,
+      'transport_percentage_septal_wall'            : average_transport_percentage_septal_wall            ,
+      'transport_percentage_marginal_sinus'         : average_transport_percentage_marginal_sinus
     }
   }
 

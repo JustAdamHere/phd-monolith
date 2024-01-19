@@ -4,7 +4,7 @@ class class_run_data:
 
     self.read_data(subfolder)
 
-  def read_data(self, subfolder):
+  def read_data(self, subfolder=None):
     from miscellaneous import get_transport_reaction_integral, get_velocity_magnitude, get_run_data, parameters_io, get_flux
 
     self.parameters = parameters_io.load_parameters("velocity-transport", "placenta", self.sim_no, subfolder)
@@ -114,6 +114,59 @@ class class_run_data:
     for i in range(2):
       transport_out += flux['transport_ms_outlet_fluxes'][i]/flux['one_ms_outlet'][i]
     self.transport_flux = U * (transport_in - transport_out)
+
+    # Percentage of velocity leaving through each vein.
+    velocity_in = 0.0
+    for i in range(self.parameters["no_placentones"]):
+      if self.parameters["basal_plate_vessels"][i][1] == 1:
+        velocity_in -= flux['velocity_inlet_fluxes'][i]
+    velocity_out_bp = 0.0
+    for i in range(self.parameters["no_placentones"]):
+      if self.parameters["basal_plate_vessels"][i][0] == 1:
+        velocity_out_bp += flux['velocity_bp_outlet_fluxes'][i][0]
+      if self.parameters["basal_plate_vessels"][i][2] == 1:
+        velocity_out_bp += flux['velocity_bp_outlet_fluxes'][i][1]
+    self.velocity_percentage_basal_plate    = 100*velocity_out_bp/velocity_in
+    velocity_out_sw = 0.0
+    for i in range(self.parameters["no_placentones"]-1):
+      if self.parameters["septal_veins"][i][0] == 1:
+        velocity_out_sw += flux['velocity_sw_outlet_fluxes'][i][0]
+      if self.parameters["septal_veins"][i][1] == 1:
+        velocity_out_sw += flux['velocity_sw_outlet_fluxes'][i][1]
+      if self.parameters["septal_veins"][i][2] == 1:
+        velocity_out_sw += flux['velocity_sw_outlet_fluxes'][i][2]
+    self.velocity_percentage_septal_wall    = 100*velocity_out_sw/velocity_in
+    velocity_out_ms = 0.0
+    for i in range(2):
+      velocity_out_ms += flux['velocity_ms_outlet_fluxes'][i]
+    self.velocity_percentage_marginal_sinus = 100*velocity_out_ms/velocity_in
+
+    # Percentage of transported nutrient leaving through each vein.
+    transport_in = 0.0
+    for i in range(self.parameters["no_placentones"]):
+      if self.parameters["basal_plate_vessels"][i][1] == 1:
+        transport_in -= flux['transport_inlet_fluxes'][i]
+    transport_out_bp = 0.0
+    for i in range(self.parameters["no_placentones"]):
+      if self.parameters["basal_plate_vessels"][i][0] == 1:
+        transport_out_bp += flux['transport_bp_outlet_fluxes'][i][0]
+      if self.parameters["basal_plate_vessels"][i][2] == 1:
+        transport_out_bp += flux['transport_bp_outlet_fluxes'][i][1]
+    self.transport_percentage_basal_plate    = 100*transport_out_bp/transport_in
+    transport_out_sw = 0.0
+    for i in range(self.parameters["no_placentones"]-1):
+      if self.parameters["septal_veins"][i][0] == 1:
+        transport_out_sw += flux['transport_sw_outlet_fluxes'][i][0]
+      if self.parameters["septal_veins"][i][1] == 1:
+        transport_out_sw += flux['transport_sw_outlet_fluxes'][i][1]
+      if self.parameters["septal_veins"][i][2] == 1:
+        transport_out_sw += flux['transport_sw_outlet_fluxes'][i][2]
+    self.transport_percentage_septal_wall    = 100*transport_out_sw/transport_in
+    transport_out_ms = 0.0
+    for i in range(2):
+      transport_out_ms += flux['transport_ms_outlet_fluxes'][i]
+    self.transport_percentage_marginal_sinus = 100*transport_out_ms/transport_in
+
 
     # print("\n")
     # print (f"Scaling U:                   {U}"                                          )
