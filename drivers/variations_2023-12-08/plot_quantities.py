@@ -30,7 +30,7 @@ def plot(simulations, simulation_bins, parameter_values, parameter_name, paramet
   # Get data to plot.
   data = setup_plots.get_data(no_bins, simulation_bins, simulations)
 
-  # Plot data.
+  # Plot data (simple).
   setup_plots.plot(ax_velocity_magnitude_integral                 , parameter_values, data['data']['velocity_magnitude_integral']                 , data['averages']['velocity_magnitude_integral']                 )
   setup_plots.plot(ax_slow_velocity_percentage_ivs                , parameter_values, data['data']['slow_velocity_percentage_ivs']                , data['averages']['slow_velocity_percentage_ivs']                )
   setup_plots.plot(ax_slow_velocity_percentage_everywhere         , parameter_values, data['data']['slow_velocity_percentage_everywhere']         , data['averages']['slow_velocity_percentage_everywhere']         )
@@ -48,7 +48,17 @@ def plot(simulations, simulation_bins, parameter_values, parameter_name, paramet
   setup_plots.plot(ax_transport_percentage_basal_plate            , parameter_values, data['data']['transport_percentage_basal_plate']            , data['averages']['transport_percentage_basal_plate']            )
   setup_plots.plot(ax_transport_percentage_septal_wall            , parameter_values, data['data']['transport_percentage_septal_wall']            , data['averages']['transport_percentage_septal_wall']            )
   setup_plots.plot(ax_transport_percentage_marginal_sinus         , parameter_values, data['data']['transport_percentage_marginal_sinus']         , data['averages']['transport_percentage_marginal_sinus']         )
-  # TODO
+
+  # Plot data (combined).
+  # setup_plots.plot(ax_velocity_percentage_combined, parameter_values, data['data']['transport_percentage_marginal_sinus'], data['averages']['transport_percentage_marginal_sinus'], )
+  ax_velocity_percentage_combined .plot(parameter_values, data['averages']['velocity_percentage_basal_plate'    ], linestyle="dashed", linewidth=1)
+  ax_velocity_percentage_combined .plot(parameter_values, data['averages']['velocity_percentage_septal_wall'    ], linestyle="dashed", linewidth=1)
+  ax_velocity_percentage_combined .plot(parameter_values, data['averages']['velocity_percentage_marginal_sinus' ], linestyle="dashed", linewidth=1)
+  ax_velocity_percentage_combined .legend(["Basal plate", "Septal wall", "Marginal sinus"], loc="upper left", fontsize=18)
+  ax_transport_percentage_combined.plot(parameter_values, data['averages']['transport_percentage_basal_plate'   ], linestyle="dashed", linewidth=1)
+  ax_transport_percentage_combined.plot(parameter_values, data['averages']['transport_percentage_septal_wall'   ], linestyle="dashed", linewidth=1)
+  ax_transport_percentage_combined.plot(parameter_values, data['averages']['transport_percentage_marginal_sinus'], linestyle="dashed", linewidth=1)
+  ax_transport_percentage_combined.legend(["Basal plate", "Septal wall", "Marginal sinus"], loc="upper left", fontsize=18)
 
   # Style plots.
   setup_plots.style(fig_velocity_magnitude_integral                 , ax_velocity_magnitude_integral                 , parameter_name, r"$E_v ~ \text{(m}/\text{s)}$"                                        , y_scilimits=[-3  , -     3  ])
