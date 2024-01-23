@@ -18,6 +18,14 @@ parameters["final_time"]    = 1.0
 
 parameters["error_on_fail"] = True
 
+parameters['scaling_D']   = 1.0
+parameters['scaling_L']   = 1.0
+parameters['scaling_R']   = 1.0
+parameters['scaling_U']   = 1.0
+parameters['scaling_k']   = 1.0
+parameters['scaling_mu']  = 1.0
+parameters['scaling_rho'] = 1.0
+
 velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True, compile_entry='velocity-transport')
 
 ##################

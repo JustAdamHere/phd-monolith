@@ -405,7 +405,7 @@ def set_aptofem_parameters(simulation_no, velocity_model, geometry, central_cavi
 	set_parameter.set_parameter("velocity-transport", 70, f"velocity_convection_coefficient {velocity_convection_coefficient:.4e}")
 	set_parameter.set_parameter("velocity-transport", 71, f"velocity_reaction_coefficient {velocity_reaction_coefficient:.4e}")
 	set_parameter.set_parameter("velocity-transport", 72, f"velocity_pressure_coefficient {1.0}")
-	set_parameter.set_parameter("velocity-transport", 73, f"velocity_time_coefficient {1.0}")
+	set_parameter.set_parameter("velocity-transport", 73, f"velocity_time_coefficient {velocity_time_coefficient}")
 	set_parameter.set_parameter("velocity-transport", 74, f"velocity_forcing_coefficient {1.0}")
 
 	set_parameter.set_parameter("velocity-transport", 76, f"transport_diffusion_coefficient {transport_diffusion_coefficient:.4e}")
