@@ -55,8 +55,13 @@ module problem_options_geometry
             calculate_mesh_velocity => calculate_mesh_velocity_circular
         else if (trim(mesh_velocity_type) == 'incompressible') then
             calculate_mesh_velocity => calculate_mesh_velocity_incompressible
+        else if (trim(mesh_velocity_type) == 'incompressible2') then
+            calculate_mesh_velocity => calculate_mesh_velocity_incompressible2
         else if (trim(mesh_velocity_type) == 'oscillating_sine') then
             calculate_mesh_velocity => calculate_mesh_velocity_oscillating_sine
+        else
+            print *, "Error: mesh_velocity_type not supported: ", trim(mesh_velocity_type)
+            error stop
         end if
 
         call create_fe_solution(solution_moving_mesh, mesh_data, 'fe_projection_moving_mesh', aptofem_stored_keys, &
