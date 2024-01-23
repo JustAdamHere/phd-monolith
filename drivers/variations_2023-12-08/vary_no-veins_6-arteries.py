@@ -27,7 +27,7 @@ for i in range(0, max_run_no):
   no_arteries = simulations[i].get_no_arteries()
 
   if (no_arteries == 6):
-    simulation_bins[no_veins-1].append(run_no)
+    simulation_bins[no_veins].append(run_no)
 
 # Plot the data.
 import plot_quantities
