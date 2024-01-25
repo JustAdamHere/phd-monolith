@@ -381,7 +381,7 @@ program velocity_transport_convergence
 
     ! Setup velocity solution.
     call create_fe_solution(solution_velocity, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, dirichlet_bc_velocity)
-    call initialise_simple_geometry(problem_dim)
+    call initialise_simple_geometry(mesh_data, aptofem_stored_keys)
 
     ! Setup error outputting.
     errors_format  = '(g15.5)'
@@ -452,7 +452,8 @@ program velocity_transport_convergence
       ! Timestep and solve.
       do time_step_no = 1, no_time_steps
         call setup_previous_velocity(mesh_data, solution_velocity)
-        call move_mesh(mesh_data, problem_dim, solution_velocity%current_time + scheme_data_velocity%time_step, &
+        mesh_data_orig = mesh_data
+        call move_mesh(mesh_data, mesh_data_orig, problem_dim, solution_velocity%current_time + scheme_data_velocity%time_step, &
           scheme_data_velocity%time_step)
         call dirk_single_time_step(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
           aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, dirk_scheme_velocity, &

@@ -17,7 +17,7 @@ parameters["scaling_rho"] = 1.0
 velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True, compile_entry='velocity-transport_convergence')
 
 # Run the simulations.
-parameters["geometry"] = "square_constant_up"
+parameters["geometry"] = "square_analytic"
 
 parameters["final_time"]      = 0.0
 parameters["no_time_steps"]   = 0
