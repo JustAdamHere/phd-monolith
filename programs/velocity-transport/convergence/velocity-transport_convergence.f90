@@ -58,9 +58,10 @@ program velocity_transport_convergence
   !! COMMAND LINE ARGUMENTS !!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!
   no_command_line_arguments = command_argument_count()
-  if (no_command_line_arguments /= 3) then
+  if (no_command_line_arguments /= 4) then
       print *, "ERROR: Incorrect number of command line arguments."
-      print *, "       Usage: ./velocity-transport.out <nsb|ns-b|ns-nsb|s-b> <test_type> <no_meshes>"
+      print *, "       Usage: ./velocity-transport.out <nsb|ns-b|ns-nsb|s-b> <placentone|placenta|placentone-3d|square*> " // &
+        "<test_type> <no_meshes>"
       error stop
   end if
   call get_command_argument(1, assembly_name)
@@ -68,15 +69,21 @@ program velocity_transport_convergence
       call write_message(io_err, 'Error: assembly_name should be nsb or ns-b or ns-nsb or s-b.')
       error stop
   end if
-  call get_command_argument(2, test_type)
+  call get_command_argument(2, geometry_name)
+  if (geometry_name /= 'placentone' .and. geometry_name /= 'placenta' .and. geometry_name /= 'placentone-3d' .and. &
+      geometry_name(1:6) /= 'square') then
+    call write_message(io_err, 'Error: geometry_name should be placentone or placenta or placentone-3d or square*.')
+    error stop
+  end if
+  call get_command_argument(3, test_type)
   if (.false.) then
     call write_message(io_err, 'Error: assembly_name should be [TODO].')
     error stop
   end if
-  call get_command_argument(3, no_meshes_string)
+  call get_command_argument(4, no_meshes_string)
   read(no_meshes_string, *) no_meshes
 
-  geometry_name = 'square'
+  ! geometry_name = 'square'
 
   !!!!!!!!!!!!!!!!!!!
   !! APTOFEM SETUP !!

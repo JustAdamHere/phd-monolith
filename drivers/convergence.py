@@ -5,9 +5,13 @@ parameters = velocity_transport_convergence.get_default_run_parameters()
 parameters["verbose_output"] = False
 parameters["no_threads"]     = 1
 parameters["mesh_resolution"] = 2
-parameters["velocity_reaction_coefficient"] = 0.0
-parameters["velocity_time_coefficient"] = 1.0
-parameters["velocity_diffusion_coefficient"] = 1.0
+parameters["scaling_D"] = 1.0
+parameters["scaling_L"] = 1.0
+parameters["scaling_R"] = 1.0
+parameters["scaling_U"] = 1.0
+parameters["scaling_k"] = 1.0
+parameters["scaling_mu"] = 1.0
+parameters["scaling_rho"] = 1.0
 
 # Clean and compile.
 velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True, compile_entry='velocity-transport_convergence')
@@ -36,11 +40,12 @@ parameters["mesh_resolution"] = 0.1
 parameters["moving_mesh"]     = False
 velocity_transport_convergence.run(3, parameters)
 
-parameters["final_time"]      = 1e-1
-parameters["no_time_steps"]   = 10
-parameters["test_type"]       = "mm_velocity_space"
-parameters["mesh_resolution"] = 2
-parameters["moving_mesh"]     = True
+parameters["final_time"]         = 1e-1
+parameters["no_time_steps"]      = 10
+parameters["test_type"]          = "mm_velocity_space"
+parameters["mesh_resolution"]    = 2
+parameters["moving_mesh"]        = True
+parameters["mesh_velocity_type"] = "constant_up"
 velocity_transport_convergence.run(4, parameters)
 
 # Save output.
