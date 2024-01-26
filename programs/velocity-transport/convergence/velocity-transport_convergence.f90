@@ -29,10 +29,10 @@ program velocity_transport_convergence
   logical                       :: ifail
 
   ! Mesh refinement variables.
-  type(refinement_tree)              :: mesh_tree
-  integer, dimension(:), allocatable :: refinement_marks
-  integer                            :: mesh_no, no_eles, problem_dim, no_meshes, i
-  character(3)                       :: no_meshes_string
+  type(refinement_tree), dimension(:), allocatable :: mesh_tree
+  integer, dimension(:), allocatable               :: refinement_marks
+  integer                                          :: mesh_no, no_eles, problem_dim, no_meshes, i
+  character(3)                                     :: no_meshes_string
 
   ! Time stepping variables.
   class(sp_matrix_rhs), pointer   :: sp_matrix_rhs_data_velocity, sp_matrix_rhs_data_transport
@@ -136,6 +136,8 @@ program velocity_transport_convergence
 
     write(23111997, tsv_format) 'no_timesteps', 'mesh_no', 'dofs', 'L2_u', 'L2_p', 'L2_up', 'DG_up', 'L2_div_u'
 
+    allocate(mesh_tree(1))
+
     ! Loop over meshes.
     do mesh_no = 1, no_meshes
       ! Setup and solve for this mesh.
@@ -163,13 +165,15 @@ program velocity_transport_convergence
 
       ! Refine the mesh uniformly.
       if (mesh_no < no_meshes) then
-        call hp_mesh_adapt_uniform_refinement('uniform_refinement', aptofem_stored_keys, mesh_tree, mesh_data, &
+        call hp_mesh_adapt_uniform_refinement('uniform_refinement', aptofem_stored_keys, mesh_tree(1), mesh_data, &
           solution_velocity, mesh_data_orig, solution_velocity_orig, mesh_no)
 
         call delete_mesh(mesh_data_orig)
         call delete_solution(solution_velocity_orig)
       end if
     end do
+
+    deallocate(mesh_tree)
 
     call delete_solution(solution_velocity)
     call delete_mesh(mesh_data)
@@ -193,6 +197,8 @@ program velocity_transport_convergence
     errors_name(5) = '||div(u-u_h)||_L_2'
 
     write(23111997, tsv_format) 'no_timesteps', 'mesh_no', 'dofs', 'L2_u', 'L2_p', 'L2_up', 'DG_up', 'L2_div_u'
+
+    allocate(mesh_tree(1))
 
     ! Loop over meshes.
     do mesh_no = 1, no_meshes
@@ -270,13 +276,15 @@ program velocity_transport_convergence
 
       ! Refine the mesh uniformly.
       if (mesh_no < no_meshes) then
-        call hp_mesh_adapt_uniform_refinement('uniform_refinement', aptofem_stored_keys, mesh_tree, mesh_data, &
+        call hp_mesh_adapt_uniform_refinement('uniform_refinement', aptofem_stored_keys, mesh_tree(1), mesh_data, &
           solution_velocity, mesh_data_orig, solution_velocity_orig, mesh_no)
 
         call delete_mesh(mesh_data_orig)
         call delete_solution(solution_velocity_orig)
       end if
     end do
+
+    deallocate(mesh_tree)
 
     call delete_solution(solution_velocity)
     call delete_mesh(mesh_data)
@@ -398,6 +406,8 @@ program velocity_transport_convergence
 
     write(23111997, tsv_format) 'no_timesteps', 'mesh_no', 'dofs', 'L2_u', 'L2_p', 'L2_up', 'DG_up', 'L2_div_u'
 
+    allocate(mesh_tree(no_meshes-1))
+
     ! Loop over meshes.
     do mesh_no = 1, no_meshes
       ! Setup mesh.
@@ -408,12 +418,12 @@ program velocity_transport_convergence
       call create_fe_solution(solution_velocity, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, dirichlet_bc_velocity)
 
       ! Refine the mesh uniformly.
-      do i = 1, mesh_no - 1
-        call hp_mesh_adapt_uniform_refinement('uniform_refinement', aptofem_stored_keys, mesh_tree, mesh_data, &
+      do i = 1, mesh_no-1
+        call hp_mesh_adapt_uniform_refinement('uniform_refinement', aptofem_stored_keys, mesh_tree(mesh_no-1), mesh_data, &
           solution_velocity, mesh_data_orig, solution_velocity_orig, i)
 
-        call delete_mesh(mesh_data_orig)
         call delete_solution(solution_velocity_orig)
+        call delete_mesh(mesh_data_orig)
       end do
 
       ! Setup geometry and moving mesh storage.
@@ -501,6 +511,8 @@ program velocity_transport_convergence
       call delete_solution(solution_velocity)
       call delete_mesh(mesh_data)
     end do
+
+    deallocate(mesh_tree)
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! VELOCITY MOVING MESH TIME CONVERGENCE !!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

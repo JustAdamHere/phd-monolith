@@ -2,7 +2,7 @@ from programs import velocity_transport_convergence, velocity_transport
 
 # Problem setup.
 parameters = velocity_transport_convergence.get_default_run_parameters()
-parameters["verbose_output"] = True
+parameters["verbose_output"] = False
 parameters["no_threads"]     = 1
 parameters["scaling_D"] = 1.0
 parameters["scaling_L"] = 1.0
@@ -39,15 +39,13 @@ parameters["mesh_resolution"] = 0.1
 parameters["moving_mesh"]     = False
 velocity_transport_convergence.run(3, parameters)
 
-parameters["final_time"]         = 1e-1
+parameters["final_time"]         = 1.0e-3
 parameters["no_time_steps"]      = 10
 parameters["test_type"]          = "mm_velocity_space"
 parameters["mesh_resolution"]    = 2
 parameters["moving_mesh"]        = True
 parameters["mesh_velocity_type"] = "constant_up"
 velocity_transport_convergence.run(4, parameters)
-
-parameters["geometry"] = "square_constant_diagonal"
 
 parameters["final_time"]         = 1.0e-1
 parameters["no_time_steps"]      = 2
