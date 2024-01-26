@@ -501,6 +501,119 @@ program velocity_transport_convergence
       call delete_solution(solution_velocity)
       call delete_mesh(mesh_data)
     end do
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  !! VELOCITY MOVING MESH TIME CONVERGENCE !!
+  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  else if (trim(test_type) == 'mm_velocity_time') then
+    ! Setup error outputting.
+    errors_format  = '(g15.5)'
+    errors_name(1) = '||u-u_h||_L_2'
+    errors_name(2) = '||p-p_h||_L_2'
+    errors_name(3) = '||u-u_h,p-p_h||_L_2'
+    errors_name(4) = '||u-u_h,p-p_h||_DG'
+    errors_name(5) = '||div(u-u_h)||_L_2'
+
+    write(23111997, tsv_format) 'no_timesteps', 'mesh_no', 'dofs', 'L2_u', 'L2_p', 'L2_up', 'DG_up', 'L2_div_u'
+
+    ! Loop over meshes.
+    do mesh_no = 1, no_meshes
+      ! Setup mesh.
+      call create_mesh(mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
+      problem_dim = mesh_data%problem_dim
+
+      ! Setup velocity solution.
+      call create_fe_solution(solution_velocity, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, dirichlet_bc_velocity)
+
+      ! Setup geometry and moving mesh storage.
+      call initialise_simple_geometry(mesh_data, aptofem_stored_keys)
+
+      ! Reset timestepping.
+      solution_velocity%current_time    = 0.0_db
+      scheme_data_velocity%current_time = 0.0_db
+      scheme_data_velocity%time_step    = final_local_time/real(no_time_steps, db)
+      call set_current_time(solution_velocity, 0.0_db)
+
+      ! Store steady-state assembly for initial condition.
+      if (assembly_name == 'nsb') then
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element',       jacobian_nsb_ss, 1)
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', jacobian_face_nsb_ss, 1)
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element',         element_residual_nsb_ss, 1)
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face',   element_residual_face_nsb_ss,&
+          1)
+      else
+        call write_message(io_err, 'Error: not implemented for other assemblies other than nsb.')
+        error stop
+      end if
+
+      ! Setup and solve steady-state problem.
+      call set_up_newton_solver_parameters('solver_velocity', aptofem_stored_keys, scheme_data_velocity)
+      call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', aptofem_stored_keys, &
+        sp_matrix_rhs_data_velocity, 1, scheme_data_velocity)
+      call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', aptofem_stored_keys, &
+        sp_matrix_rhs_data_velocity, 2, scheme_data_velocity)
+      call newton_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', aptofem_stored_keys, &
+        sp_matrix_rhs_data_velocity, scheme_data_velocity, ifail)
+      call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', aptofem_stored_keys, &
+        sp_matrix_rhs_data_velocity,  5, scheme_data_velocity)
+
+      ! Store appropriate time-dependent assembly routines.
+      if (assembly_name == 'nsb') then
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element',       jacobian_nsb_mm, 1)
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', jacobian_face_nsb_mm, 1)
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element',         element_residual_nsb_mm, 1)
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face',   element_residual_face_nsb_mm,&
+          1)
+      else
+        call write_message(io_err, 'Error: not implemented for other assemblies other than nsb.')
+        error stop
+      end if
+
+      ! Setup DIRK timestepping.
+      call set_up_dirk_timestepping('solver_velocity', aptofem_stored_keys, dirk_scheme_velocity)
+
+      ! Setup for this mesh.
+      call set_up_newton_solver_parameters('solver_velocity', aptofem_stored_keys, scheme_data_velocity)
+      call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', aptofem_stored_keys, &
+        sp_matrix_rhs_data_velocity, 1, scheme_data_velocity)
+      call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', aptofem_stored_keys, &
+        sp_matrix_rhs_data_velocity, 2, scheme_data_velocity)
+
+      ! Get DoFs.
+      velocity_dofs = get_no_dofs(solution_velocity)
+
+      ! Timestep and solve.
+      do time_step_no = 1, no_time_steps
+        call setup_previous_velocity(mesh_data, solution_velocity)
+        call move_mesh(mesh_data, prev_mesh_data, problem_dim, solution_velocity%current_time + scheme_data_velocity%time_step, &
+          scheme_data_velocity%time_step)
+        call dirk_single_time_step(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
+          aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, dirk_scheme_velocity, &
+          scheme_data_velocity%current_time, scheme_data_velocity%time_step, velocity_dofs, time_step_no, .false., &
+          norm_diff_u)
+        call finalise_previous_velocity()
+      end do
+
+      ! Norms and output.
+      call error_norms_velocity(errors, mesh_data, solution_velocity)
+      call write_data   ('output_data', aptofem_stored_keys, errors, 5, errors_name, errors_format, mesh_data, &
+        solution_velocity)
+      call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, mesh_no, mesh_data, solution_velocity)
+      write(23111997, tsv_format) no_time_steps, mesh_no, velocity_dofs, errors(1), errors(2), errors(3), errors(4), errors(5)
+
+      ! Clean up solver storage.
+      call linear_fe_solver(solution_velocity,  mesh_data, fe_solver_routines_velocity,  'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity,  5, scheme_data_velocity)
+
+      ! Refine the timestep.
+      if (mesh_no < no_meshes) then
+        no_time_steps = 2*no_time_steps
+      end if
+
+      ! Clean up.
+      call finalise_simple_geometry()
+      call delete_solution(solution_velocity)
+      call delete_mesh(mesh_data)
+    end do
   else
     call write_message(io_err, 'Error: unknown test_type.')
     error stop

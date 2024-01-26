@@ -457,7 +457,7 @@ module problem_options_geometry
             ! mesh_velocity = calculate_mesh_velocity(mesh_data%coords(:, i), problem_dim, mesh_time)
             element => mesh_data%node_eles(i)
             element_number = element%value ! Doesn't matter which element we choose, as the solution is continuous.
-            call compute_uh_glob_pt(mesh_velocity, problem_dim, element_number, mesh_data%coords(:, i), problem_dim, &
+            call compute_uh_glob_pt(mesh_velocity, problem_dim, element_number, mesh_data_orig%coords(i, :), problem_dim, &
                 mesh_data_orig, solution_moving_mesh)
             
             mesh_data%coords(:, i) = mesh_data%coords(:, i) + mesh_velocity*time_step

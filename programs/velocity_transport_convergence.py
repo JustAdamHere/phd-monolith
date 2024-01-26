@@ -49,7 +49,7 @@ def run(simulation_no, p):
 	
 	assert(p["velocity_model" ] in ['nsb'        , 'ns-nsb'        , 'ns-b'     , 's-b'  ])
 	assert(p["run_type"       ] in ['serial'     , 'openmp'        , 'mpi'               ])
-	assert(p["geometry"       ] in ['placentone' , 'placentone-3d' , 'placenta', 'square_analytic', 'square_constant_up'])
+	# assert(p["geometry"       ] in ['placentone' , 'placentone-3d' , 'placenta', 'square_analytic', 'square_constant_up'])
 
 	if (p["no_time_steps"] == 0):
 		velocity_ss = True
