@@ -38,7 +38,7 @@ module problem_options_geometry
         integer :: problem_dim
 
         problem_dim = mesh_data%problem_dim
-        allocate (move_mesh_centre(problem_dim))
+        allocate(move_mesh_centre(problem_dim))
         move_mesh_centre = 0.5_db
 
         if (trim(mesh_velocity_type) == 'zero') then

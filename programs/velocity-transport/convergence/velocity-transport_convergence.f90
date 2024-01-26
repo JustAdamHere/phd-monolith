@@ -31,7 +31,7 @@ program velocity_transport_convergence
   ! Mesh refinement variables.
   type(refinement_tree)              :: mesh_tree
   integer, dimension(:), allocatable :: refinement_marks
-  integer                            :: mesh_no, no_eles, problem_dim, no_meshes
+  integer                            :: mesh_no, no_eles, problem_dim, no_meshes, i
   character(3)                       :: no_meshes_string
 
   ! Time stepping variables.
@@ -90,7 +90,6 @@ program velocity_transport_convergence
   !!!!!!!!!!!!!!!!!!!
   call AptoFEM_initialize     (aptofem_stored_keys, 'aptofem_control_file.dat', './common/')
   call setup_velocity_bcs     (geometry_name)
-  call create_mesh            (mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
   call get_user_data          ('user_data', aptofem_stored_keys)
   call get_user_data_velocity ('user_data', aptofem_stored_keys)
   call get_user_data_transport('user_data', aptofem_stored_keys)
@@ -110,6 +109,9 @@ program velocity_transport_convergence
   !! VELOCITY STEADY-STATE SPATIAL CONVERGENCE !!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   if (trim(test_type) == 'ss_velocity_space') then
+    ! Setup mesh.
+    call create_mesh(mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
+
     ! Setup velocity solution.
     call create_fe_solution(solution_velocity, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, dirichlet_bc_velocity)
 
@@ -170,11 +172,15 @@ program velocity_transport_convergence
     end do
 
     call delete_solution(solution_velocity)
+    call delete_mesh(mesh_data)
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! VELOCITY TIME-DEPENDENT SPATIAL CONVERGENCE !!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   else if (trim(test_type) == 'velocity_space') then
+    ! Setup mesh.
+    call create_mesh(mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
+
     ! Setup velocity solution.
     call create_fe_solution(solution_velocity, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, dirichlet_bc_velocity)
 
@@ -273,10 +279,15 @@ program velocity_transport_convergence
     end do
 
     call delete_solution(solution_velocity)
+    call delete_mesh(mesh_data)
+    
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! VELOCITY TIME-DEPENDENT SPATIAL CONVERGENCE !!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   else if (trim(test_type) == 'velocity_time') then
+    ! Setup mesh.
+    call create_mesh(mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
+
     ! Setup velocity solution.
     call create_fe_solution(solution_velocity, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, dirichlet_bc_velocity)
 
@@ -371,18 +382,12 @@ program velocity_transport_convergence
     end do
 
     call delete_solution(solution_velocity)
+    call delete_mesh(mesh_data)
 
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   !! VELOCITY MOVING MESH SPATIAL CONVERGENCE !!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   else if (trim(test_type) == 'mm_velocity_space') then
-    ! Set problem dimension.
-    problem_dim = mesh_data%problem_dim
-
-    ! Setup velocity solution.
-    call create_fe_solution(solution_velocity, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, dirichlet_bc_velocity)
-    call initialise_simple_geometry(mesh_data, aptofem_stored_keys)
-
     ! Setup error outputting.
     errors_format  = '(g15.5)'
     errors_name(1) = '||u-u_h||_L_2'
@@ -395,6 +400,25 @@ program velocity_transport_convergence
 
     ! Loop over meshes.
     do mesh_no = 1, no_meshes
+      ! Setup mesh.
+      call create_mesh(mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
+      problem_dim = mesh_data%problem_dim
+
+      ! Setup velocity solution.
+      call create_fe_solution(solution_velocity, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, dirichlet_bc_velocity)
+
+      ! Refine the mesh uniformly.
+      do i = 1, mesh_no - 1
+        call hp_mesh_adapt_uniform_refinement('uniform_refinement', aptofem_stored_keys, mesh_tree, mesh_data, &
+          solution_velocity, mesh_data_orig, solution_velocity_orig, i)
+
+        call delete_mesh(mesh_data_orig)
+        call delete_solution(solution_velocity_orig)
+      end do
+
+      ! Setup geometry and moving mesh storage.
+      call initialise_simple_geometry(mesh_data, aptofem_stored_keys)
+
       ! Reset timestepping.
       solution_velocity%current_time    = 0.0_db
       scheme_data_velocity%current_time = 0.0_db
@@ -452,13 +476,13 @@ program velocity_transport_convergence
       ! Timestep and solve.
       do time_step_no = 1, no_time_steps
         call setup_previous_velocity(mesh_data, solution_velocity)
-        mesh_data_orig = mesh_data
-        call move_mesh(mesh_data, mesh_data_orig, problem_dim, solution_velocity%current_time + scheme_data_velocity%time_step, &
+        call move_mesh(mesh_data, prev_mesh_data, problem_dim, solution_velocity%current_time + scheme_data_velocity%time_step, &
           scheme_data_velocity%time_step)
         call dirk_single_time_step(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
           aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, dirk_scheme_velocity, &
           scheme_data_velocity%current_time, scheme_data_velocity%time_step, velocity_dofs, time_step_no, .false., &
           norm_diff_u)
+        call finalise_previous_velocity()
       end do
 
       ! Norms and output.
@@ -472,18 +496,11 @@ program velocity_transport_convergence
       call linear_fe_solver(solution_velocity,  mesh_data, fe_solver_routines_velocity,  'solver_velocity', &
         aptofem_stored_keys, sp_matrix_rhs_data_velocity,  5, scheme_data_velocity)
 
-      ! Refine the mesh uniformly.
-      if (mesh_no < no_meshes) then
-        call hp_mesh_adapt_uniform_refinement('uniform_refinement', aptofem_stored_keys, mesh_tree, mesh_data, &
-          solution_velocity, mesh_data_orig, solution_velocity_orig, mesh_no)
-
-        call delete_mesh(mesh_data_orig)
-        call delete_solution(solution_velocity_orig)
-      end if
+      ! Clean up.
+      call finalise_simple_geometry()
+      call delete_solution(solution_velocity)
+      call delete_mesh(mesh_data)
     end do
-
-    call delete_solution(solution_velocity)
-    deallocate(move_mesh_centre)
   else
     call write_message(io_err, 'Error: unknown test_type.')
     error stop
@@ -493,7 +510,6 @@ program velocity_transport_convergence
   !! CLEAN UP !!
   !!!!!!!!!!!!!!
   close(23111997)
-  call delete_mesh(mesh_data)
   call finalise_user_data()
   call AptoFEM_finalize  (aptofem_stored_keys)
 end program
