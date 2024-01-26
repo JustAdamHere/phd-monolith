@@ -476,7 +476,8 @@ program velocity_transport_convergence
       ! Timestep and solve.
       do time_step_no = 1, no_time_steps
         call setup_previous_velocity(mesh_data, solution_velocity)
-        call move_mesh(mesh_data, prev_mesh_data, problem_dim, solution_velocity%current_time, scheme_data_velocity%time_step)
+        call move_mesh(mesh_data, prev_mesh_data, problem_dim, solution_velocity%current_time, scheme_data_velocity%time_step, &
+          aptofem_stored_keys)
         call dirk_single_time_step(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
           aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, dirk_scheme_velocity, &
           scheme_data_velocity%current_time, scheme_data_velocity%time_step, velocity_dofs, time_step_no, .false., &
@@ -583,7 +584,8 @@ program velocity_transport_convergence
       ! Timestep and solve.
       do time_step_no = 1, no_time_steps
         call setup_previous_velocity(mesh_data, solution_velocity)
-        call move_mesh(mesh_data, prev_mesh_data, problem_dim, solution_velocity%current_time, scheme_data_velocity%time_step)
+        call move_mesh(mesh_data, prev_mesh_data, problem_dim, solution_velocity%current_time, scheme_data_velocity%time_step, &
+          aptofem_stored_keys)
         call dirk_single_time_step(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
           aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, dirk_scheme_velocity, &
           scheme_data_velocity%current_time, scheme_data_velocity%time_step, velocity_dofs, time_step_no, .false., &

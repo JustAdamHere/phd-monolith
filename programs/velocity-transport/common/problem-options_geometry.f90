@@ -436,7 +436,7 @@ module problem_options_geometry
         call delete_solution(solution_moving_mesh)
     end subroutine
     
-    subroutine move_mesh(mesh_data, mesh_data_orig, problem_dim, mesh_time, time_step)
+    subroutine move_mesh(mesh_data, mesh_data_orig, problem_dim, mesh_time, time_step, aptofem_stored_keys)
         use param
         
         implicit none
@@ -444,6 +444,7 @@ module problem_options_geometry
         type(mesh), intent(inout) :: mesh_data, mesh_data_orig
         integer, intent(in)       :: problem_dim
         real(db), intent(in)      :: mesh_time, time_step
+        type(aptofem_keys), pointer :: aptofem_stored_keys
         
         integer                          :: no_nodes, i, element_number
         real(db), dimension(problem_dim) :: mesh_velocity
@@ -455,7 +456,7 @@ module problem_options_geometry
         call project_function(solution_moving_mesh, mesh_data_orig, project_mesh_velocity)
         
         do i = 1, no_nodes
-            ! mesh_velocity = calculate_mesh_velocity(mesh_data%coords(:, i), problem_dim, mesh_time)
+            ! mesh_velocity = calculate_mesh_velocity(mesh_data_orig%coords(:, i), problem_dim, mesh_time)
             element => mesh_data%node_eles(i)
             element_number = element%value ! Doesn't matter which element we choose, as the solution is continuous.
             call compute_uh_glob_pt(mesh_velocity, problem_dim, element_number, mesh_data_orig%coords(i, :), problem_dim, &
@@ -463,6 +464,13 @@ module problem_options_geometry
             
             mesh_data%coords(:, i) = mesh_data%coords(:, i) + mesh_velocity*time_step
         end do
+
+        ! Project the mesh velocity onto the new mesh.
+        call delete_solution(solution_moving_mesh)
+        call create_fe_solution(solution_moving_mesh, mesh_data, 'fe_projection_moving_mesh', aptofem_stored_keys, &
+            anal_soln_moving_mesh, get_boundary_no_moving_mesh)
+        call set_current_time(solution_moving_mesh, mesh_time + time_step)
+        call project_function(solution_moving_mesh, mesh_data_orig, project_mesh_velocity)
     end subroutine
 
     subroutine anal_soln_moving_mesh(u, global_point, problem_dim, no_vars, boundary_no, t)

@@ -752,15 +752,9 @@ program velocity_transport
         ! MOVE MESH !
         !!!!!!!!!!!!!
         if (moving_mesh) then
-            call set_current_time(solution_moving_mesh, current_time)
-
-            mesh_data_orig = mesh_data
-            call move_mesh(mesh_data, mesh_data_orig, problem_dim, current_time, time_step)
-            call delete_mesh(mesh_data_orig)
+            call move_mesh(mesh_data, prev_mesh_data, problem_dim, current_time, time_step, aptofem_stored_keys)
 
             call update_geometry(current_time, time_step, geometry_name)
-
-            call set_current_time(solution_moving_mesh, current_time)
 
 #ifdef OPENMP        
 !$OMP PARALLEL PRIVATE(thread_no)
