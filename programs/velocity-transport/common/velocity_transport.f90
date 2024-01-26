@@ -119,11 +119,6 @@ program velocity_transport
     call get_user_data_velocity ('user_data', aptofem_stored_keys)
     call get_user_data_transport('user_data', aptofem_stored_keys)
     call set_space_type_velocity(aptofem_stored_keys)
-    if (geometry_name(1:6) == "square") then
-        call initialise_simple_geometry(mesh_data, aptofem_stored_keys)
-    else
-        call initialise_geometry(geometry_name, mesh_data, aptofem_stored_keys)
-    end if
 
     if (moving_mesh) then
 #ifdef OPENMP        
@@ -204,6 +199,12 @@ program velocity_transport
 
         call delete_mesh(mesh_data_orig)
     end do
+
+    if (geometry_name(1:6) == "square") then
+        call initialise_simple_geometry(mesh_data, aptofem_stored_keys)
+    else
+        call initialise_geometry(geometry_name, mesh_data, aptofem_stored_keys)
+    end if
 
     !!!!!!!!!!!!!!!!!!!!!!!!!
     !! GET MESH ATTRIBUTES !!

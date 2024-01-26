@@ -452,6 +452,10 @@ module problem_options_geometry
         
         no_nodes = mesh_data%no_nodes
 
+        ! Project the mesh velocity onto the original mesh.
+        call delete_solution(solution_moving_mesh)
+        call create_fe_solution(solution_moving_mesh, mesh_data_orig, 'fe_projection_moving_mesh', aptofem_stored_keys, &
+            anal_soln_moving_mesh, get_boundary_no_moving_mesh)
         call set_current_time(solution_moving_mesh, mesh_time)
         call project_function(solution_moving_mesh, mesh_data_orig, project_mesh_velocity)
         
@@ -459,7 +463,7 @@ module problem_options_geometry
             ! mesh_velocity = calculate_mesh_velocity(mesh_data_orig%coords(:, i), problem_dim, mesh_time)
             element => mesh_data%node_eles(i)
             element_number = element%value ! Doesn't matter which element we choose, as the solution is continuous.
-            call compute_uh_glob_pt(mesh_velocity, problem_dim, element_number, mesh_data_orig%coords(i, :), problem_dim, &
+            call compute_uh_glob_pt(mesh_velocity, problem_dim, element_number, mesh_data_orig%coords(:, i), problem_dim, &
                 mesh_data_orig, solution_moving_mesh)
             
             mesh_data%coords(:, i) = mesh_data%coords(:, i) + mesh_velocity*time_step
@@ -470,7 +474,7 @@ module problem_options_geometry
         call create_fe_solution(solution_moving_mesh, mesh_data, 'fe_projection_moving_mesh', aptofem_stored_keys, &
             anal_soln_moving_mesh, get_boundary_no_moving_mesh)
         call set_current_time(solution_moving_mesh, mesh_time + time_step)
-        call project_function(solution_moving_mesh, mesh_data_orig, project_mesh_velocity)
+        call project_function(solution_moving_mesh, mesh_data, project_mesh_velocity)
     end subroutine
 
     subroutine anal_soln_moving_mesh(u, global_point, problem_dim, no_vars, boundary_no, t)
