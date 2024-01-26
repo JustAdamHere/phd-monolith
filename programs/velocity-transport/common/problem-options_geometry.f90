@@ -451,6 +451,7 @@ module problem_options_geometry
         
         no_nodes = mesh_data%no_nodes
 
+        call set_current_time(solution_moving_mesh, mesh_time)
         call project_function(solution_moving_mesh, mesh_data_orig, project_mesh_velocity)
         
         do i = 1, no_nodes
