@@ -23,6 +23,8 @@ module jacobi_residual_nsb_mm
     use problem_options
     use problem_options_velocity
     use problem_options_geometry
+    use basis_fns_storage_type
+    use aptofem_fe_matrix_assembly
 
     include 'assemble_residual_element.h'
 
@@ -45,17 +47,39 @@ module jacobi_residual_nsb_mm
     real(db) :: dirk_scaling_factor,current_time
 
     real(db) :: diffusion_terms, convection_terms, reaction_terms, forcing_terms, pressure_terms, incompressibility_terms, &
-      time_terms
+      time_terms, prev_time_terms
     integer  :: element_region_id
 
     ! Moving mesh variables.
     real(db), dimension(facet_data%problem_dim) :: mesh_velocity, prev_uh
-    real(db), dimension(prev_problem_dim, prev_no_quad_points_volume_max) :: prev_global_points_ele
-    real(db), dimension(prev_no_quad_points_volume_max) :: prev_jacobian, prev_quad_weights_ele
-    real(db), dimension(prev_dim_soln_coeff, prev_no_quad_points_volume_max, no_ele_dofs_per_var_max) :: prev_phi
-    integer, dimension(prev_dim_soln_coeff, no_ele_dofs_per_var_max) :: prev_global_dof_numbers
-    integer, dimension(prev_dim_soln_coeff) :: prev_no_dofs_per_variable
+    real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: prev_global_points_ele
+    real(db), dimension(facet_data%no_quad_points) :: prev_jacobian, prev_quad_weights_ele
+    real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable)) :: prev_phi
+    integer, dimension(facet_data%dim_soln_coeff, maxval(facet_data%no_dofs_per_variable)) :: prev_global_dof_numbers
+    integer, dimension(facet_data%dim_soln_coeff) :: prev_no_dofs_per_variable
     integer :: prev_no_quad_points
+
+    character(len=aptofem_length_key_def) :: control_parameter
+
+    integer             :: prev_dim_soln_coeff, prev_no_pdes, prev_no_elements, prev_no_nodes, prev_no_faces, prev_problem_dim, &
+      prev_npinc, prev_no_quad_points_volume_max, prev_no_quad_points_face_max
+    type(basis_storage) :: prev_fe_basis_info
+
+    ! Setup basis storage.
+    prev_dim_soln_coeff = get_dim_soln_coeff(prev_solution_velocity_data)
+    prev_no_pdes        = get_no_pdes(prev_solution_velocity_data)
+
+    call get_mesh_info(prev_no_elements, prev_no_nodes, prev_no_faces, prev_problem_dim, prev_mesh_data)
+
+    prev_npinc = 2
+    call compute_max_no_quad_points(prev_no_quad_points_volume_max, prev_no_quad_points_face_max, prev_mesh_data, &
+      prev_solution_velocity_data, prev_npinc)
+
+    control_parameter = 'uh_ele'
+    call initialize_fe_basis_storage(prev_fe_basis_info, control_parameter, prev_solution_velocity_data, &
+      prev_problem_dim, prev_no_quad_points_volume_max, prev_no_quad_points_face_max)
+
+    call create_aptofem_dg_penalisation(prev_mesh_data, prev_solution_velocity_data)
 
     ! Integration info on the previous mesh.
     call element_integration_info(prev_dim_soln_coeff, prev_problem_dim, prev_mesh_data, prev_solution_velocity_data, &
@@ -94,7 +118,9 @@ module jacobi_residual_nsb_mm
         end do
         call forcing_function_velocity(floc(:,qk),global_points_ele(:,qk),problem_dim,no_pdes,current_time,&
           element_region_id)
-        mesh_velocity = calculate_mesh_velocity(global_points_ele(:,qk),problem_dim,current_time)
+        !mesh_velocity = calculate_mesh_velocity(global_points_ele(:,qk),problem_dim,current_time)
+        call compute_uh_glob_pt(mesh_velocity, problem_dim, element_number, global_points_ele(:, qk), problem_dim, &
+          mesh_data, solution_moving_mesh)
         call convective_fluxes(interpolant_uh(:,qk),fluxes(:,:,qk),problem_dim,no_pdes,mesh_velocity)
 
       end do
@@ -114,6 +140,22 @@ module jacobi_residual_nsb_mm
           prev_fe_basis_info%basis_element%basis_fns(i)%fem_basis_fns(1:prev_no_quad_points, 1:prev_no_dofs_per_variable(i), 1)
       end do
 
+      ! ! Separately doing the previous mesh integral.
+      ! do qk = 1, prev_no_quad_points
+      !   prev_uh = uh_element(prev_fe_basis_info, prev_no_pdes, qk)
+
+      !   do ieqn = 1, prev_problem_dim
+      !     do i = 1, prev_no_dofs_per_variable(ieqn)
+      !       prev_time_terms = calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
+      !         element_region_id)* &
+      !           dirk_scaling_factor*prev_uh(ieqn)*prev_phi(ieqn, qk, i)
+
+      !       element_rhs(ieqn, i) = element_rhs(ieqn, i) + &
+      !         prev_jacobian(qk)*prev_quad_weights_ele(qk)*prev_time_terms
+      !     end do
+      !   end do
+      ! end do
+
       ! Momentum Equations
 
       do ieqn = 1,problem_dim
@@ -124,21 +166,35 @@ module jacobi_residual_nsb_mm
 
           ! Loop over phi_i
 
+          ! Really inefficient way of doing this...
           prev_uh = uh_element(prev_fe_basis_info, prev_no_pdes, qk)
 
           do i = 1,no_dofs_per_variable(ieqn)
+            ! TODO: DIRK scaling factor needs investigation. I think this only appeared on one term in Paul's original
+            !   discretisation.
+            ! Note: this assumes the time coefficient takes the same value on both meshes.
+            prev_time_terms = calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
+              element_region_id)* &
+                dirk_scaling_factor*prev_uh(ieqn)*prev_phi(ieqn, qk, i)
 
-            ! ! Note: this assumes the time coefficient doesn't vary spatially.
-            time_terms = calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
+            time_terms = -calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
-              ( &
-                ! prev_uh(ieqn)*prev_phi(ieqn, qk, i) - &
-                prev_jacobian(qk)*prev_quad_weights_ele(qk)*prev_uh(ieqn)*prev_phi(ieqn, qk, i) - &
-                dirk_scaling_factor*interpolant_uh(ieqn, qk)*phi(ieqn, qk, i) &
-              )
-              ! (uh_previous_time_step(ieqn, qk) - dirk_scaling_factor*interpolant_uh(ieqn, qk))*phi(ieqn, qk, i)
+                  dirk_scaling_factor*interpolant_uh(ieqn, qk)*phi(ieqn, qk, i)
+
+            ! prev_time_terms = 1e10*prev_jacobian(qk)
+
+            ! print *, prev_uh(ieqn)
+
+            ! DID CHANGE: prev_uh(ieqn)
 
             ! time_terms = 0.0_db
+            ! prev_time_terms = 0.0_db
+
+            ! if (prev_time_terms > time_terms) then
+            !   print *, "+: ", prev_time_terms, time_terms
+            ! else
+            !   print *, "-: ", prev_time_terms, time_terms
+            ! end if
 
             diffusion_terms = calculate_velocity_diffusion_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
@@ -167,7 +223,8 @@ module jacobi_residual_nsb_mm
               reaction_terms + &
               pressure_terms + &
               forcing_terms &
-            )
+            ) &
+            + prev_jacobian(qk)*prev_quad_weights_ele(qk)*prev_time_terms
 
           end do
         end do
@@ -197,6 +254,8 @@ module jacobi_residual_nsb_mm
       end do
 
     end associate
+
+    call delete_fe_basis_storage(prev_fe_basis_info)
 
   end subroutine element_residual_nsb_mm
 
@@ -294,7 +353,10 @@ module jacobi_residual_nsb_mm
             gradient_uh1(i,qk,1:problem_dim) = grad_uh_face1(fe_basis_info,problem_dim,i,qk,1)
           end do
 
-          mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! We pass neighbours(1) because this solution is continuous.
+          call compute_uh_glob_pt(mesh_velocity, problem_dim, neighbours(1), global_points_face(:, qk), problem_dim, &
+            mesh_data, solution_moving_mesh)
 
           call anal_soln_velocity(uloc(:,qk),global_points_face(:,qk),problem_dim,no_pdes,bdry_face,current_time, &
             face_element_region_ids(1))
@@ -356,7 +418,10 @@ module jacobi_residual_nsb_mm
             gradient_uh1(i,qk,1:problem_dim) = grad_uh_face1(fe_basis_info,problem_dim,i,qk,1)
             gradient_uh2(i,qk,1:problem_dim) = grad_uh_face2(fe_basis_info,problem_dim,i,qk,1)
           end do
-          mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! We pass neighbours(1) because this solution is continuous.
+          call compute_uh_glob_pt(mesh_velocity, problem_dim, neighbours(1), global_points_face(:, qk), problem_dim, &
+            mesh_data, solution_moving_mesh)
           call lax_friedrichs(nflxsoln(:,qk),interpolant_uh1(:,qk), &
             interpolant_uh2(:,qk),face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
         end do
@@ -372,11 +437,13 @@ module jacobi_residual_nsb_mm
           %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable2(i),1)
         end do
 
-        if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
-          region_id = face_element_region_ids(1)
-        else
-          region_id = face_element_region_ids(2)
-        end if
+        ! TODO: wtf?!
+        ! if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
+        !   region_id = face_element_region_ids(1)
+        ! else
+        !   region_id = face_element_region_ids(2)
+        ! end if
+        region_id = face_element_region_ids(1)
 
         do ieqn = 1,problem_dim
           do qk = 1,no_quad_points
@@ -421,7 +488,10 @@ module jacobi_residual_nsb_mm
             gradient_uh1(i,qk,1:problem_dim) = grad_uh_face1(fe_basis_info,problem_dim,i,qk,1)
           end do
 
-          mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! We pass neighbours(1) because this solution is continuous.
+          call compute_uh_glob_pt(mesh_velocity, problem_dim, neighbours(1), global_points_face(:, qk), problem_dim, &
+            mesh_data, solution_moving_mesh)
 
           call anal_soln_velocity(uloc(:,qk),global_points_face(:,qk),problem_dim,no_pdes,bdry_face,current_time, &
             face_element_region_ids(1))
@@ -509,7 +579,10 @@ module jacobi_residual_nsb_mm
             gradient_uh1(i,qk,1:problem_dim) = grad_uh_face1(fe_basis_info,problem_dim,i,qk,1)
             gradient_uh2(i,qk,1:problem_dim) = grad_uh_face2(fe_basis_info,problem_dim,i,qk,1)
           end do
-          mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! We pass neighbours(1) because this solution is continuous.
+          call compute_uh_glob_pt(mesh_velocity, problem_dim, neighbours(1), global_points_face(:, qk), problem_dim, &
+            mesh_data, solution_moving_mesh)
           call lax_friedrichs(nflxsoln(:,qk),interpolant_uh1(:,qk), &
             interpolant_uh2(:,qk),face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
         end do
@@ -673,7 +746,9 @@ module jacobi_residual_nsb_mm
 
       do qk = 1,no_quad_points
         interpolant_uh(:,qk) = uh_element(fe_basis_info,no_pdes,qk)
-        mesh_velocity = calculate_mesh_velocity(global_points_ele(:,qk),problem_dim,current_time)
+        ! mesh_velocity = calculate_mesh_velocity(global_points_ele(:,qk),problem_dim,current_time)
+        call compute_uh_glob_pt(mesh_velocity, problem_dim, element_number, global_points_ele(:, qk), problem_dim, &
+          mesh_data, solution_moving_mesh)
         call jacobian_convective_fluxes(interpolant_uh(:,qk), &
           fluxes_prime(:,:,:,qk),problem_dim,no_pdes,mesh_velocity)
       end do
@@ -847,14 +922,17 @@ module jacobi_residual_nsb_mm
             grad_uh1(i,qk,1:problem_dim) = grad_uh_face1(fe_basis_info,problem_dim,i,qk,1)
           end do
 
-          mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! We pass neighbours(1) because this solution is continuous.
+          call compute_uh_glob_pt(mesh_velocity, problem_dim, neighbours(1), global_points_face(:, qk), problem_dim, &
+            mesh_data, solution_moving_mesh)
 
           call anal_soln_velocity(uloc(:,qk),global_points_face(:,qk),problem_dim,no_pdes,0,current_time, &
             face_element_region_ids(1))
           call compute_boundary_condition(interpolant_uh2(:,qk), &
             interpolant_uh1(:,qk),uloc(:,qk),abs(bdry_face),problem_dim,no_pdes)
-            alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
-            face_normals(:,qk),problem_dim,no_pdes)
+          alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
+            face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh1(:,qk), &
             fluxes_prime1(:,:,:,qk),problem_dim,no_pdes, mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh2(:,qk), &
@@ -891,8 +969,9 @@ module jacobi_residual_nsb_mm
 
                     if (ieqn <= problem_dim .and. ivar <= problem_dim) then
                       convective_flux_1 = 0.5_db*dot_product( &
-                      fluxes_prime1(1:problem_dim,ieqn,ivar,qk), &
-                      face_normals(1:problem_dim,qk))
+                        fluxes_prime1(1:problem_dim,ieqn,ivar,qk), &
+                        face_normals(1:problem_dim,qk)&
+                      )
                       if (ieqn == ivar) then
                         convective_flux_1 = convective_flux_1+0.5_db*alpha(qk)
                       endif
@@ -958,9 +1037,12 @@ module jacobi_residual_nsb_mm
             grad_uh1(i,qk,1:problem_dim) = grad_uh_face1(fe_basis_info,problem_dim,i,qk,1)
             grad_uh2(i,qk,1:problem_dim) = grad_uh_face2(fe_basis_info,problem_dim,i,qk,1)
           end do
-          mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! We pass neighbours(1) because this solution is continuous.
+          call compute_uh_glob_pt(mesh_velocity, problem_dim, neighbours(1), global_points_face(:, qk), problem_dim, &
+            mesh_data, solution_moving_mesh)
           alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
-            face_normals(:,qk),problem_dim,no_pdes)
+            face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh1(:,qk), &
             fluxes_prime1(:,:,:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh2(:,qk), &
@@ -978,11 +1060,12 @@ module jacobi_residual_nsb_mm
           %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable2(i),1)
         end do
 
-        if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
-          region_id = face_element_region_ids(1)
-        else
-          region_id = face_element_region_ids(2)
-        end if
+        ! if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
+        !   region_id = face_element_region_ids(1)
+        ! else
+        !   region_id = face_element_region_ids(2)
+        ! end if
+        region_id = face_element_region_ids(1)
 
         do qk = 1,no_quad_points
 
@@ -1083,9 +1166,12 @@ module jacobi_residual_nsb_mm
             grad_uh1(i,qk,1:problem_dim) = grad_uh_face1(fe_basis_info,problem_dim,i,qk,1)
             grad_uh2(i,qk,1:problem_dim) = grad_uh_face2(fe_basis_info,problem_dim,i,qk,1)
           end do
-          mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! We pass neighbours(1) because this solution is continuous.
+          call compute_uh_glob_pt(mesh_velocity, problem_dim, neighbours(1), global_points_face(:, qk), problem_dim, &
+            mesh_data, solution_moving_mesh)
           alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
-            face_normals(:,qk),problem_dim,no_pdes)
+            face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh1(:,qk), &
             fluxes_prime1(:,:,:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh2(:,qk), &
@@ -1262,11 +1348,14 @@ module jacobi_residual_nsb_mm
 
           call anal_soln_velocity(uloc(:,qk),global_points_face(:,qk),problem_dim,no_pdes,0,current_time, &
             face_element_region_ids(1))
+          ! mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+          ! We pass neighbours(1) because this solution is continuous.
+          call compute_uh_glob_pt(mesh_velocity, problem_dim, neighbours(1), global_points_face(:, qk), problem_dim, &
+            mesh_data, solution_moving_mesh)
           call compute_boundary_condition(interpolant_uh2(:,qk), &
             interpolant_uh1(:,qk),uloc(:,qk),abs(bdry_face),problem_dim,no_pdes)
             alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
-            face_normals(:,qk),problem_dim,no_pdes)
-          mesh_velocity = calculate_mesh_velocity(global_points_face(:,qk),problem_dim,current_time)
+            face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh1(:,qk), &
             fluxes_prime1(:,:,:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh2(:,qk), &
@@ -1347,6 +1436,67 @@ module jacobi_residual_nsb_mm
     end associate
 
   end subroutine jacobian_face_nsb_mm
+
+  !--------------------------------------------------------------------
+  ! PURPOSE:
+  !> Defines the nonlinear residual for the
+  !!  Navier-Stokes+ku equations in CG.
+  !!
+  !! Author:
+  !!   Paul Houston, Adam Blakey
+  !!
+  !! Date Created:
+  !!   22-06-2023
+  !--------------------------------------------------------------------
+  subroutine element_residual_cg_boundary_nsb_mm(face_residual, mesh_data, soln_data, facet_data, fe_basis_info)
+    use param
+
+    include 'assemble_residual_bdry_face.h'
+
+    integer :: qk,i,j,ieqn
+    real(db), dimension(facet_data%no_pdes,facet_data%no_quad_points) :: un
+    real(db), dimension(facet_data%no_pdes) :: uh1
+    real(db), dimension(facet_data%no_pdes,facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable1)) :: phi1
+
+    associate( &
+      dim_soln_coeff => facet_data%dim_soln_coeff, &
+      no_pdes => facet_data%no_pdes, &
+      problem_dim => facet_data%problem_dim, &
+      no_quad_points => facet_data%no_quad_points, &
+      global_points => facet_data%global_points, &
+      integral_weighting => facet_data%integral_weighting, &
+      face_number => facet_data%face_number, &
+      interior_face_boundary_no => facet_data%interior_face_boundary_no, &
+      face_element_region_ids => facet_data%face_element_region_ids, &
+      boundary_no => facet_data%bdry_no, &
+      no_dofs_per_variable => facet_data%no_dofs_per_variable1, &
+      face_normals => facet_data%face_normals)
+
+      face_residual = 0.0_db
+
+      if (200 <= abs(boundary_no) .and. abs(boundary_no) <= 299) then
+        do qk = 1, no_quad_points
+          uh1 = uh_face1(fe_basis_info, no_pdes, qk)
+          call neumann_bc_velocity(un, global_points(1:problem_dim, qk), problem_dim, boundary_no, 0.0_db, &
+            face_element_region_ids(1), face_normals(1:problem_dim, qk))
+        end do
+
+        do i = 1, no_pdes
+          phi1(i, 1:no_quad_points, 1:no_dofs_per_variable(i)) = fe_basis_info%basis_face1%basis_fns(i) &
+            %fem_basis_fns(1:no_quad_points, 1:no_dofs_per_variable(i), 1)
+        end do
+
+        do ieqn = 1, no_pdes
+          do qk = 1, no_quad_points
+            do i = 1, no_dofs_per_variable(ieqn)
+              face_residual(ieqn, i) = face_residual(ieqn,i) &
+                -integral_weighting(qk)*un(ieqn, qk)*phi1(ieqn, qk, i)
+            end do
+          end do
+        end do
+      end if
+    end associate
+  end subroutine element_residual_cg_boundary_nsb_mm
 
   function cal_gradgradterm(grad_phi_u,grad_phi_v,ivar,ieqn,problem_dim,no_pdes)
 
@@ -1500,6 +1650,7 @@ module jacobi_residual_nsb_mm
 
     do i = 1,problem_dim
       do j = 1,problem_dim
+        ! fluxes(i,j) = velocity(i)*velocity(j)
         fluxes(i,j) = (velocity(i) - mesh_velocity(i))*velocity(j)
       end do
     end do
@@ -1510,9 +1661,6 @@ module jacobi_residual_nsb_mm
   subroutine jacobian_convective_fluxes(soln,fluxes_prime,problem_dim,no_pdes,mesh_velocity)
     !  -------------------------------------------------------------
     !<   This routine defines the Jacobian matrix of the convective fluxes
-    !<
-    !<   AB: I don't think this storage arrangement is correct... I think it's
-    !<      Fluxes\_prime(ieqn,ivar,problem\_dim)
     !<
     !<   Storage arrangement:
     !<
@@ -1543,87 +1691,47 @@ module jacobi_residual_nsb_mm
 
     if (problem_dim == 2) then
 
-      fluxes_prime(1,1,1) = 2.0_db*velocity(1)
+      fluxes_prime(1,1,1) = 2.0_db*velocity(1) - mesh_velocity(1)
       fluxes_prime(1,1,2) = 0.0_db
-      fluxes_prime(1,2,1) = velocity(2)
+      fluxes_prime(1,2,1) = velocity(2) - mesh_velocity(2)
       fluxes_prime(1,2,2) = velocity(1)
 
       fluxes_prime(2,1,1) = velocity(2)
-      fluxes_prime(2,1,2) = velocity(1)
+      fluxes_prime(2,1,2) = velocity(1) - mesh_velocity(1)
       fluxes_prime(2,2,1) = 0.0_db
-      fluxes_prime(2,2,2) = 2.0_db*velocity(2)
-
-      ! fluxes_prime(1,1,1) = 2.0_db*velocity(1) - mesh_velocity(1)
-      ! fluxes_prime(1,1,2) = 0.0_db
-      ! fluxes_prime(1,2,1) = velocity(2)
-      ! fluxes_prime(1,2,2) = velocity(1) - mesh_velocity(1)
-
-      ! fluxes_prime(2,1,1) = velocity(2) - mesh_velocity(2)
-      ! fluxes_prime(2,1,2) = velocity(1)
-      ! fluxes_prime(2,2,1) = 0.0_db
-      ! fluxes_prime(2,2,2) = 2.0_db*velocity(2) - mesh_velocity(2)
+      fluxes_prime(2,2,2) = 2.0_db*velocity(2) - mesh_velocity(2)
 
     else if (problem_dim == 3) then
 
-      fluxes_prime(1,1,1) = 2.0_db*velocity(1)
+      fluxes_prime(1,1,1) = 2.0_db*velocity(1) - mesh_velocity(1)
       fluxes_prime(1,1,2) = 0.0_db
       fluxes_prime(1,1,3) = 0.0_db
-      fluxes_prime(1,2,1) = velocity(2)
+      fluxes_prime(1,2,1) = velocity(2) - mesh_velocity(2)
       fluxes_prime(1,2,2) = velocity(1)
       fluxes_prime(1,2,3) = 0.0_db
-      fluxes_prime(1,3,1) = velocity(3)
+      fluxes_prime(1,3,1) = velocity(3) - mesh_velocity(3)
       fluxes_prime(1,3,2) = 0.0_db
       fluxes_prime(1,3,3) = velocity(1)
 
-      fluxes_prime(2,1,1) = velocity(2)
-      fluxes_prime(2,1,2) = velocity(1)
+      fluxes_prime(2,1,1) = velocity(2) - mesh_velocity(2)
+      fluxes_prime(2,1,2) = velocity(1) - mesh_velocity(1)
       fluxes_prime(2,1,3) = 0.0_db
       fluxes_prime(2,2,1) = 0.0_db
-      fluxes_prime(2,2,2) = 2.0_db*velocity(2)
+      fluxes_prime(2,2,2) = 2.0_db*velocity(2) - mesh_velocity(2)
       fluxes_prime(2,2,3) = 0.0_db
       fluxes_prime(2,3,1) = 0.0_db
-      fluxes_prime(2,3,2) = velocity(3)
+      fluxes_prime(2,3,2) = velocity(3) - mesh_velocity(3)
       fluxes_prime(2,3,3) = velocity(2)
 
       fluxes_prime(3,1,1) = velocity(3)
       fluxes_prime(3,1,2) = 0.0_db
-      fluxes_prime(3,1,3) = velocity(1)
+      fluxes_prime(3,1,3) = velocity(1) - mesh_velocity(1)
       fluxes_prime(3,2,1) = 0.0_db
       fluxes_prime(3,2,2) = velocity(3)
-      fluxes_prime(3,2,3) = velocity(2)
+      fluxes_prime(3,2,3) = velocity(2) - mesh_velocity(2)
       fluxes_prime(3,3,1) = 0.0_db
       fluxes_prime(3,3,2) = 0.0_db
-      fluxes_prime(3,3,3) = 2.0_db*velocity(3)
-
-      ! fluxes_prime(1,1,1) = 2.0_db*velocity(1) - mesh_velocity(1)
-      ! fluxes_prime(1,1,2) = 0.0_db
-      ! fluxes_prime(1,1,3) = 0.0_db
-      ! fluxes_prime(1,2,1) = velocity(2)
-      ! fluxes_prime(1,2,2) = velocity(1) - mesh_velocity(1)
-      ! fluxes_prime(1,2,3) = 0.0_db
-      ! fluxes_prime(1,3,1) = velocity(3)
-      ! fluxes_prime(1,3,2) = 0.0_db
-      ! fluxes_prime(1,3,3) = velocity(1) - mesh_velocity(1)
-
-      ! fluxes_prime(2,1,1) = velocity(2) - mesh_velocity(2)
-      ! fluxes_prime(2,1,2) = velocity(1)
-      ! fluxes_prime(2,1,3) = 0.0_db
-      ! fluxes_prime(2,2,1) = 0.0_db
-      ! fluxes_prime(2,2,2) = 2.0_db*velocity(2) - mesh_velocity(2)
-      ! fluxes_prime(2,2,3) = 0.0_db
-      ! fluxes_prime(2,3,1) = 0.0_db
-      ! fluxes_prime(2,3,2) = velocity(3)
-      ! fluxes_prime(2,3,3) = velocity(2) - mesh_velocity(2)
-
-      ! fluxes_prime(3,1,1) = velocity(3) - mesh_velocity(3)
-      ! fluxes_prime(3,1,2) = 0.0_db
-      ! fluxes_prime(3,1,3) = velocity(1)
-      ! fluxes_prime(3,2,1) = 0.0_db
-      ! fluxes_prime(3,2,2) = velocity(3) - mesh_velocity(3)
-      ! fluxes_prime(3,2,3) = velocity(2)
-      ! fluxes_prime(3,3,1) = 0.0_db
-      ! fluxes_prime(3,3,2) = 0.0_db
-      ! fluxes_prime(3,3,3) = 2.0_db*velocity(3) - mesh_velocity(3)
+      fluxes_prime(3,3,3) = 2.0_db*velocity(3) - mesh_velocity(3)
 
     end if
 
@@ -1745,7 +1853,7 @@ module jacobi_residual_nsb_mm
     call convective_fluxes(u1,fluxes1,problem_dim,no_pdes,mesh_velocity)
     call convective_fluxes(u2,fluxes2,problem_dim,no_pdes,mesh_velocity)
 
-    alpha = cal_alpha(u1,u2,normal,problem_dim,no_pdes)
+    alpha = cal_alpha(u1,u2,normal,problem_dim,no_pdes,mesh_velocity)
 
     nflxsoln = 0.0_db
 
@@ -1757,7 +1865,7 @@ module jacobi_residual_nsb_mm
 
   end subroutine lax_friedrichs
 
-  function cal_alpha(u1,u2,normal,problem_dim,no_pdes)
+  function cal_alpha(u1,u2,normal,problem_dim,no_pdes,mesh_velocity)
 
     use param
 
@@ -1765,11 +1873,15 @@ module jacobi_residual_nsb_mm
 
     real(db) :: cal_alpha
     integer, intent(in) :: problem_dim,no_pdes
-    real(db), dimension(problem_dim), intent(in) :: normal
+    real(db), dimension(problem_dim), intent(in) :: normal,mesh_velocity
     real(db), dimension(no_pdes), intent(in) :: u1,u2
 
-    cal_alpha = 2.0_db*max(abs(dot_product(u1(1:problem_dim),normal)), &
-    abs(dot_product(u2(1:problem_dim),normal)))
+    cal_alpha = max( &
+      abs(2.0_db*dot_product(u1(1:problem_dim), normal) - dot_product(mesh_velocity, normal)), &
+      abs(2.0_db*dot_product(u2(1:problem_dim), normal) - dot_product(mesh_velocity, normal)), &
+      abs(dot_product(u1(1:problem_dim), normal)), &
+      abs(dot_product(u2(1:problem_dim), normal))  &
+    )
 
   end function cal_alpha
   !  -------------------------------------------------------------

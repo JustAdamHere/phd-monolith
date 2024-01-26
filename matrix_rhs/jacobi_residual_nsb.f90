@@ -1,4 +1,5 @@
 module jacobi_residual_nsb
+  use bcs_analytic_velocity
   use placenta_2d_bcs_velocity
   use placentone_2d_bcs_velocity
   use placentone_3d_bcs_velocity
@@ -15,7 +16,7 @@ module jacobi_residual_nsb
   !!
   !! Date Created:
   !!   26-10-2022
-  !--------------------------------------------------------------------
+  !-----------------------------------------------------------------\---
   subroutine element_residual_nsb(element_rhs, &
     mesh_data,soln_data,facet_data,fe_basis_info)
     !--------------------------------------------------------------------
@@ -104,17 +105,22 @@ module jacobi_residual_nsb
 
           do i = 1,no_dofs_per_variable(ieqn)
 
-            time_terms = calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
-                element_region_id)* &
-              (uh_previous_time_step(ieqn, qk) - dirk_scaling_factor*interpolant_uh(ieqn, qk))*phi(ieqn, qk, i)
+            ! print *, 1.0_db/dirk_scaling_factor
 
-            diffusion_terms = calculate_velocity_diffusion_coefficient(global_points_ele(:, qk), problem_dim, &
+            time_terms = -calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
-              (-1.0_db) * dot_product(gradient_uh(ieqn,qk,:),grad_phi(ieqn,qk,:,i))
+              (interpolant_uh(ieqn, qk)*dirk_scaling_factor - uh_previous_time_step(ieqn, qk))*phi(ieqn, qk, i)
+              ! (interpolant_uh(ieqn, qk) - uh_previous_time_step(ieqn, qk))*phi(ieqn, qk, i)/dirk_scaling_factor
+              ! (uh_previous_time_step(ieqn, qk) - interpolant_uh(ieqn, qk))*phi(ieqn, qk, i)/dirk_scaling_factor
+              ! (uh_previous_time_step(ieqn, qk) - dirk_scaling_factor*interpolant_uh(ieqn, qk))*phi(ieqn, qk, i)
+
+            diffusion_terms = -calculate_velocity_diffusion_coefficient(global_points_ele(:, qk), problem_dim, &
+                element_region_id)* &
+              dot_product(gradient_uh(ieqn,qk,:),grad_phi(ieqn,qk,:,i))
 
             convection_terms = calculate_velocity_convection_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
-            dot_product(fluxes(1:problem_dim,ieqn,qk), grad_phi(ieqn,qk,1:problem_dim,i))
+              dot_product(fluxes(1:problem_dim,ieqn,qk), grad_phi(ieqn,qk,1:problem_dim,i))
 
             pressure_terms = calculate_velocity_pressure_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
@@ -334,11 +340,12 @@ module jacobi_residual_nsb
           %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable2(i),1)
         end do
 
-        if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
-          region_id = face_element_region_ids(1)
-        else
-          region_id = face_element_region_ids(2)
-        end if
+        ! if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
+        !   region_id = face_element_region_ids(1)
+        ! else
+        !   region_id = face_element_region_ids(2)
+        ! end if
+        region_id = face_element_region_ids(1)
 
         do ieqn = 1,problem_dim
           do qk = 1,no_quad_points
@@ -577,7 +584,7 @@ module jacobi_residual_nsb
   !--------------------------------------------------------------------
   ! PURPOSE:
   !> Defines the element jacobian matrix for the
-  !!  Navier-Stokes-Brinkman equations
+  !!  Navier-Stokes+ku equations
   !!
   !! Authors:
   !!   Paul Houston, Adam Blakey
@@ -927,11 +934,12 @@ module jacobi_residual_nsb
           %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable2(i),1)
         end do
 
-        if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
-          region_id = face_element_region_ids(1)
-        else
-          region_id = face_element_region_ids(2)
-        end if
+        ! if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
+        !   region_id = face_element_region_ids(1)
+        ! else
+        !   region_id = face_element_region_ids(2)
+        ! end if
+        region_id = face_element_region_ids(1)
 
         do qk = 1,no_quad_points
 
@@ -1294,6 +1302,71 @@ module jacobi_residual_nsb
     end associate
 
   end subroutine jacobian_face_nsb
+  
+  !--------------------------------------------------------------------
+  ! PURPOSE:
+  !> Defines the nonlinear residual for the
+  !!  Navier-Stokes+ku equations in CG.
+  !!
+  !! Author:
+  !!   Paul Houston, Adam Blakey
+  !!
+  !! Date Created:
+  !!   22-06-2023
+  !--------------------------------------------------------------------
+  subroutine element_residual_cg_boundary_nsb(face_residual, mesh_data, soln_data, facet_data, fe_basis_info)
+    use param
+
+    include 'assemble_residual_bdry_face.h'
+
+    integer :: qk,i,j,ieqn
+    real(db), dimension(facet_data%no_pdes,facet_data%no_quad_points) :: un
+    real(db), dimension(facet_data%no_pdes) :: uh1
+    real(db), dimension(facet_data%no_pdes,facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable1)) :: phi1
+    real(db) :: current_time
+
+    associate( &
+      dim_soln_coeff => facet_data%dim_soln_coeff, &
+      no_pdes => facet_data%no_pdes, &
+      problem_dim => facet_data%problem_dim, &
+      no_quad_points => facet_data%no_quad_points, &
+      global_points => facet_data%global_points, &
+      integral_weighting => facet_data%integral_weighting, &
+      face_number => facet_data%face_number, &
+      interior_face_boundary_no => facet_data%interior_face_boundary_no, &
+      face_element_region_ids => facet_data%face_element_region_ids, &
+      boundary_no => facet_data%bdry_no, &
+      no_dofs_per_variable => facet_data%no_dofs_per_variable1, &
+      face_normals => facet_data%face_normals, &
+      scheme_user_data => facet_data%scheme_user_data)
+
+      current_time = scheme_user_data%current_time
+
+      face_residual = 0.0_db
+
+      if (200 <= abs(boundary_no) .and. abs(boundary_no) <= 299) then
+        do qk = 1, no_quad_points
+          uh1 = uh_face1(fe_basis_info, no_pdes, qk)
+          call neumann_bc_velocity(un, global_points(1:problem_dim, qk), problem_dim, boundary_no, current_time, &
+            face_element_region_ids(1), face_normals(1:problem_dim, qk))
+        end do
+
+        do i = 1, no_pdes
+          phi1(i, 1:no_quad_points, 1:no_dofs_per_variable(i)) = fe_basis_info%basis_face1%basis_fns(i) &
+            %fem_basis_fns(1:no_quad_points, 1:no_dofs_per_variable(i), 1)
+        end do
+
+        do ieqn = 1, no_pdes
+          do qk = 1, no_quad_points
+            do i = 1, no_dofs_per_variable(ieqn)
+              face_residual(ieqn, i) = face_residual(ieqn,i) &
+                -integral_weighting(qk)*un(ieqn, qk)*phi1(ieqn, qk, i)
+            end do
+          end do
+        end do
+      end if
+    end associate
+  end subroutine element_residual_cg_boundary_nsb
 
   function cal_gradgradterm(grad_phi_u,grad_phi_v,ivar,ieqn,problem_dim,no_pdes)
 

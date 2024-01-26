@@ -94,9 +94,9 @@ module jacobi_residual_nsb_ss
 
           do i = 1,no_dofs_per_variable(ieqn)
 
-            diffusion_terms = calculate_velocity_diffusion_coefficient(global_points_ele(:, qk), problem_dim, &
+            diffusion_terms = -calculate_velocity_diffusion_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
-              (-1.0_db) * dot_product(gradient_uh(ieqn,qk,:),grad_phi(ieqn,qk,:,i))
+              dot_product(gradient_uh(ieqn,qk,:),grad_phi(ieqn,qk,:,i))
 
             convection_terms = calculate_velocity_convection_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
@@ -322,11 +322,12 @@ module jacobi_residual_nsb_ss
         end do
 
         !! TODO: WTF?!
-        if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
-          region_id = face_element_region_ids(1)
-        else
-          region_id = face_element_region_ids(2)
-        end if
+        ! if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
+        !   region_id = face_element_region_ids(1)
+        ! else
+        !   region_id = face_element_region_ids(2)
+        ! end if
+        region_id = face_element_region_ids(1)
 
         do ieqn = 1,problem_dim
           do qk = 1,no_quad_points
@@ -899,11 +900,12 @@ module jacobi_residual_nsb_ss
         end do
 
         !! TODO: WTF?!
-        if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
-          region_id = face_element_region_ids(1)
-        else
-          region_id = face_element_region_ids(2)
-        end if
+        ! if (500 <= face_element_region_ids(1) .and. face_element_region_ids(1) <= 599) then
+        !   region_id = face_element_region_ids(1)
+        ! else
+        !   region_id = face_element_region_ids(2)
+        ! end if
+        region_id = face_element_region_ids(1)
 
         do qk = 1,no_quad_points
 
@@ -1326,7 +1328,7 @@ module jacobi_residual_nsb_ss
         end do
       end if
     end associate
-  end subroutine
+  end subroutine element_residual_cg_boundary_nsb_ss
 
   function cal_gradgradterm(grad_phi_u,grad_phi_v,ivar,ieqn,problem_dim,no_pdes)
 

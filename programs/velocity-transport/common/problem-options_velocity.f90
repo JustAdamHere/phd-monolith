@@ -121,6 +121,8 @@ contains
                 translated_point = translate_placenta_to_placentone_point(problem_dim, global_point, element_region_id)
             else if (trim(geometry_name) == 'placentone-3d') then
                 translated_point = translate_placentone_3d_to_placentone_point(problem_dim, global_point, element_region_id)
+            else if (geometry_name(1:6) == 'square') then
+                translated_point = 0.0_db
             else
                 print *, "Error in calculate_velocity_reaction_coefficient. Missed case."
                 print *, "geometry_name = ", geometry_name
@@ -130,33 +132,38 @@ contains
             translated_point = 0.0_db
         end if
 
-        ! IVS.
-        if (300 <= element_region_id .and. element_region_id <= 399) then
-            calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
-                1.0_db
-        ! Arteries.
-        else if (element_region_id == 412 .or. element_region_id == 422 .or. element_region_id == 432 .or. &
-                 element_region_id == 442 .or. element_region_id == 452 .or. element_region_id == 462 .or. &
-                 element_region_id == 472) then
-            calculate_velocity_reaction_coefficient = &
-                0.0_db
-        ! Veins.
-        else if (400 <= element_region_id .and. element_region_id <= 499) then
-            calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
-                calculate_placentone_pipe_transition(translated_point, problem_dim, element_region_id, steepness)
-        ! Cavities.
-        else if (500 <= element_region_id .and. element_region_id <= 509) then
-            calculate_velocity_reaction_coefficient = &
-                0.0_db
-        ! Cavity transitions.
-        else if (510 <= element_region_id .and. element_region_id <= 527) then
-            placentone_no = mod(element_region_id, 10)
-            calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
-                calculate_placentone_cavity_transition(translated_point, problem_dim, element_region_id, steepness, placentone_no)
+        if (geometry_name(1:6) == 'square') then
+            calculate_velocity_reaction_coefficient = velocity_reaction_coefficient
         else
-            print *, "Error in calculate_velocity_reaction_coefficient. Missed case."
-            print *, "element_region_id = ", element_region_id
-            error stop
+            ! IVS.
+            if (300 <= element_region_id .and. element_region_id <= 399) then
+                calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
+                    1.0_db
+            ! Arteries.
+            else if (element_region_id == 412 .or. element_region_id == 422 .or. element_region_id == 432 .or. &
+                    element_region_id == 442 .or. element_region_id == 452 .or. element_region_id == 462 .or. &
+                    element_region_id == 472) then
+                calculate_velocity_reaction_coefficient = &
+                    0.0_db
+            ! Veins.
+            else if (400 <= element_region_id .and. element_region_id <= 499) then
+                calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
+                    calculate_placentone_pipe_transition(translated_point, problem_dim, element_region_id, steepness)
+            ! Cavities.
+            else if (500 <= element_region_id .and. element_region_id <= 509) then
+                calculate_velocity_reaction_coefficient = &
+                    0.0_db
+            ! Cavity transitions.
+            else if (510 <= element_region_id .and. element_region_id <= 527) then
+                placentone_no = mod(element_region_id, 10)
+                calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
+                    calculate_placentone_cavity_transition(translated_point, problem_dim, element_region_id, steepness, &
+                        placentone_no)
+            else
+                print *, "Error in calculate_velocity_reaction_coefficient. Missed case."
+                print *, "element_region_id = ", element_region_id
+                error stop
+            end if
         end if
         
     end function

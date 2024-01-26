@@ -77,12 +77,16 @@ program velocity_transport
 
     integer :: no_command_line_arguments
 
-    real(db) :: current_time, time_step
+    real(db) :: current_time, previous_time, time_step
 
     integer :: thread_no
 
     real(db) :: one_ivs, one_everywhere, vmi_ivs, vmi_everywhere, velocity_average_ivs, velocity_average_everywhere, svp_ivs, &
         svp_everywhere, svp_0_0005_everywhere, fvp_0_001_everywhere, svp_nominal_ivs, svp_nominal_everywhere
+
+    !! DELETE ME !!
+    type(solution) :: solution_difference
+    !! DELETE ME !! 
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! COMMAND LINE ARGUMENTS !!
@@ -90,7 +94,7 @@ program velocity_transport
     no_command_line_arguments = command_argument_count()
     if (no_command_line_arguments /= 2) then
         print *, "ERROR: Incorrect number of command line arguments."
-        print *, "       Usage: ./velocity_transport.out <nsb|ns-b|ns-nsb|s-b> <placentone|placenta|placentone-3d>"
+        print *, "       Usage: ./velocity-transport.out <nsb|ns-b|ns-nsb|s-b> <placentone|placenta|placentone-3d|square*>"
         error stop
     end if
     call get_command_argument(1, assembly_name)
@@ -99,8 +103,9 @@ program velocity_transport
         error stop
     end if
     call get_command_argument(2, geometry_name)
-    if (geometry_name /= 'placentone' .and. geometry_name /= 'placenta' .and. geometry_name /= 'placentone-3d') then
-        call write_message(io_err, 'Error: geometry_name should be placentone or placenta or placentone-3d.')
+    if (geometry_name /= 'placentone' .and. geometry_name /= 'placenta' .and. geometry_name /= 'placentone-3d' .and. &
+            geometry_name(1:6) /= 'square') then
+        call write_message(io_err, 'Error: geometry_name should be placentone or placenta or placentone-3d or square*.')
         error stop
     end if
 
@@ -114,7 +119,23 @@ program velocity_transport
     call get_user_data_velocity ('user_data', aptofem_stored_keys)
     call get_user_data_transport('user_data', aptofem_stored_keys)
     call set_space_type_velocity(aptofem_stored_keys)
-    call initialise_geometry    (geometry_name, no_placentones)
+
+    if (moving_mesh) then
+#ifdef OPENMP        
+!$OMP PARALLEL PRIVATE(thread_no)
+        thread_no = omp_get_thread_num()
+        if (thread_no == 0) then
+            call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, 0, mesh_data, solution_moving_mesh)
+        end if
+!$OMP END PARALLEL
+#elif MPI
+        if (processor_no == 0) then
+            call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, 0, mesh_data, solution_moving_mesh)
+        end if
+#else
+        call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, 0, mesh_data, solution_moving_mesh)
+#endif
+    end if
 
     !!!!!!!!!!!!!!!!!
     !! REFINE MESH !!
@@ -179,6 +200,12 @@ program velocity_transport
         call delete_mesh(mesh_data_orig)
     end do
 
+    if (geometry_name(1:6) == "square") then
+        call initialise_simple_geometry(mesh_data, aptofem_stored_keys)
+    else
+        call initialise_geometry(geometry_name, mesh_data, aptofem_stored_keys)
+    end if
+
     !!!!!!!!!!!!!!!!!!!!!!!!!
     !! GET MESH ATTRIBUTES !!
     !!!!!!!!!!!!!!!!!!!!!!!!!
@@ -192,7 +219,7 @@ program velocity_transport
         call create_fe_solution(solution_permeability, mesh_data, 'fe_projection_permeability', aptofem_stored_keys, &
             anal_soln_transport, get_boundary_no_transport) ! Doesn't matter what dirichlet bc is passed.
 
-#ifdef OPENMP        
+#if defined(OPENMP)
 !$OMP PARALLEL PRIVATE(thread_no)
         thread_no = omp_get_thread_num()
         if (thread_no == 0) then
@@ -200,7 +227,7 @@ program velocity_transport
             call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 0, mesh_data, solution_permeability)
         end if
 !$OMP END PARALLEL
-#elif MPI
+#elif defined(MPI)
     if (processor_no == 0) then
         call project_function_region_id(solution_permeability, mesh_data, project_permeability)
         call write_fe_data('output_mesh_solution_permeability', aptofem_stored_keys, 0, mesh_data, solution_permeability)
@@ -519,15 +546,6 @@ program velocity_transport
         ! Velocity routines.
         if (trim(assembly_name) == 'nsb') then
             if (moving_mesh) then
-                ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
-                !     jacobian_nsb_mm, 1)
-                ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
-                !     jacobian_face_nsb_mm, 1)
-                ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element', &
-                !     element_residual_nsb_mm, 1)
-                ! call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face', &
-                !     element_residual_face_nsb_mm, 1)
-
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element', &
                     jacobian_nsb_mm, 1)
                 call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', &
@@ -686,11 +704,16 @@ program velocity_transport
         write(23111999, tsvFormat) -1, -1, -1.0_db, -1, no_eles
     end if
 
+    !! delete me !!
+    ! call replace_aptofem_key(aptofem_stored_keys, 'solver_velocity', 'newton_itns_max', '1', io_err)
+    !! delete me !!
+
     !!!!!!!!!!!!!!!!!!
     !! TIMESTEPPING !!
     !!!!!!!!!!!!!!!!!!
     do time_step_no = 1, no_time_steps
-        current_time = current_time + time_step
+        previous_time = current_time
+        current_time  = current_time + time_step
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! SETUP FOR NEXT TRANSPORT TIMESTEP !
@@ -708,6 +731,21 @@ program velocity_transport
         ! SAVE PREVIOUS VELOCITY MESH AND SOLUTION !
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if (moving_mesh) then
+            ! TODO: re-calculate the interior penalty parameter.
+! #ifdef OPENMP
+! !$OMP PARALLEL PRIVATE(thread_no)
+!             thread_no = omp_get_thread_num()
+!             if (thread_no == 0) then
+!                 call setup_previous_velocity(mesh_data, solution_velocity)
+!             end if
+! !$OMP END PARALLEL
+! #elif MPI
+!             if (processor_no == 0) then
+!                 call setup_previous_velocity(mesh_data, solution_velocity)
+!             end if
+! #else
+!             call setup_previous_velocity(mesh_data, solution_velocity)
+! #endif            
             call setup_previous_velocity(mesh_data, solution_velocity)
         end if
 
@@ -715,11 +753,35 @@ program velocity_transport
         ! MOVE MESH !
         !!!!!!!!!!!!!
         if (moving_mesh) then
-            ! Plus dt since t has not yet been updated.
-            ! TODO: Is this right?! ^^
-            ! TODO: Make a copy of the mesh (or at least do something appropriate so you can store fe_basis_info_old).
-            call move_mesh(mesh_data, problem_dim, current_time + time_step, time_step)
-            call update_geometry(current_time + time_step, time_step, geometry_name)
+            call move_mesh(mesh_data, prev_mesh_data, problem_dim, current_time, time_step, aptofem_stored_keys)
+
+            call update_geometry(current_time, time_step, geometry_name)
+
+#ifdef OPENMP        
+!$OMP PARALLEL PRIVATE(thread_no)
+            thread_no = omp_get_thread_num()
+            if (thread_no == 0) then
+                call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, time_step_no, mesh_data, &
+                    solution_moving_mesh)
+            end if
+!$OMP END PARALLEL
+#elif MPI
+            if (processor_no == 0) then
+                call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, time_step_no, mesh_data, &
+                    solution_moving_mesh)
+            end if
+#else
+            call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, time_step_no, mesh_data, &
+                solution_moving_mesh)
+#endif
+
+            if (compute_velocity) then
+                call project_dirichlet_boundary_values(solution_velocity, mesh_data)
+            end if
+    
+            if (compute_transport) then
+                call project_dirichlet_boundary_values(solution_transport, mesh_data)
+            end if
         end if
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -803,6 +865,11 @@ program velocity_transport
                 scheme_data_velocity%current_time, scheme_data_velocity%time_step, no_dofs_velocity, time_step_no, .false., &
                 norm_diff_u)
 
+            if (ifail) then
+                call write_message(io_msg, "ERROR: Newton solver failed to converge.")
+                error stop
+            end if
+
             call set_current_time(solution_velocity, solution_velocity%current_time + &
                 scheme_data_velocity%time_step)
         end if
@@ -859,6 +926,16 @@ program velocity_transport
                     // trim(geometry_name), '../../output/')
             end if
         end if
+
+        !! DELETE ME !!
+        if (moving_mesh) then
+            call create_fe_solution(solution_difference, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, &
+                dirichlet_bc_velocity)
+            solution_difference%soln_values = solution_velocity%soln_values - prev_solution_velocity_data%soln_values
+            call write_fe_data('solution_difference', aptofem_stored_keys, time_step_no, mesh_data, solution_difference)
+            call delete_solution(solution_difference)
+        end if
+        !! DELETE ME !!
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! SAVE INTEGRAL VELOCITY MAGNITUDE !
@@ -931,7 +1008,11 @@ program velocity_transport
     end if
     
     call delete_mesh       (mesh_data)
-    call finalise_geometry (geometry_name)
+    if (geometry_name(1:6) == "square") then
+        call finalise_simple_geometry()
+    else
+        call finalise_geometry(geometry_name)
+    end if
     call finalise_user_data()
     call AptoFEM_finalize  (aptofem_stored_keys)
 end program

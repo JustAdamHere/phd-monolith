@@ -9,7 +9,7 @@ module problem_options
         no_time_steps, output_frequency, no_placentones
     logical           :: velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, &
         compute_permeability, compute_uptake, moving_mesh, compute_ss_flag
-    character(len=20) :: geometry_name, assembly_name, linear_solver
+    character(len=30) :: geometry_name, assembly_name, linear_solver, mesh_velocity_type
 
     real(db), dimension(:, :), allocatable :: vessel_locations
     real(db), dimension(:), allocatable    :: central_cavity_widths, central_cavity_heights
@@ -69,6 +69,8 @@ module problem_options
         call get_aptofem_key_definition('wall_height_ratio',                 wall_height_ratio,                 section_name, &
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('linear_solver',                     linear_solver,                     'solver_velocity', &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('mesh_velocity_type',                mesh_velocity_type,                section_name, &
             aptofem_stored_keys, ierr)
 
         if (.not. compute_velocity .and. compute_transport) then

@@ -39,7 +39,7 @@ parameters["verbose_output"]  = True
 parameters["plot"]            = True
 
 # Mesh resolution.
-parameters["mesh_resolution"] = 1#0.02
+parameters["mesh_resolution"] = 0.1#0.02
 
 # Simulation.
 parameters["compute_permeability"       ] = True
@@ -75,8 +75,6 @@ parameters["no_threads"]    = 20
 ##################
 # SIMULATION RUN #
 ##################
-import numpy as np
-
 # Clean and compile.
 velocity_transport.setup(clean=False, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True)
 

@@ -1,6 +1,32 @@
 def add_option(options, option, value):
 	options += [f'-setnumber', option, str(value)]
 
+def generate_simple_mesh(simulation_no, geometry, mesh_resolution):
+	import subprocess
+
+	if (geometry.startswith("square")):
+		geo_file = "square.geo"
+		# geo_file = "l-shape.geo"
+		dim = 2
+	else:
+		raise ValueError("geometry must be 'square*'")
+
+	mesh_command = [\
+		'/home/pmyambl/software/gmsh-4.11.1-Linux64/bin/gmsh',\
+		f'./meshes/{geo_file}',\
+		'-string', 'Mesh.MshFileVersion=2;',\
+		'-tol', '1e-12',\
+	]
+
+	mesh_output = [\
+		f'-{dim}',\
+		'-o', f'meshes/mesh_{simulation_no}.msh'\
+	]
+
+	stdout = subprocess.DEVNULL # None
+	subprocess.run(mesh_command + ['-setnumber', 'h', str(mesh_resolution)] + mesh_output, stdout=stdout)
+
+
 def generate_mesh(simulation_no, geometry, mesh_resolution, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, basal_plate_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones, vessel_fillet_radius, basal_plate_vessel_locations, septal_vein_locations, equal_wall_heights, generate_outline_mesh):
 	import subprocess
 
@@ -17,6 +43,8 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, central_cavity_width
 	elif (geometry == "placenta"):
 		geo_file = "inverted-circle-slice-6-flat_normal-walls.geo"
 		dim = 2
+	else:
+		raise ValueError("geometry must be 'placentone', 'placentone-3d', 'placenta', or 'square'")
 
 	# Set mesh resolution.
 	if (mesh_resolution == -1):
@@ -151,7 +179,8 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, central_cavity_width
 	full_mesh_command = [\
 		'/home/pmyambl/software/gmsh-4.11.1-Linux64/bin/gmsh',\
 		f'./meshes/{geo_file}',\
-		'-string', 'Mesh.MshFileVersion=2;'\
+		'-string', 'Mesh.MshFileVersion=2;',\
+		'-tol', '1e-12',\
 	]
 
 	full_mesh_output = [\
