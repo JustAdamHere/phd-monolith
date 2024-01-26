@@ -49,7 +49,7 @@ velocity_transport_convergence.run(4, parameters)
 
 parameters["geometry"] = "square_constant_diagonal"
 
-parameters["final_time"]         = 1.0
+parameters["final_time"]         = 1.0e-1
 parameters["no_time_steps"]      = 2
 parameters["test_type"]          = "mm_velocity_time"
 parameters["mesh_resolution"]    = 0.1
