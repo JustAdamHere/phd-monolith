@@ -29,17 +29,10 @@ module problem_options_geometry
     
     contains
 
-    subroutine initialise_simple_geometry(mesh_data, aptofem_stored_keys)
+    subroutine select_mesh_velocity(mesh_velocity_type)
         implicit none
 
-        type(mesh), intent(inout)   :: mesh_data
-        type(aptofem_keys), pointer :: aptofem_stored_keys
-
-        integer :: problem_dim
-
-        problem_dim = mesh_data%problem_dim
-        allocate(move_mesh_centre(problem_dim))
-        move_mesh_centre = 0.5_db
+        character(len=20), intent(in) :: mesh_velocity_type
 
         if (trim(mesh_velocity_type) == 'zero') then
             calculate_mesh_velocity => calculate_mesh_velocity_zero
@@ -63,6 +56,21 @@ module problem_options_geometry
             print *, "Error: mesh_velocity_type not supported: ", trim(mesh_velocity_type)
             error stop
         end if
+    end subroutine
+
+    subroutine initialise_simple_geometry(mesh_data, aptofem_stored_keys)
+        implicit none
+
+        type(mesh), intent(inout)   :: mesh_data
+        type(aptofem_keys), pointer :: aptofem_stored_keys
+
+        integer :: problem_dim
+
+        problem_dim = mesh_data%problem_dim
+        allocate(move_mesh_centre(problem_dim))
+        move_mesh_centre = 0.5_db
+
+        call select_mesh_velocity(mesh_velocity_type)
 
         call create_fe_solution(solution_moving_mesh, mesh_data, 'fe_projection_moving_mesh', aptofem_stored_keys, &
             anal_soln_moving_mesh, get_boundary_no_moving_mesh)
@@ -80,10 +88,7 @@ module problem_options_geometry
         integer  :: i, j, problem_dim, no_vessels
         real(db) :: x, y, r
 
-        calculate_mesh_velocity => calculate_mesh_velocity_oscillating_sine
-
-        call create_fe_solution(solution_moving_mesh, mesh_data, 'fe_projection_moving_mesh', aptofem_stored_keys, &
-            anal_soln_moving_mesh, get_boundary_no_moving_mesh)
+        call select_mesh_velocity(mesh_velocity_type)
         
         ! TODO: THIS NEEDS TO CHANGE BASED ON USER INPUT.
         placentone_width = 1.0_db                        ! 40 mm
@@ -414,6 +419,9 @@ module problem_options_geometry
             print *, "Y_CENTRE: ", y_centre
             print *, "PLACENTONE WIDTH: ", placentone_widths(4)
         end if
+
+        call create_fe_solution(solution_moving_mesh, mesh_data, 'fe_projection_moving_mesh', aptofem_stored_keys, &
+            anal_soln_moving_mesh, get_boundary_no_moving_mesh)
     end subroutine
 
     subroutine finalise_simple_geometry()
