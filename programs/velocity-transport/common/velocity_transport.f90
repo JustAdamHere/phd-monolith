@@ -120,23 +120,6 @@ program velocity_transport
     call get_user_data_transport('user_data', aptofem_stored_keys)
     call set_space_type_velocity(aptofem_stored_keys)
 
-    if (moving_mesh) then
-#ifdef OPENMP        
-!$OMP PARALLEL PRIVATE(thread_no)
-        thread_no = omp_get_thread_num()
-        if (thread_no == 0) then
-            call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, 0, mesh_data, solution_moving_mesh)
-        end if
-!$OMP END PARALLEL
-#elif MPI
-        if (processor_no == 0) then
-            call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, 0, mesh_data, solution_moving_mesh)
-        end if
-#else
-        call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, 0, mesh_data, solution_moving_mesh)
-#endif
-    end if
-
     !!!!!!!!!!!!!!!!!
     !! REFINE MESH !!
     !!!!!!!!!!!!!!!!!
@@ -204,6 +187,23 @@ program velocity_transport
         call initialise_simple_geometry(mesh_data, aptofem_stored_keys)
     else
         call initialise_geometry(geometry_name, mesh_data, aptofem_stored_keys)
+    end if
+
+    if (moving_mesh) then
+#ifdef OPENMP        
+!$OMP PARALLEL PRIVATE(thread_no)
+        thread_no = omp_get_thread_num()
+        if (thread_no == 0) then
+            call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, 0, mesh_data, solution_moving_mesh)
+        end if
+!$OMP END PARALLEL
+#elif MPI
+        if (processor_no == 0) then
+            call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, 0, mesh_data, solution_moving_mesh)
+        end if
+#else
+        call write_fe_data('output_mesh_solution_moving_mesh', aptofem_stored_keys, 0, mesh_data, solution_moving_mesh)
+#endif
     end if
 
     !!!!!!!!!!!!!!!!!!!!!!!!!
