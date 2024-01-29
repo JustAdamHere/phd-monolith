@@ -46,7 +46,7 @@ def outliers(data, q25, q75):
   import numpy as np
 
   iqr = [q75[i] - q25[i] for i in range(0, len(q25))]
-  return [data[i][np.where((data[i] < q25[i] - 1.5*iqr[i]) | (data[i] > q75[i] + 1.5*iqr[i]))] for i in range(0, len(data))]
+  return [data[i][np.where((data[i] < q25[i] - 1.5*iqr[i]) | (data[i] > q75[i] + 1.5*iqr[i]))] for i in range(len(data))]
 
 def get_data(no_bins, simulation_bins, simulations):
   import numpy as np
