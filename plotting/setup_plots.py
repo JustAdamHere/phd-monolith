@@ -35,12 +35,18 @@ def style(figure, axis, x_parameter_name, y_parameter_name, y_scilimits=None, y_
 def percentiles(data, percentage):
   import numpy as np
 
-  return [np.percentile(data[i], percentage) for i in range(0, len(data))]
+  return np.array([np.percentile(data[i], percentage) for i in range(0, len(data))])
 
 def iqr(q25, q75):
   import numpy as np
 
-  return [q75[i] - q25[i] for i in range(0, len(q25))]
+  return np.array([q75[i] - q25[i] for i in range(0, len(q25))])
+
+def outliers(data, q25, q75):
+  import numpy as np
+
+  iqr = [q75[i] - q25[i] for i in range(0, len(q25))]
+  return [data[i][np.where((data[i] < q25[i] - 1.5*iqr[i]) | (data[i] > q75[i] + 1.5*iqr[i]))] for i in range(0, len(data))]
 
 def get_data(no_bins, simulation_bins, simulations):
   import numpy as np
@@ -187,8 +193,8 @@ def get_data(no_bins, simulation_bins, simulations):
   q75_transport_percentage_basal_plate            = percentiles(transport_percentage_basal_plate           , 75)
   q75_transport_percentage_septal_wall            = percentiles(transport_percentage_septal_wall           , 75)
   q75_transport_percentage_marginal_sinus         = percentiles(transport_percentage_marginal_sinus        , 75)
-  
-  # Inter-quartile ranges.
+
+  # Interquartile range.
   iqr_velocity_magnitude_integral                 = iqr(q25_velocity_magnitude_integral                 , q75_velocity_magnitude_integral                )
   iqr_slow_velocity_percentage_ivs                = iqr(q25_slow_velocity_percentage_ivs                , q75_slow_velocity_percentage_ivs               )
   iqr_slow_velocity_percentage_everywhere         = iqr(q25_slow_velocity_percentage_everywhere         , q75_slow_velocity_percentage_everywhere        )
@@ -247,85 +253,119 @@ def get_data(no_bins, simulation_bins, simulations):
       'transport_percentage_marginal_sinus'         : average_transport_percentage_marginal_sinus
     },
     'q25' : {
-      'velocity_magnitude_integral'                 : percentiles(velocity_magnitude_integral                , 25),
-      'slow_velocity_percentage_ivs'                : percentiles(slow_velocity_percentage_ivs               , 25),
-      'slow_velocity_percentage_everywhere'         : percentiles(slow_velocity_percentage_everywhere        , 25),
-      'slow_velocity_percentage_dellschaft'         : percentiles(slow_velocity_percentage_dellschaft        , 25),
-      'fast_velocity_percentage_dellschaft'         : percentiles(fast_velocity_percentage_dellschaft        , 25),
-      'slow_velocity_percentage_nominal_everywhere' : percentiles(slow_velocity_percentage_nominal_everywhere, 25),
-      'transport_reaction_integral'                 : percentiles(transport_reaction_integral                , 25),
-      'kinetic_energy_flux'                         : percentiles(kinetic_energy_flux                        , 25),
-      'total_energy_flux'                           : percentiles(total_energy_flux                          , 25),
-      'velocity_cross_flow_flux'                    : percentiles(velocity_cross_flow_flux                   , 25),
-      'transport_flux'                              : percentiles(transport_flux                             , 25),
-      'velocity_percentage_basal_plate'             : percentiles(velocity_percentage_basal_plate            , 25),
-      'velocity_percentage_septal_wall'             : percentiles(velocity_percentage_septal_wall            , 25),
-      'velocity_percentage_marginal_sinus'          : percentiles(velocity_percentage_marginal_sinus         , 25),
-      'transport_percentage_basal_plate'            : percentiles(transport_percentage_basal_plate           , 25),
-      'transport_percentage_septal_wall'            : percentiles(transport_percentage_septal_wall           , 25),
-      'transport_percentage_marginal_sinus'         : percentiles(transport_percentage_marginal_sinus        , 25)
-    },
-    'q50' : {
-      'velocity_magnitude_integral'                 : percentiles(velocity_magnitude_integral                , 50),
-      'slow_velocity_percentage_ivs'                : percentiles(slow_velocity_percentage_ivs               , 50),
-      'slow_velocity_percentage_everywhere'         : percentiles(slow_velocity_percentage_everywhere        , 50),
-      'slow_velocity_percentage_dellschaft'         : percentiles(slow_velocity_percentage_dellschaft        , 50),
-      'fast_velocity_percentage_dellschaft'         : percentiles(fast_velocity_percentage_dellschaft        , 50),
-      'slow_velocity_percentage_nominal_everywhere' : percentiles(slow_velocity_percentage_nominal_everywhere, 50),
-      'transport_reaction_integral'                 : percentiles(transport_reaction_integral                , 50),
-      'kinetic_energy_flux'                         : percentiles(kinetic_energy_flux                        , 50),
-      'total_energy_flux'                           : percentiles(total_energy_flux                          , 50),
-      'velocity_cross_flow_flux'                    : percentiles(velocity_cross_flow_flux                   , 50),
-      'transport_flux'                              : percentiles(transport_flux                             , 50),
-      'velocity_percentage_basal_plate'             : percentiles(velocity_percentage_basal_plate            , 50),
-      'velocity_percentage_septal_wall'             : percentiles(velocity_percentage_septal_wall            , 50),
-      'velocity_percentage_marginal_sinus'          : percentiles(velocity_percentage_marginal_sinus         , 50),
-      'transport_percentage_basal_plate'            : percentiles(transport_percentage_basal_plate           , 50),
-      'transport_percentage_septal_wall'            : percentiles(transport_percentage_septal_wall           , 50),
-      'transport_percentage_marginal_sinus'         : percentiles(transport_percentage_marginal_sinus        , 50)
+      'velocity_magnitude_integral'                 : q25_velocity_magnitude_integral                ,
+      'slow_velocity_percentage_ivs'                : q25_slow_velocity_percentage_ivs               ,
+      'slow_velocity_percentage_everywhere'         : q25_slow_velocity_percentage_everywhere        ,
+      'slow_velocity_percentage_dellschaft'         : q25_slow_velocity_percentage_dellschaft        ,
+      'fast_velocity_percentage_dellschaft'         : q25_fast_velocity_percentage_dellschaft        ,
+      'slow_velocity_percentage_nominal_everywhere' : q25_slow_velocity_percentage_nominal_everywhere,
+      'transport_reaction_integral'                 : q25_transport_reaction_integral                ,
+      'kinetic_energy_flux'                         : q25_kinetic_energy_flux                        ,
+      'total_energy_flux'                           : q25_total_energy_flux                          ,
+      'velocity_cross_flow_flux'                    : q25_velocity_cross_flow_flux                   ,
+      'transport_flux'                              : q25_transport_flux                             ,
+      'velocity_percentage_basal_plate'             : q25_velocity_percentage_basal_plate            ,
+      'velocity_percentage_septal_wall'             : q25_velocity_percentage_septal_wall            ,
+      'velocity_percentage_marginal_sinus'          : q25_velocity_percentage_marginal_sinus         ,
+      'transport_percentage_basal_plate'            : q25_transport_percentage_basal_plate           ,
+      'transport_percentage_septal_wall'            : q25_transport_percentage_septal_wall           ,
+      'transport_percentage_marginal_sinus'         : q25_transport_percentage_marginal_sinus
     },
     'q75' : {
-      'velocity_magnitude_integral'                 : percentiles(velocity_magnitude_integral                , 75),
-      'slow_velocity_percentage_ivs'                : percentiles(slow_velocity_percentage_ivs               , 75),
-      'slow_velocity_percentage_everywhere'         : percentiles(slow_velocity_percentage_everywhere        , 75),
-      'slow_velocity_percentage_dellschaft'         : percentiles(slow_velocity_percentage_dellschaft        , 75),
-      'fast_velocity_percentage_dellschaft'         : percentiles(fast_velocity_percentage_dellschaft        , 75),
-      'slow_velocity_percentage_nominal_everywhere' : percentiles(slow_velocity_percentage_nominal_everywhere, 75),
-      'transport_reaction_integral'                 : percentiles(transport_reaction_integral                , 75),
-      'kinetic_energy_flux'                         : percentiles(kinetic_energy_flux                        , 75),
-      'total_energy_flux'                           : percentiles(total_energy_flux                          , 75),
-      'velocity_cross_flow_flux'                    : percentiles(velocity_cross_flow_flux                   , 75),
-      'transport_flux'                              : percentiles(transport_flux                             , 75),
-      'velocity_percentage_basal_plate'             : percentiles(velocity_percentage_basal_plate            , 75),
-      'velocity_percentage_septal_wall'             : percentiles(velocity_percentage_septal_wall            , 75),
-      'velocity_percentage_marginal_sinus'          : percentiles(velocity_percentage_marginal_sinus         , 75),
-      'transport_percentage_basal_plate'            : percentiles(transport_percentage_basal_plate           , 75),
-      'transport_percentage_septal_wall'            : percentiles(transport_percentage_septal_wall           , 75),
-      'transport_percentage_marginal_sinus'         : percentiles(transport_percentage_marginal_sinus        , 75)
+      'velocity_magnitude_integral'                 : q75_velocity_magnitude_integral                ,
+      'slow_velocity_percentage_ivs'                : q75_slow_velocity_percentage_ivs               ,
+      'slow_velocity_percentage_everywhere'         : q75_slow_velocity_percentage_everywhere        ,
+      'slow_velocity_percentage_dellschaft'         : q75_slow_velocity_percentage_dellschaft        ,
+      'fast_velocity_percentage_dellschaft'         : q75_fast_velocity_percentage_dellschaft        ,
+      'slow_velocity_percentage_nominal_everywhere' : q75_slow_velocity_percentage_nominal_everywhere,
+      'transport_reaction_integral'                 : q75_transport_reaction_integral                ,
+      'kinetic_energy_flux'                         : q75_kinetic_energy_flux                        ,
+      'total_energy_flux'                           : q75_total_energy_flux                          ,
+      'velocity_cross_flow_flux'                    : q75_velocity_cross_flow_flux                   ,
+      'transport_flux'                              : q75_transport_flux                             ,
+      'velocity_percentage_basal_plate'             : q75_velocity_percentage_basal_plate            ,
+      'velocity_percentage_septal_wall'             : q75_velocity_percentage_septal_wall            ,
+      'velocity_percentage_marginal_sinus'          : q75_velocity_percentage_marginal_sinus         ,
+      'transport_percentage_basal_plate'            : q75_transport_percentage_basal_plate           ,
+      'transport_percentage_septal_wall'            : q75_transport_percentage_septal_wall           ,
+      'transport_percentage_marginal_sinus'         : q75_transport_percentage_marginal_sinus
     },
     'iqr' : {
-      'velocity_magnitude_integral'                 : iqr_velocity_magnitude_integral                ,
-      'slow_velocity_percentage_ivs'                : iqr_slow_velocity_percentage_ivs               ,
-      'slow_velocity_percentage_everywhere'         : iqr_slow_velocity_percentage_everywhere        ,
-      'slow_velocity_percentage_dellschaft'         : iqr_slow_velocity_percentage_dellschaft        ,
-      'fast_velocity_percentage_dellschaft'         : iqr_fast_velocity_percentage_dellschaft        ,
-      'slow_velocity_percentage_nominal_everywhere' : iqr_slow_velocity_percentage_nominal_everywhere,
-      'transport_reaction_integral'                 : iqr_transport_reaction_integral                ,
-      'kinetic_energy_flux'                         : iqr_kinetic_energy_flux                        ,
-      'total_energy_flux'                           : iqr_total_energy_flux                          ,
-      'velocity_cross_flow_flux'                    : iqr_velocity_cross_flow_flux                   ,
-      'transport_flux'                              : iqr_transport_flux                             ,
-      'velocity_percentage_basal_plate'             : iqr_velocity_percentage_basal_plate            ,
-      'velocity_percentage_septal_wall'             : iqr_velocity_percentage_septal_wall            ,
-      'velocity_percentage_marginal_sinus'          : iqr_velocity_percentage_marginal_sinus         ,
-      'transport_percentage_basal_plate'            : iqr_transport_percentage_basal_plate           ,
-      'transport_percentage_septal_wall'            : iqr_transport_percentage_septal_wall           ,
+      'velocity_magnitude_integral'                 : iqr_velocity_magnitude_integral                 ,
+      'slow_velocity_percentage_ivs'                : iqr_slow_velocity_percentage_ivs                ,
+      'slow_velocity_percentage_everywhere'         : iqr_slow_velocity_percentage_everywhere         ,
+      'slow_velocity_percentage_dellschaft'         : iqr_slow_velocity_percentage_dellschaft         ,
+      'fast_velocity_percentage_dellschaft'         : iqr_fast_velocity_percentage_dellschaft         ,
+      'slow_velocity_percentage_nominal_everywhere' : iqr_slow_velocity_percentage_nominal_everywhere ,
+      'transport_reaction_integral'                 : iqr_transport_reaction_integral                 ,
+      'kinetic_energy_flux'                         : iqr_kinetic_energy_flux                         ,
+      'total_energy_flux'                           : iqr_total_energy_flux                           ,
+      'velocity_cross_flow_flux'                    : iqr_velocity_cross_flow_flux                    ,
+      'transport_flux'                              : iqr_transport_flux                              ,
+      'velocity_percentage_basal_plate'             : iqr_velocity_percentage_basal_plate             ,
+      'velocity_percentage_septal_wall'             : iqr_velocity_percentage_septal_wall             ,
+      'velocity_percentage_marginal_sinus'          : iqr_velocity_percentage_marginal_sinus          ,
+      'transport_percentage_basal_plate'            : iqr_transport_percentage_basal_plate            ,
+      'transport_percentage_septal_wall'            : iqr_transport_percentage_septal_wall            ,
       'transport_percentage_marginal_sinus'         : iqr_transport_percentage_marginal_sinus
+    },
+    'whisker_low' : {
+      'velocity_magnitude_integral'                 : q25_velocity_magnitude_integral                 - 1.5*iqr_velocity_magnitude_integral,
+      'slow_velocity_percentage_ivs'                : q25_slow_velocity_percentage_ivs                - 1.5*iqr_slow_velocity_percentage_ivs,
+      'slow_velocity_percentage_everywhere'         : q25_slow_velocity_percentage_everywhere         - 1.5*iqr_slow_velocity_percentage_everywhere,
+      'slow_velocity_percentage_dellschaft'         : q25_slow_velocity_percentage_dellschaft         - 1.5*iqr_slow_velocity_percentage_dellschaft,
+      'fast_velocity_percentage_dellschaft'         : q25_fast_velocity_percentage_dellschaft         - 1.5*iqr_fast_velocity_percentage_dellschaft,
+      'slow_velocity_percentage_nominal_everywhere' : q25_slow_velocity_percentage_nominal_everywhere - 1.5*iqr_slow_velocity_percentage_nominal_everywhere,
+      'transport_reaction_integral'                 : q25_transport_reaction_integral                 - 1.5*iqr_transport_reaction_integral,
+      'kinetic_energy_flux'                         : q25_kinetic_energy_flux                         - 1.5*iqr_kinetic_energy_flux,
+      'total_energy_flux'                           : q25_total_energy_flux                           - 1.5*iqr_total_energy_flux,
+      'velocity_cross_flow_flux'                    : q25_velocity_cross_flow_flux                    - 1.5*iqr_velocity_cross_flow_flux,
+      'transport_flux'                              : q25_transport_flux                              - 1.5*iqr_transport_flux,
+      'velocity_percentage_basal_plate'             : q25_velocity_percentage_basal_plate             - 1.5*iqr_velocity_percentage_basal_plate,
+      'velocity_percentage_septal_wall'             : q25_velocity_percentage_septal_wall             - 1.5*iqr_velocity_percentage_septal_wall,
+      'velocity_percentage_marginal_sinus'          : q25_velocity_percentage_marginal_sinus          - 1.5*iqr_velocity_percentage_marginal_sinus,
+      'transport_percentage_basal_plate'            : q25_transport_percentage_basal_plate            - 1.5*iqr_transport_percentage_basal_plate,
+      'transport_percentage_septal_wall'            : q25_transport_percentage_septal_wall            - 1.5*iqr_transport_percentage_septal_wall,
+      'transport_percentage_marginal_sinus'         : q25_transport_percentage_marginal_sinus         - 1.5*iqr_transport_percentage_marginal_sinus
+    },
+    'whisker_high' : {
+      'velocity_magnitude_integral'                 : q75_velocity_magnitude_integral                 + 1.5*iqr_velocity_magnitude_integral,
+      'slow_velocity_percentage_ivs'                : q75_slow_velocity_percentage_ivs                + 1.5*iqr_slow_velocity_percentage_ivs,
+      'slow_velocity_percentage_everywhere'         : q75_slow_velocity_percentage_everywhere         + 1.5*iqr_slow_velocity_percentage_everywhere,
+      'slow_velocity_percentage_dellschaft'         : q75_slow_velocity_percentage_dellschaft         + 1.5*iqr_slow_velocity_percentage_dellschaft,
+      'fast_velocity_percentage_dellschaft'         : q75_fast_velocity_percentage_dellschaft         + 1.5*iqr_fast_velocity_percentage_dellschaft,
+      'slow_velocity_percentage_nominal_everywhere' : q75_slow_velocity_percentage_nominal_everywhere + 1.5*iqr_slow_velocity_percentage_nominal_everywhere,
+      'transport_reaction_integral'                 : q75_transport_reaction_integral                 + 1.5*iqr_transport_reaction_integral,
+      'kinetic_energy_flux'                         : q75_kinetic_energy_flux                         + 1.5*iqr_kinetic_energy_flux,
+      'total_energy_flux'                           : q75_total_energy_flux                           + 1.5*iqr_total_energy_flux,
+      'velocity_cross_flow_flux'                    : q75_velocity_cross_flow_flux                    + 1.5*iqr_velocity_cross_flow_flux,
+      'transport_flux'                              : q75_transport_flux                              + 1.5*iqr_transport_flux,
+      'velocity_percentage_basal_plate'             : q75_velocity_percentage_basal_plate             + 1.5*iqr_velocity_percentage_basal_plate,
+      'velocity_percentage_septal_wall'             : q75_velocity_percentage_septal_wall             + 1.5*iqr_velocity_percentage_septal_wall,
+      'velocity_percentage_marginal_sinus'          : q75_velocity_percentage_marginal_sinus          + 1.5*iqr_velocity_percentage_marginal_sinus,
+      'transport_percentage_basal_plate'            : q75_transport_percentage_basal_plate            + 1.5*iqr_transport_percentage_basal_plate,
+      'transport_percentage_septal_wall'            : q75_transport_percentage_septal_wall            + 1.5*iqr_transport_percentage_septal_wall,
+      'transport_percentage_marginal_sinus'         : q75_transport_percentage_marginal_sinus         + 1.5*iqr_transport_percentage_marginal_sinus
+    },
+    'outliers' : {
+      'velocity_magnitude_integral'                 : outliers(velocity_magnitude_integral                , q25_velocity_magnitude_integral                , q75_velocity_magnitude_integral                ),
+      'slow_velocity_percentage_ivs'                : outliers(slow_velocity_percentage_ivs               , q25_slow_velocity_percentage_ivs               , q75_slow_velocity_percentage_ivs               ),
+      'slow_velocity_percentage_everywhere'         : outliers(slow_velocity_percentage_everywhere        , q25_slow_velocity_percentage_everywhere        , q75_slow_velocity_percentage_everywhere        ),
+      'slow_velocity_percentage_dellschaft'         : outliers(slow_velocity_percentage_dellschaft        , q25_slow_velocity_percentage_dellschaft        , q75_slow_velocity_percentage_dellschaft        ),
+      'fast_velocity_percentage_dellschaft'         : outliers(fast_velocity_percentage_dellschaft        , q25_fast_velocity_percentage_dellschaft        , q75_fast_velocity_percentage_dellschaft        ),
+      'slow_velocity_percentage_nominal_everywhere' : outliers(slow_velocity_percentage_nominal_everywhere, q25_slow_velocity_percentage_nominal_everywhere, q75_slow_velocity_percentage_nominal_everywhere),
+      'transport_reaction_integral'                 : outliers(transport_reaction_integral                , q25_transport_reaction_integral                , q75_transport_reaction_integral                ),
+      'kinetic_energy_flux'                         : outliers(kinetic_energy_flux                        , q25_kinetic_energy_flux                        , q75_kinetic_energy_flux                        ),
+      'total_energy_flux'                           : outliers(total_energy_flux                          , q25_total_energy_flux                          , q75_total_energy_flux                          ),
+      'velocity_cross_flow_flux'                    : outliers(velocity_cross_flow_flux                   , q25_velocity_cross_flow_flux                   , q75_velocity_cross_flow_flux                   ),
+      'transport_flux'                              : outliers(transport_flux                             , q25_transport_flux                             , q75_transport_flux                             ),
+      'velocity_percentage_basal_plate'             : outliers(velocity_percentage_basal_plate            , q25_velocity_percentage_basal_plate            , q75_velocity_percentage_basal_plate            ),
+      'velocity_percentage_septal_wall'             : outliers(velocity_percentage_septal_wall            , q25_velocity_percentage_septal_wall            , q75_velocity_percentage_septal_wall            ),
+      'velocity_percentage_marginal_sinus'          : outliers(velocity_percentage_marginal_sinus         , q25_velocity_percentage_marginal_sinus         , q75_velocity_percentage_marginal_sinus         ),
+      'transport_percentage_basal_plate'            : outliers(transport_percentage_basal_plate           , q25_transport_percentage_basal_plate           , q75_transport_percentage_basal_plate           ),
+      'transport_percentage_septal_wall'            : outliers(transport_percentage_septal_wall           , q25_transport_percentage_septal_wall           , q75_transport_percentage_septal_wall           ),
+      'transport_percentage_marginal_sinus'         : outliers(transport_percentage_marginal_sinus        , q25_transport_percentage_marginal_sinus        , q75_transport_percentage_marginal_sinus        )
     }
-    # },
-    # 'outliers' : {
-    #   'transport_percentage_basal_plate' : np.where(transport_percentage_basal_plate < percentiles(transport_percentage_basal_plate, 25), transport_percentage_basal_plate)
-    # }
   }
 
   return output
