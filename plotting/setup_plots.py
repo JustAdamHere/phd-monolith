@@ -12,7 +12,7 @@ def plot(axis, parameter_values, box_plot_data, average_data, box_plot_width=0.7
   axis.boxplot(box_plot_data, positions=parameter_values, widths=box_plot_width)
   axis.plot(parameter_values, average_data, 'k--')
 
-def style(figure, axis, x_parameter_name, y_parameter_name, y_scilimits=None, y_bottom=0, y_top=None, integer_ticks=True, xlim=None):
+def style(figure, axis, x_parameter_name, y_parameter_name, y_scilimits=None, y_bottom=-2, y_top=None, integer_ticks=True, xlim=None):
   if (integer_ticks):
     axis.xaxis.set_major_formatter(plt.FormatStrFormatter('%d'))
   else:
@@ -46,30 +46,30 @@ def get_data(no_bins, simulation_bins, simulations):
   import numpy as np
   
   # 1
-  velocity_magnitude_integral = [[] for i in range(no_bins)]
+  velocity_magnitude_integral = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
   # 2
-  slow_velocity_percentage_ivs                = [[] for i in range(no_bins)]
-  slow_velocity_percentage_everywhere         = [[] for i in range(no_bins)]
-  slow_velocity_percentage_dellschaft         = [[] for i in range(no_bins)]
-  fast_velocity_percentage_dellschaft         = [[] for i in range(no_bins)]
-  slow_velocity_percentage_nominal_everywhere = [[] for i in range(no_bins)]
+  slow_velocity_percentage_ivs                = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
+  slow_velocity_percentage_everywhere         = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
+  slow_velocity_percentage_dellschaft         = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
+  fast_velocity_percentage_dellschaft         = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
+  slow_velocity_percentage_nominal_everywhere = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
   # 3
-  transport_reaction_integral = [[] for i in range(no_bins)]
+  transport_reaction_integral = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
   # 4
-  kinetic_energy_flux = [[] for i in range(no_bins)]
+  kinetic_energy_flux = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
   # 5
-  total_energy_flux = [[] for i in range(no_bins)]
+  total_energy_flux = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
   # 6
-  velocity_cross_flow_flux = [[] for i in range(no_bins)]
+  velocity_cross_flow_flux = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
   # 7
-  transport_flux = [[] for i in range(no_bins)]
+  transport_flux = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
   # 8 
-  velocity_percentage_basal_plate     = [[] for i in range(no_bins)]
-  velocity_percentage_septal_wall     = [[] for i in range(no_bins)]
-  velocity_percentage_marginal_sinus  = [[] for i in range(no_bins)]
-  transport_percentage_basal_plate    = [[] for i in range(no_bins)]
-  transport_percentage_septal_wall    = [[] for i in range(no_bins)]
-  transport_percentage_marginal_sinus = [[] for i in range(no_bins)]
+  velocity_percentage_basal_plate     = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
+  velocity_percentage_septal_wall     = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
+  velocity_percentage_marginal_sinus  = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
+  transport_percentage_basal_plate    = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
+  transport_percentage_septal_wall    = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
+  transport_percentage_marginal_sinus = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
 
   # Averages.
   average_velocity_magnitude_integral                 = []
@@ -94,23 +94,23 @@ def get_data(no_bins, simulation_bins, simulations):
     for j in range(0, len(simulation_bins[i])):
       run_no = simulation_bins[i][j]
 
-      velocity_magnitude_integral                 [i].append(simulations[run_no-1].velocity_magnitude_integral_ivs             )
-      slow_velocity_percentage_ivs                [i].append(simulations[run_no-1].slow_velocity_percentage_ivs                )
-      slow_velocity_percentage_everywhere         [i].append(simulations[run_no-1].slow_velocity_percentage_everywhere         )
-      slow_velocity_percentage_dellschaft         [i].append(simulations[run_no-1].slow_velocity_percentage_dellschaft         )
-      fast_velocity_percentage_dellschaft         [i].append(simulations[run_no-1].fast_velocity_percentage_dellschaft         )
-      slow_velocity_percentage_nominal_everywhere [i].append(simulations[run_no-1].slow_velocity_percentage_nominal_everywhere )
-      transport_reaction_integral                 [i].append(simulations[run_no-1].transport_reaction_integral                 )
-      kinetic_energy_flux                         [i].append(simulations[run_no-1].kinetic_energy_flux                         )
-      total_energy_flux                           [i].append(simulations[run_no-1].total_energy_flux                           )
-      velocity_cross_flow_flux                    [i].append(simulations[run_no-1].abs_velocity_cross_flow_flux                )
-      transport_flux                              [i].append(simulations[run_no-1].transport_flux                              )
-      velocity_percentage_basal_plate             [i].append(simulations[run_no-1].velocity_percentage_basal_plate             )
-      velocity_percentage_septal_wall             [i].append(simulations[run_no-1].velocity_percentage_septal_wall             )
-      velocity_percentage_marginal_sinus          [i].append(simulations[run_no-1].velocity_percentage_marginal_sinus          )
-      transport_percentage_basal_plate            [i].append(simulations[run_no-1].transport_percentage_basal_plate            )
-      transport_percentage_septal_wall            [i].append(simulations[run_no-1].transport_percentage_septal_wall            )
-      transport_percentage_marginal_sinus         [i].append(simulations[run_no-1].transport_percentage_marginal_sinus         )
+      velocity_magnitude_integral                 [i][j] = simulations[run_no-1].velocity_magnitude_integral_ivs
+      slow_velocity_percentage_ivs                [i][j] = simulations[run_no-1].slow_velocity_percentage_ivs
+      slow_velocity_percentage_everywhere         [i][j] = simulations[run_no-1].slow_velocity_percentage_everywhere
+      slow_velocity_percentage_dellschaft         [i][j] = simulations[run_no-1].slow_velocity_percentage_dellschaft
+      fast_velocity_percentage_dellschaft         [i][j] = simulations[run_no-1].fast_velocity_percentage_dellschaft
+      slow_velocity_percentage_nominal_everywhere [i][j] = simulations[run_no-1].slow_velocity_percentage_nominal_everywhere
+      transport_reaction_integral                 [i][j] = simulations[run_no-1].transport_reaction_integral
+      kinetic_energy_flux                         [i][j] = simulations[run_no-1].kinetic_energy_flux
+      total_energy_flux                           [i][j] = simulations[run_no-1].total_energy_flux
+      velocity_cross_flow_flux                    [i][j] = simulations[run_no-1].abs_velocity_cross_flow_flux
+      transport_flux                              [i][j] = simulations[run_no-1].transport_flux
+      velocity_percentage_basal_plate             [i][j] = simulations[run_no-1].velocity_percentage_basal_plate
+      velocity_percentage_septal_wall             [i][j] = simulations[run_no-1].velocity_percentage_septal_wall
+      velocity_percentage_marginal_sinus          [i][j] = simulations[run_no-1].velocity_percentage_marginal_sinus
+      transport_percentage_basal_plate            [i][j] = simulations[run_no-1].transport_percentage_basal_plate
+      transport_percentage_septal_wall            [i][j] = simulations[run_no-1].transport_percentage_septal_wall
+      transport_percentage_marginal_sinus         [i][j] = simulations[run_no-1].transport_percentage_marginal_sinus
 
     # Calculate mean for those within IQR.
     if (len(simulation_bins[i]) > 0):
@@ -322,6 +322,10 @@ def get_data(no_bins, simulation_bins, simulations):
       'transport_percentage_septal_wall'            : iqr_transport_percentage_septal_wall           ,
       'transport_percentage_marginal_sinus'         : iqr_transport_percentage_marginal_sinus
     }
+    # },
+    # 'outliers' : {
+    #   'transport_percentage_basal_plate' : np.where(transport_percentage_basal_plate < percentiles(transport_percentage_basal_plate, 25), transport_percentage_basal_plate)
+    # }
   }
 
   return output
