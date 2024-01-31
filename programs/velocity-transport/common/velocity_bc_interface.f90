@@ -111,6 +111,8 @@ module velocity_bc_interface
     use bcs_constant_up_velocity
     use bcs_constant_diagonal_velocity
     use bcs_poiseuille_velocity
+    use bcs_etienne2009_velocity
+    use bcs_etienne2009_ti_velocity
     use bcs_zero_velocity
 
     implicit none
@@ -189,6 +191,24 @@ module velocity_bc_interface
       get_boundary_no_velocity     => poiseuille_2d_get_boundary_no_velocity
       dirichlet_bc_velocity        => poiseuille_2d_dirichlet_bc_velocity
       neumann_bc_velocity          => poiseuille_2d_neumann_bc_velocity
+    else if (trim(geometry_name) == 'square_etienne2009') then
+      convert_velocity_boundary_no => etienne2009_2d_convert_velocity_boundary_no
+      convert_velocity_region_id   => etienne2009_2d_convert_velocity_region_id
+      forcing_function_velocity    => etienne2009_2d_forcing_function_velocity
+      anal_soln_velocity           => etienne2009_2d_anal_soln_velocity
+      anal_soln_velocity_1         => etienne2009_2d_anal_soln_velocity_1
+      get_boundary_no_velocity     => etienne2009_2d_get_boundary_no_velocity
+      dirichlet_bc_velocity        => etienne2009_2d_dirichlet_bc_velocity
+      neumann_bc_velocity          => etienne2009_2d_neumann_bc_velocity
+    else if (trim(geometry_name) == 'square_etienne2009_ti') then
+      convert_velocity_boundary_no => etienne2009_ti_2d_convert_velocity_boundary_no
+      convert_velocity_region_id   => etienne2009_ti_2d_convert_velocity_region_id
+      forcing_function_velocity    => etienne2009_ti_2d_forcing_function_velocity
+      anal_soln_velocity           => etienne2009_ti_2d_anal_soln_velocity
+      anal_soln_velocity_1         => etienne2009_ti_2d_anal_soln_velocity_1
+      get_boundary_no_velocity     => etienne2009_ti_2d_get_boundary_no_velocity
+      dirichlet_bc_velocity        => etienne2009_ti_2d_dirichlet_bc_velocity
+      neumann_bc_velocity          => etienne2009_ti_2d_neumann_bc_velocity
     else 
       call write_message(io_err, "Error: Unknown geometry name: " // trim(geometry_name))
       error stop

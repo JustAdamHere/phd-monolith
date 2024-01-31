@@ -159,4 +159,56 @@ parameters["geometry"] = "square_poiseuille"
 parameters["mesh_velocity_type"] = "oscillating_sine"
 velocity_transport.run(32, parameters)
 
+parameters["geometry"] = "square_zero"
+parameters["mesh_velocity_type"] = "etienne2009"
+velocity_transport.run(33, parameters)
+
+parameters["geometry"] = "square_constant_up"
+parameters["mesh_velocity_type"] = "etienne2009"
+velocity_transport.run(34, parameters)
+
+parameters["geometry"] = "square_constant_diagonal"
+parameters["mesh_velocity_type"] = "etienne2009"
+velocity_transport.run(35, parameters)
+
+parameters["geometry"] = "square_poiseuille"
+parameters["mesh_velocity_type"] = "etienne2009"
+velocity_transport.run(36, parameters)
+
+parameters["geometry"] = "square_etienne2009_ti"
+parameters["mesh_velocity_type"] = "zero"
+velocity_transport.run(37, parameters)
+
+parameters["geometry"] = "square_etienne2009_ti"
+parameters["mesh_velocity_type"] = "interior"
+velocity_transport.run(38, parameters)
+
+parameters["geometry"] = "square_etienne2009_ti"
+parameters["mesh_velocity_type"] = "constant_up"
+velocity_transport.run(39, parameters)
+
+parameters["geometry"] = "square_etienne2009_ti"
+parameters["mesh_velocity_type"] = "shear"
+velocity_transport.run(40, parameters)
+
+parameters["geometry"] = "square_etienne2009_ti"
+parameters["mesh_velocity_type"] = "circular"
+velocity_transport.run(41, parameters)
+
+parameters["geometry"] = "square_etienne2009_ti"
+parameters["mesh_velocity_type"] = "incompressible"
+velocity_transport.run(42, parameters)
+
+parameters["geometry"] = "square_etienne2009_ti"
+parameters["mesh_velocity_type"] = "incompressible2"
+velocity_transport.run(43, parameters)
+
+parameters["geometry"] = "square_etienne2009_ti"
+parameters["mesh_velocity_type"] = "oscillating_sine"
+velocity_transport.run(44, parameters)
+
+parameters["geometry"] = "square_etienne2009_ti"
+parameters["mesh_velocity_type"] = "etienne2009"
+velocity_transport.run(45, parameters)
+
 # MORE COMPLICATED SQUEEZING AND STRETCHING

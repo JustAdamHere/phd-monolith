@@ -1,39 +1,4 @@
 def get_default_run_parameters():
-	# parameters_dictionary =  {
-	# 	'clean_files'                      : [False, False, False, False, False, False, False],
-	# 	'error_on_fail'                    : True,
-	# 	'extra_text'                       : '',
-	# 	'final_time'                       : 1.0,
-	# 	'geometry'                         : 'square_analytic',
-	# 	'linear_solver'                    : 'mumps',
-	# 	'mesh_resolution'                  : 1,
-	# 	'mesh_velocity_type'               : 'zero',
-	# 	'moving_mesh'                      : False,
-	# 	'no_threads'                       : 1,
-	# 	'no_time_steps'                    : 10,
-	# 	'plot'                             : False,
-	# 	'problem_dim'                      : 2,
-	# 	'run_type'                         : 'openmp',
-	# 	'terminal_output'                  : True,
-	# 	'test_type'                        : 'ss_velocity_space',
-	# 	'transport_convection_coefficient' : 1.0,
-	# 	'transport_diffusion_coefficient'  : 1.0,
-	# 	'transport_forcing_coefficient'    : 1.0,
-	# 	'transport_reaction_coefficient'   : 1.0,
-	# 	'transport_time_coefficient'       : 1.0,
-	# 	'velocity_convection_coefficient'  : 1.0,
-	# 	'velocity_diffusion_coefficient'   : 1.0,
-	# 	'velocity_forcing_coefficient'     : 1.0,
-	# 	'velocity_pressure_coefficient'    : 1.0,
-	# 	'velocity_reaction_coefficient'    : 1.0,
-	# 	'velocity_time_coefficient'        : 1.0,
-	# 	'velocity_model'                   : 'nsb',
-	# 	'velocity_space'                   : 'DG',
-	# 	'verbose_output'                   : False
-	# }
-
-	# return parameters_dictionary
-
 	from programs import velocity_transport
 	parameters_dictionary = velocity_transport.get_default_run_parameters()
 	parameters_dictionary["test_type"] = 'ss_velocity_space'
