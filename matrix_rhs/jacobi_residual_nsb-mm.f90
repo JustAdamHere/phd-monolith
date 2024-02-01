@@ -53,7 +53,8 @@ module jacobi_residual_nsb_mm
     integer  :: element_region_id
 
     ! Moving mesh variables.
-    real(db), dimension(facet_data%problem_dim) :: mesh_velocity, prev_uh
+    real(db), dimension(facet_data%problem_dim) :: mesh_velocity
+    real(db), dimension(facet_data%no_pdes) :: prev_uh
     real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: prev_global_points_ele
     real(db), dimension(facet_data%no_quad_points) :: prev_jacobian, prev_quad_weights_ele
     real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable)) :: prev_phi
@@ -121,8 +122,10 @@ module jacobi_residual_nsb_mm
         call forcing_function_velocity(floc(:,qk),global_points_ele(:,qk),problem_dim,no_pdes,current_time,&
           element_region_id)
         !mesh_velocity = calculate_mesh_velocity(global_points_ele(:,qk),problem_dim,current_time)
-        call compute_uh_glob_pt(mesh_velocity, problem_dim, element_number, prev_global_points_ele(:, qk), problem_dim, &
-          prev_mesh_data, solution_moving_mesh)
+        ! call compute_uh_glob_pt(mesh_velocity, problem_dim, element_number, prev_global_points_ele(:, qk), problem_dim, &
+        !   prev_mesh_data, solution_moving_mesh)
+        prev_uh = uh_element(prev_fe_basis_info, prev_no_pdes, qk)
+        mesh_velocity = prev_uh(1:2)
         call convective_fluxes(interpolant_uh(:,qk),fluxes(:,:,qk),problem_dim,no_pdes,mesh_velocity)
 
       end do
@@ -780,6 +783,7 @@ module jacobi_residual_nsb_mm
     use problem_options
     use problem_options_velocity
     use problem_options_geometry
+    use aptofem_fe_matrix_assembly
 
     include 'assemble_jac_matrix_element.h'
 
@@ -799,7 +803,8 @@ module jacobi_residual_nsb_mm
     integer  :: element_region_id
 
     ! Moving mesh variables.
-    real(db), dimension(facet_data%problem_dim) :: mesh_velocity, prev_uh
+    real(db), dimension(facet_data%problem_dim) :: mesh_velocity
+    real(db), dimension(facet_data%no_pdes) :: prev_uh
     real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: prev_global_points_ele
     real(db), dimension(facet_data%no_quad_points) :: prev_jacobian, prev_quad_weights_ele
     real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable)) :: prev_phi
@@ -828,7 +833,7 @@ module jacobi_residual_nsb_mm
       prev_problem_dim, prev_no_quad_points_volume_max, prev_no_quad_points_face_max)
 
     ! Not necessary as we're just using this for the quadrature points.
-    ! call create_aptofem_dg_penalisation(prev_mesh_data, prev_solution_velocity_data)
+    call create_aptofem_dg_penalisation(prev_mesh_data, prev_solution_velocity_data)
 
     ! Integration info on the previous mesh.
     call element_integration_info(prev_dim_soln_coeff, prev_problem_dim, prev_mesh_data, prev_solution_velocity_data, &
@@ -857,8 +862,10 @@ module jacobi_residual_nsb_mm
       do qk = 1,no_quad_points
         interpolant_uh(:,qk) = uh_element(fe_basis_info,no_pdes,qk)
         ! mesh_velocity = calculate_mesh_velocity(global_points_ele(:,qk),problem_dim,current_time)
-        call compute_uh_glob_pt(mesh_velocity, problem_dim, element_number, prev_global_points_ele(:, qk), problem_dim, &
-          prev_mesh_data, solution_moving_mesh)
+        ! call compute_uh_glob_pt(mesh_velocity, problem_dim, element_number, prev_global_points_ele(:, qk), problem_dim, &
+        !   prev_mesh_data, solution_moving_mesh)
+        prev_uh = uh_element(prev_fe_basis_info, prev_no_pdes, qk)
+        mesh_velocity = prev_uh(1:2)
         call jacobian_convective_fluxes(interpolant_uh(:,qk), &
           fluxes_prime(:,:,:,qk),problem_dim,no_pdes,mesh_velocity)
       end do
@@ -948,6 +955,7 @@ module jacobi_residual_nsb_mm
     use problem_options
     use problem_options_velocity
     use problem_options_geometry
+    use aptofem_fe_matrix_assembly
 
     include 'assemble_jac_matrix_int_bdry_face.h'
 
@@ -1018,7 +1026,7 @@ module jacobi_residual_nsb_mm
       prev_problem_dim, prev_no_quad_points_volume_max, prev_no_quad_points_face_max)
 
     ! Not necessary as we're just using this for the quadrature points.
-    ! call create_aptofem_dg_penalisation(prev_mesh_data, prev_solution_velocity_data)
+    call create_aptofem_dg_penalisation(prev_mesh_data, prev_solution_velocity_data)
 
     ! Integration info on the previous mesh.
     call face_integration_info(prev_dim_soln_coeff, prev_problem_dim, prev_mesh_data, prev_solution_velocity_data, &
