@@ -478,13 +478,6 @@ module problem_options_geometry
             
             mesh_data%coords(:, i) = mesh_data%coords(:, i) + mesh_velocity*time_step
         end do
-
-        ! Project the mesh velocity onto the new mesh.
-        call delete_solution(solution_moving_mesh)
-        call create_fe_solution(solution_moving_mesh, mesh_data, 'fe_projection_moving_mesh', aptofem_stored_keys, &
-            anal_soln_moving_mesh, get_boundary_no_moving_mesh)
-        call set_current_time(solution_moving_mesh, mesh_time + time_step)
-        call project_function(solution_moving_mesh, mesh_data, project_mesh_velocity)
     end subroutine
 
     subroutine anal_soln_moving_mesh(u, global_point, problem_dim, no_vars, boundary_no, t)
