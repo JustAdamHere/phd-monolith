@@ -33,6 +33,8 @@ def get_default_run_parameters():
 		'mesh_resolution'                : 0.1,
 		'mesh_velocity_type'             : 'zero',
 		'moving_mesh'                    : False,
+		'newton_itns_max'                : 30,
+		'newton_tolerance'               : 1e-10,
 		'no_placentones'                 : 6,
 		'no_reynold_ramp_steps'          : 1,
 		'no_threads'                     : 20,
@@ -127,7 +129,7 @@ def run(simulation_no, p):
 		##################
 		if (p["run_set_aptofem_parameters"]):
 			output_timer.time(simulation_no, "AptoFEM set parameters", p["terminal_output"], clear_existing=True)
-			set_aptofem_parameters(simulation_no, p["velocity_model"], p["geometry"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["pipe_transition"], p["artery_length"], p["artery_width_sm"], p["log_cavity_transition"], p["scaling_L"], p["scaling_U"], p["scaling_mu"], p["scaling_rho"], p["scaling_k"], p["scaling_D"], p["scaling_R"], p["velocity_space"], velocity_ss, p["velocity_ic_from_ss"], p["transport_ic_from_ss"], p["compute_velocity"], p["compute_transport"], p["compute_permeability"], p["compute_uptake"], p["large_boundary_v_penalisation"], p["moving_mesh"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_time_steps"], p["final_time"], p["no_placentones"], p["no_threads"], p["run_type"], p["no_reynold_ramp_steps"], p["reynold_ramp_start_ratio"], p["reynold_ramp_step_base"], p["linear_solver"], p["wall_height_ratio"], p["basal_plate_vessel_positions"], p["rerun_with_reynold_steps"], p["mesh_velocity_type"])
+			set_aptofem_parameters(simulation_no, p["velocity_model"], p["geometry"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["pipe_transition"], p["artery_length"], p["artery_width_sm"], p["log_cavity_transition"], p["scaling_L"], p["scaling_U"], p["scaling_mu"], p["scaling_rho"], p["scaling_k"], p["scaling_D"], p["scaling_R"], p["velocity_space"], velocity_ss, p["velocity_ic_from_ss"], p["transport_ic_from_ss"], p["compute_velocity"], p["compute_transport"], p["compute_permeability"], p["compute_uptake"], p["large_boundary_v_penalisation"], p["moving_mesh"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_time_steps"], p["final_time"], p["no_placentones"], p["no_threads"], p["run_type"], p["no_reynold_ramp_steps"], p["reynold_ramp_start_ratio"], p["reynold_ramp_step_base"], p["linear_solver"], p["wall_height_ratio"], p["basal_plate_vessel_positions"], p["rerun_with_reynold_steps"], p["mesh_velocity_type"], p["newton_itns_max"], p["newton_tolerance"])
 			output_timer.time(simulation_no, "AptoFEM set parameters", p["terminal_output"])
 
 		if (p["run_aptofem_simulation"]):
@@ -311,7 +313,7 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, terminal_output,
 # def convergence():
 # 	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration
 
-def set_aptofem_parameters(simulation_no, velocity_model, geometry, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, artery_width_sm, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, compute_permeability, compute_uptake, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver, wall_height_ratio, basal_plate_vessel_positions, rerun_with_reynold_steps, mesh_velocity_type):
+def set_aptofem_parameters(simulation_no, velocity_model, geometry, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, artery_width_sm, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, compute_permeability, compute_uptake, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver, wall_height_ratio, basal_plate_vessel_positions, rerun_with_reynold_steps, mesh_velocity_type, newton_itns_max, newton_tolerance):
 	# Programatically create coefficients. ##
 	#  Re
 	velocity_time_coefficient = scaling_rho*scaling_U*scaling_L/scaling_mu
@@ -468,6 +470,10 @@ def set_aptofem_parameters(simulation_no, velocity_model, geometry, central_cavi
 	# Setup time dependence.
 	set_parameter.set_parameter("velocity-transport", 157, f"dirk_final_time {final_time:.4e}")
 	set_parameter.set_parameter("velocity-transport", 158, f"dirk_number_of_timesteps {no_time_steps}")
+
+	# Set Newton max iterations, tolerance, and terminate on fail.
+	set_parameter.set_parameter("velocity-transport", 168, f"newton_itns_max {newton_itns_max}")
+	set_parameter.set_parameter("velocity-transport", 169, f"newton_tolerance {newton_tolerance:.4e}")
 	set_parameter.set_parameter("velocity-transport", 170, f"newton_terminate_on_fail .{str(error_on_fail).lower()}.")
 
 	# Linear solver.

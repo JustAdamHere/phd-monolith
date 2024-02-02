@@ -4,7 +4,7 @@
 from programs import velocity_transport
 parameters = velocity_transport.get_default_run_parameters()
 
-parameters["verbose_output"] = True
+parameters["verbose_output"] = False
 
 parameters["mesh_resolution"] = 0.1
 
@@ -16,7 +16,7 @@ parameters["moving_mesh"]   = True
 parameters["no_time_steps"] = 10
 parameters["final_time"]    = 1.0
 
-parameters["error_on_fail"] = True
+parameters["error_on_fail"] = False
 
 parameters['scaling_D']   = 1.0
 parameters['scaling_L']   = 1.0
@@ -26,7 +26,9 @@ parameters['scaling_k']   = 1.0
 parameters['scaling_mu']  = 1.0
 parameters['scaling_rho'] = 1.0
 
-velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True, compile_entry='velocity-transport')
+parameters["newton_tolerance"] = 1e-10
+
+velocity_transport.setup(clean=False, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True, compile_entry='velocity-transport')
 
 ##################
 # SIMULATION RUN #
