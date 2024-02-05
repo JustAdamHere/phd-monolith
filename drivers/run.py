@@ -17,7 +17,7 @@ parameters["vessel_fillet_radius"]      = 0.01
 parameters["artery_width"]              = 0.06
 parameters["artery_width_sm"]           = 0.0125
 parameters["no_placentones"]            = 6
-parameters["geometry"]                  = 'placenta'
+parameters["geometry"]                  = "placenta"
 
 # Problem parameters.
 parameters["scaling_L"]   = 0.04     # m
@@ -31,7 +31,8 @@ parameters["scaling_R"]   = 1.667e-2 # m^2/s
 # Moving mesh.
 parameters["moving_mesh"]   = False
 parameters["no_time_steps"] = 0
-parameters["final_time"]    = 0.01
+parameters["final_time"]    = 1.0
+parameters["mesh_velocity_type"] = "oscillating_sine"
 
 # Output.
 parameters["terminal_output"] = True
@@ -39,7 +40,7 @@ parameters["verbose_output"]  = True
 parameters["plot"]            = True
 
 # Mesh resolution.
-parameters["mesh_resolution"] = 0.1#0.02
+parameters["mesh_resolution"] = 0.1
 
 # Simulation.
 parameters["compute_permeability"       ] = True
@@ -76,7 +77,7 @@ parameters["no_threads"]    = 20
 # SIMULATION RUN #
 ##################
 # Clean and compile.
-velocity_transport.setup(clean=False, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True)
+velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True)
 
 # Run simulations.
 velocity_transport.run(1, parameters)
