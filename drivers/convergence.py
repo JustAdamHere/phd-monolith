@@ -39,15 +39,12 @@ parameters["mesh_resolution"] = 0.1
 parameters["moving_mesh"]     = False
 velocity_transport_convergence.run(3, parameters)
 
-# Run the moving mesh simulations.
-parameters["geometry"] = "square_etienne2009"
-
 parameters["final_time"]         = 1.0e-3
 parameters["no_time_steps"]      = 10
 parameters["test_type"]          = "mm_velocity_space"
 parameters["mesh_resolution"]    = 2
 parameters["moving_mesh"]        = True
-parameters["mesh_velocity_type"] = "etienne2009"
+parameters["mesh_velocity_type"] = "etienne2009_mesh"
 velocity_transport_convergence.run(4, parameters)
 
 parameters["final_time"]         = 1.0e-1
@@ -55,7 +52,7 @@ parameters["no_time_steps"]      = 2
 parameters["test_type"]          = "mm_velocity_time"
 parameters["mesh_resolution"]    = 0.1
 parameters["moving_mesh"]        = True
-parameters["mesh_velocity_type"] = "etienne2009"
+parameters["mesh_velocity_type"] = "etienne2009_mesh"
 velocity_transport_convergence.run(5, parameters)
 
 # Save output.
