@@ -263,7 +263,7 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, terminal_output,
 	program           = f"velocity-transport"
 	program_directory = f"programs/velocity-transport/"
 
-	from miscellaneous import get_current_run_no, save_output, output, raise_error
+	from miscellaneous import get_current_run_no, raise_error, output
 	import subprocess
 	import sys
 
@@ -274,28 +274,8 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, terminal_output,
 		run_commands = ['mpirun', '-n', f'{no_threads}'] + run_commands
 	run_process = subprocess.Popen(run_commands, cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-	# Display last line of output to screen, and write lines to file.
-	line_truncation = 123
-	if (verbose_output):
-		end = '\r\n'
-	else:
-		end = '\r'
-	run_output = open(f"./output/{program}_{geometry}_{run_no}.txt", "w")
-	output.output("", terminal_output)
-	while run_process.poll() is None:
-		line = run_process.stdout.readline().decode('utf-8').rstrip('\r\n')
-		if (line != ""):
-			output.output(f">>> {line[:line_truncation]:<{line_truncation}}", terminal_output, end='')
-			if (len(line) > line_truncation):
-				output.output("...", terminal_output, end=end)
-			else:
-				output.output("", terminal_output, end=end)
-			run_output.write(line + '\n')
-	run_output.close()
-	if (verbose_output):
-		output.output("", terminal_output, end='\rStarting AptoFEM simulation... ')
-	else:
-		output.output("", terminal_output, end='\x1b[1A\rStarting AptoFEM simulation... ')
+	# Display output to terminal and write to file.
+	output.display_run_output(run_process, f"{program}_{geometry}_{run_no}", terminal_output, verbose_output, "Starting AptoFEM simulation...")
 
 	# Possibly return an error.
 	if (run_process.poll() != 0):
