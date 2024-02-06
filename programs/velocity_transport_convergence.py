@@ -50,6 +50,20 @@ def run(simulation_no, p):
 	output.output(tabulate(errors.transpose(), headers=['#Timesteps', 'DoFs', 'L2_u', 'L2_p', 'L2_up', 'E_up', 'div_u'], tablefmt='rounded_outline'), p["terminal_output"])
 	output.output(tabulate(error_ratios.transpose(), headers=['L2_u_ratio', 'L2_p_ratio', 'L2_up_ratio', 'E_up_ratio', 'div_u_ratio'], tablefmt='rounded_outline'), p["terminal_output"])
 
+	########
+	# PLOT #
+	########
+	if (p["plot"]):
+		if (p["test_type"][-5:] == "space"):
+			plot_spatial  = True
+			plot_temporal = False
+		else:
+			plot_spatial  = False
+			plot_temporal = True
+
+		from plotting import plot_convergence
+		plot_convergence.plot(simulation_no, errors, plot_spatial, plot_temporal)
+
 def aptofem_simple_simulation(simulation_no, velocity_model, geometry, verbose_output, terminal_output, no_threads, run_type, test_type):
 	from miscellaneous import set_parameter, set_run_numbers, output, raise_error
 	import subprocess
@@ -136,7 +150,7 @@ def aptofem_simple_simulation(simulation_no, velocity_model, geometry, verbose_o
 	# 	raise ValueError(f"Unknown problem dimension: {problem_dim}")	
 	
 	# Run AptoFEM simulation.
-	run_commands = [f'./velocity-transport_convergence.out', f'{velocity_model}', f'{geometry}', f'{test_type}', '4']
+	run_commands = [f'./velocity-transport_convergence.out', f'{velocity_model}', f'{geometry}', f'{test_type}', '5']
 	if (run_type == 'mpi'):
 		run_commands = ['mpirun', '-n', f'{no_threads}'] + run_commands
 	run_process = subprocess.Popen(run_commands, cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
