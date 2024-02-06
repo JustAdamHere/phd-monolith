@@ -23,7 +23,7 @@ velocity_bcs = 2d-bcs_velocity_placenta.f90 2d-bcs_velocity_placentone.f90 3d-bc
 
 .PHONY: cleanall
 
-MAIN_SOURCES = $(storage) $(fluxes) $(problem_options) $(velocity_bcs) $(transport_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) velocity_transport.f90
+MAIN_SOURCES = $(storage) $(fluxes) $(problem_options) $(velocity_bcs) $(transport_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) $(norms) velocity_transport.f90
 MAIN_OBJECTS = $(patsubst %.f90,./.obj/%.o,$(MAIN_SOURCES))
 CONVERGENCE_SOURCES = $(storage) $(fluxes) $(problem_options) $(velocity_bcs) $(transport_bcs_analytic) $(velocity_assembly) $(transport_assembly) $(miscellaneous) $(norms) velocity-transport_convergence.f90
 CONVERGENCE_OBJECTS = $(patsubst %.f90,./.obj/%.o,$(CONVERGENCE_SOURCES))
