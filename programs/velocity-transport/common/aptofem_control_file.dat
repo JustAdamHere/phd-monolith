@@ -90,6 +90,7 @@ compute_velocity .true.
 compute_transport .true.
 compute_permeability .true.
 compute_uptake .true.
+compute_error_norms .false.
 large_boundary_v_penalisation .false.
 moving_mesh .false.
 mesh_velocity_type zero

@@ -43,6 +43,7 @@ parameters["plot"]            = True
 parameters["mesh_resolution"] = 0.1
 
 # Simulation.
+parameters["compute_error_norms"        ] = True
 parameters["compute_permeability"       ] = True
 parameters["compute_transport"          ] = True
 parameters["compute_uptake"             ] = True

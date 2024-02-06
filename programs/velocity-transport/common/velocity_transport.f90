@@ -20,6 +20,7 @@ program velocity_transport
     use projections
     use previous_velocity
     use flux_output
+    use error_norms
 
     use matrix_rhs_transport
     use matrix_rhs_transport_ss
@@ -54,8 +55,8 @@ program velocity_transport
     type(dirk_time_stepping_scheme) :: dirk_scheme_velocity
     real(db)                        :: norm_diff_u
 
-    character(15), dimension(1) :: errors_format, errors_name
-    real(db), dimension(1)      :: errors
+    character(15), dimension(5) :: errors_format, errors_name
+    real(db), dimension(5)      :: errors
     integer                     :: no_errors_velocity, no_errors_transport
 
     logical :: ifail
@@ -65,7 +66,7 @@ program velocity_transport
 
     logical, dimension(20) :: mesh_smoother
 
-    character(len=100) :: flux_file, data_file, velocity_magnitude_file, one_file, slow_velocity_file
+    character(len=100) :: flux_file, data_file, velocity_magnitude_file, one_file, slow_velocity_file, norm_file
     character(len=100) :: aptofem_run_number_string
     character(len=100) :: tsvFormat
 
@@ -624,6 +625,23 @@ program velocity_transport
         write(23111996, tsvFormat) 0, vmi_ivs, vmi_everywhere  
     end if
 
+    !!!!!!!!!!!!!!!!!!!!
+    !! COMPUTE ERRORS !!
+    !!!!!!!!!!!!!!!!!!!!
+    if (compute_error_norms) then
+        write(aptofem_run_number_string, '(i10)') aptofem_run_number
+        norm_file = '../../output/norms' // '_' // 'velocity-transport' // '_' // &
+            trim(geometry_name) // '_' // trim(adjustl(aptofem_run_number_string)) // '.dat'
+        open(23111993, file=norm_file, status='replace')
+        tsvFormat = '(*(G0.6,:,"'//achar(9)//'"))'
+        write(23111993, tsvFormat) 'no_timesteps', 'mesh_no', 'dofs', 'L2_u', 'L2_p', 'L2_up', 'DG_up', 'L2_div_u'
+
+        no_dofs_velocity = get_no_dofs(solution_velocity)
+        call error_norms_velocity(errors, mesh_data, solution_velocity)
+        call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, mesh_no, mesh_data, solution_velocity)
+        write(23111993, tsvFormat) 0, 0, no_dofs_velocity, errors(1), errors(2), errors(3), errors(4), errors(5)
+    end if
+
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! SAVE THE SLOW VELOCITY INTEGRAL !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -935,6 +953,12 @@ program velocity_transport
         !!!!!!!!!!!!!!!
         ! ERROR NORMS !
         !!!!!!!!!!!!!!!
+        if (compute_error_norms) then
+            no_dofs_velocity = get_no_dofs(solution_velocity)
+            call error_norms_velocity(errors, mesh_data, solution_velocity)
+            call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, mesh_no, mesh_data, solution_velocity)
+            write(23111993, tsvFormat) 0, time_step_no, no_dofs_velocity, errors(1), errors(2), errors(3), errors(4), errors(5)
+        end if
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! SAVE INTEGRAL VELOCITY MAGNITUDE !
@@ -983,6 +1007,9 @@ program velocity_transport
     !! CLEAN UP !!
     !!!!!!!!!!!!!!
     close(23111999)
+    if (compute_error_norms) then
+        close(23111993)
+    end if
     if (compute_velocity) then
         close(23111994)
         close(23111995)
