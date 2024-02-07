@@ -720,8 +720,11 @@ module problem_options_geometry
         y = coord(2) - move_mesh_centre(2)
         t = mesh_time
         
-        calculate_mesh_velocity_etienne2009(1) = x*y*t**2/5.0_db
-        calculate_mesh_velocity_etienne2009(2) = x*y*(1-t**2/5.0_db)/10.0_db
+        ! calculate_mesh_velocity_etienne2009(1) = x*y*t**2/5.0_db
+        ! calculate_mesh_velocity_etienne2009(2) = x*y*(1-t**2/5.0_db)/10.0_db
+
+        calculate_mesh_velocity_etienne2009(1) = t*(1.0_db - x**2)*(y + 1.0_db)/32.0_db
+        calculate_mesh_velocity_etienne2009(2) = t*(1.0_db - y**2)*(x + t*(1.0_db - x**2)/32.0_db + 1.0_db)/32.0_db
         
     end function
 

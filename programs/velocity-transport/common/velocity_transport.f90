@@ -625,9 +625,9 @@ program velocity_transport
         write(23111996, tsvFormat) 0, vmi_ivs, vmi_everywhere  
     end if
 
-    !!!!!!!!!!!!!!!!!!!!
-    !! COMPUTE ERRORS !!
-    !!!!!!!!!!!!!!!!!!!!
+    !!!!!!!!!!!!!!!!!
+    !! ERROR NORMS !!
+    !!!!!!!!!!!!!!!!!
     if (compute_error_norms) then
         write(aptofem_run_number_string, '(i10)') aptofem_run_number
         norm_file = '../../output/norms' // '_' // 'velocity-transport' // '_' // &
@@ -638,7 +638,6 @@ program velocity_transport
 
         no_dofs_velocity = get_no_dofs(solution_velocity)
         call error_norms_velocity(errors, mesh_data, solution_velocity)
-        call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, mesh_no, mesh_data, solution_velocity)
         write(23111993, tsvFormat) 0, 0, no_dofs_velocity, errors(1), errors(2), errors(3), errors(4), errors(5)
     end if
 
@@ -956,7 +955,6 @@ program velocity_transport
         if (compute_error_norms) then
             no_dofs_velocity = get_no_dofs(solution_velocity)
             call error_norms_velocity(errors, mesh_data, solution_velocity)
-            call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, mesh_no, mesh_data, solution_velocity)
             write(23111993, tsvFormat) 0, time_step_no, no_dofs_velocity, errors(1), errors(2), errors(3), errors(4), errors(5)
         end if
 
