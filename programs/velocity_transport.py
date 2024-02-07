@@ -3,73 +3,74 @@ integral_cache = []
 
 def get_default_run_parameters():
 	parameters_dictionary =  {
-		'artery_length'                  : 0.25,
-		'artery_width'                   : 0.06,
-		'artery_width_sm'                : 0.0125,
-		'basal_plate_vessel_positions'   : [[0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8]],
-		'basal_plate_vessels'            : [[1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]],
-		'central_cavity_height'          : 0.5,
-		'central_cavity_transition'      : 0.12,
-		'central_cavity_width'           : 0.25,
-		'clean_files'                    : [False, False, False, False, False, False, False],
-		'compress_output'								 : False,
-		'compute_error_norms'            : False,
-		'compute_mri'                    : False,
-		'compute_permeability'           : True,
-		'compute_transport'              : True,
-		'compute_uptake'                 : True,
-		'compute_velocity'               : True,
-		'compute_velocity_average'       : False,
-		'compute_velocity_sample'        : False,
-		'equal_wall_heights'             : False,
-		'error_on_fail'                  : True,
-		'extra_text'                     : '',
-		'final_time'                     : 0.0,
-		'generate_outline_mesh'          : False,
-		'geometry'                       : 'placenta',
-		'large_boundary_v_penalisation'  : False,
-		'linear_solver'                  : 'mumps',
-		'log_cavity_transition'          : False,
-		'marginal_sinus'                 : [1, 1],
-		'mesh_resolution'                : 0.1,
-		'mesh_velocity_type'             : 'zero',
-		'moving_mesh'                    : False,
-		'newton_itns_max'                : 30,
-		'newton_tolerance'               : 1e-10,
-		'no_placentones'                 : 6,
-		'no_reynold_ramp_steps'          : 1,
-		'no_threads'                     : 20,
-		'no_time_steps'                  : 0,
-		'oscillation_detection'          : True,
-		'pipe_transition'                : 0.03,
-		'plot'                           : False,
-		'rerun_on_oscillation'           : False,
-		'rerun_with_reynold_steps'       : False,
-		'reynold_ramp_start_ratio'       : 0.1,
-		'reynold_ramp_step_base'         : 2,
-		'run_aptofem_simulation'         : True,
-		'run_mesh_generation'						 : True,
-		'run_set_aptofem_parameters'     : True,
-		'run_type'                       : 'openmp',
-		'scaling_D'                      : 1.667e-09,
-		'scaling_L'                      : 0.04,
-		'scaling_R'                      : 0.01667,
-		'scaling_U'                      : 0.35,
-		'scaling_k'                      : 1e-08,
-		'scaling_mu'                     : 0.004,
-		'scaling_rho'                    : 1000.0,
-		'septal_veins'                   : [[0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
-		'septal_wall_vein_positions'     : [[0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
-		'terminal_output'                : True,
-		'transport_ic_from_ss'           : True,
-		'transport_oscillation_tolerance': 0.1,
-		'velocity_ic_from_ss'            : True,
-		'velocity_model'                 : 'nsb',
-		'velocity_oscillation_tolerance' : 0.01,
-		'velocity_space'                 : 'DG',
-		'verbose_output'                 : False,
-		'vessel_fillet_radius'           : 0.01,
-		'wall_height_ratio'              : 1.0
+		'artery_length'                      : 0.25      ,
+		'artery_width'                       : 0.06      ,
+		'artery_width_sm'                    : 0.0125    ,
+		'basal_plate_vessel_positions'       : [[0.2     , 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8], [0.2, 0.5, 0.8]],
+		'basal_plate_vessels'                : [[1       , 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1], [1, 1, 1]],
+		'central_cavity_height'              : 0.5       ,
+		'central_cavity_transition'          : 0.12      ,
+		'central_cavity_width'               : 0.25      ,
+		'clean_files'                        : [False    , False, False, False, False, False, False],
+		'compress_output'                    : False     ,
+		'compute_error_norms'                : False     ,
+		'compute_mri'                        : False     ,
+		'compute_permeability'               : True      ,
+		'compute_transport'                  : True      ,
+		'compute_uptake'                     : True      ,
+		'compute_velocity'                   : True      ,
+		'compute_velocity_average'           : False     ,
+		'compute_velocity_sample'            : False     ,
+		'equal_wall_heights'                 : False     ,
+		'error_on_fail'                      : True      ,
+		'extra_text'                         : ''        ,
+		'final_time'                         : 0.0       ,
+		'generate_outline_mesh'              : False     ,
+		'geometry'                           : 'placenta',
+		'large_boundary_v_penalisation'      : False     ,
+		'linear_solver'                      : 'mumps'   ,
+		'log_cavity_transition'              : False     ,
+		'marginal_sinus'                     : [1        , 1],
+		'mesh_resolution'                    : 0.1       ,
+		'mesh_velocity_type'                 : 'zero'    ,
+		'moving_mesh'                        : False     ,
+		'newton_itns_max'                    : 30        ,
+		'newton_tolerance'                   : 1e-10     ,
+		'no_placentones'                     : 6         ,
+		'no_reynold_ramp_steps'              : 1         ,
+		'no_threads'                         : 20        ,
+		'no_time_steps'                      : 0         ,
+		'oscillation_detection'              : True      ,
+		'pipe_transition'                    : 0.03      ,
+		'plot'                               : False     ,
+		'rerun_on_oscillation'               : False     ,
+		'rerun_with_reynold_steps'           : False     ,
+		'reynold_ramp_start_ratio'           : 0.1       ,
+		'reynold_ramp_step_base'             : 2         ,
+		'run_aptofem_simulation'             : True      ,
+		'run_mesh_generation'                : True      ,
+		'run_set_aptofem_parameters'         : True      ,
+		'run_type'                           : 'openmp'  ,
+		'scaling_D'                          : 1.667e-09 ,
+		'scaling_L'                          : 0.04      ,
+		'scaling_R'                          : 0.01667   ,
+		'scaling_U'                          : 0.35      ,
+		'scaling_k'                          : 1e-08     ,
+		'scaling_mu'                         : 0.004     ,
+		'scaling_rho'                        : 1000.0    ,
+		'septal_veins'                       : [[0       , 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0], [0, 0, 0]],
+		'septal_wall_vein_positions'         : [[0.5     , 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5], [0.5, 0.5, 0.5]],
+		'terminal_output'                    : True      ,
+		'transport_ic_from_ss'               : True      ,
+		'transport_oscillation_tolerance'    : 0.1       ,
+		'velocity_ic_from_ss'                : True      ,
+		'velocity_model'                     : 'nsb'     ,
+		'velocity_oscillation_tolerance'     : 0.01      ,
+		'velocity_space'                     : 'DG'      ,
+		'verbose_output'                     : False     ,
+		'vessel_fillet_radius'               : 0.01      ,
+		'wall_height_ratio'                  : 1.0       ,
+		'zero_velocity_reaction_coefficient' : False
 	}
 
 	return parameters_dictionary
@@ -130,7 +131,7 @@ def run(simulation_no, p):
 		##################
 		if (p["run_set_aptofem_parameters"]):
 			output_timer.time(simulation_no, "AptoFEM set parameters", p["terminal_output"], clear_existing=True)
-			set_aptofem_parameters(simulation_no, p["velocity_model"], p["geometry"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["pipe_transition"], p["artery_length"], p["artery_width_sm"], p["log_cavity_transition"], p["scaling_L"], p["scaling_U"], p["scaling_mu"], p["scaling_rho"], p["scaling_k"], p["scaling_D"], p["scaling_R"], p["velocity_space"], velocity_ss, p["velocity_ic_from_ss"], p["transport_ic_from_ss"], p["compute_velocity"], p["compute_transport"], p["compute_permeability"], p["compute_uptake"], p["large_boundary_v_penalisation"], p["moving_mesh"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_time_steps"], p["final_time"], p["no_placentones"], p["no_threads"], p["run_type"], p["no_reynold_ramp_steps"], p["reynold_ramp_start_ratio"], p["reynold_ramp_step_base"], p["linear_solver"], p["wall_height_ratio"], p["basal_plate_vessel_positions"], p["rerun_with_reynold_steps"], p["mesh_velocity_type"], p["newton_itns_max"], p["newton_tolerance"], p["compute_error_norms"])
+			set_aptofem_parameters(simulation_no, p["velocity_model"], p["geometry"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["pipe_transition"], p["artery_length"], p["artery_width_sm"], p["log_cavity_transition"], p["scaling_L"], p["scaling_U"], p["scaling_mu"], p["scaling_rho"], p["scaling_k"], p["scaling_D"], p["scaling_R"], p["velocity_space"], velocity_ss, p["velocity_ic_from_ss"], p["transport_ic_from_ss"], p["compute_velocity"], p["compute_transport"], p["compute_permeability"], p["compute_uptake"], p["large_boundary_v_penalisation"], p["moving_mesh"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_time_steps"], p["final_time"], p["no_placentones"], p["no_threads"], p["run_type"], p["no_reynold_ramp_steps"], p["reynold_ramp_start_ratio"], p["reynold_ramp_step_base"], p["linear_solver"], p["wall_height_ratio"], p["basal_plate_vessel_positions"], p["rerun_with_reynold_steps"], p["mesh_velocity_type"], p["newton_itns_max"], p["newton_tolerance"], p["compute_error_norms"], p["zero_velocity_reaction_coefficient"])
 			output_timer.time(simulation_no, "AptoFEM set parameters", p["terminal_output"])
 
 		if (p["run_aptofem_simulation"]):
@@ -325,18 +326,21 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, terminal_output,
 # def convergence():
 # 	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration
 
-def set_aptofem_parameters(simulation_no, velocity_model, geometry, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, artery_width_sm, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, compute_permeability, compute_uptake, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver, wall_height_ratio, basal_plate_vessel_positions, rerun_with_reynold_steps, mesh_velocity_type, newton_itns_max, newton_tolerance, compute_error_norms):
+def set_aptofem_parameters(simulation_no, velocity_model, geometry, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, artery_width_sm, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, compute_permeability, compute_uptake, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver, wall_height_ratio, basal_plate_vessel_positions, rerun_with_reynold_steps, mesh_velocity_type, newton_itns_max, newton_tolerance, compute_error_norms, zero_velocity_reaction_coefficient):
 	# Programatically create coefficients. ##
 	#  Re
 	velocity_time_coefficient = scaling_rho*scaling_U*scaling_L/scaling_mu
 	#  Re 
 	velocity_convection_coefficient = scaling_rho*scaling_U*scaling_L/scaling_mu
 	# 1/Dar
-	velocity_reaction_coefficient   = scaling_L**2/scaling_k
+	if (zero_velocity_reaction_coefficient):
+		velocity_reaction_coefficient = 0.0
+	else:
+		velocity_reaction_coefficient = scaling_L**2/scaling_k
 	# 1/Pe
 	transport_diffusion_coefficient = scaling_D/(scaling_U*scaling_L)
 	# Dam
-	transport_reaction_coefficient  = scaling_R*scaling_L/scaling_U
+	transport_reaction_coefficient = scaling_R*scaling_L/scaling_U
 
 	# Problem dimension.
 	if (geometry == 'placentone'):
