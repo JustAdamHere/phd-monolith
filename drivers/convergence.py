@@ -58,7 +58,7 @@ parameters["moving_mesh"]        = True
 parameters["mesh_velocity_type"] = "etienne2009"
 velocity_transport_convergence.run(4, parameters)
 
-parameters["final_time"]         = 0.1
+parameters["final_time"]         = 1
 parameters["no_time_steps"]      = 2
 parameters["test_type"]          = "mm_velocity_time"
 parameters["mesh_resolution"]    = 0.05
