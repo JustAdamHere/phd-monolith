@@ -30,7 +30,7 @@ parameters["newton_tolerance"] = 1e-10
 
 parameters["compute_error_norms"] = True
 
-velocity_transport.setup(clean=False, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True, compile_entry='velocity-transport')
+velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True, compile_entry='velocity-transport')
 
 ##################
 # SIMULATION RUN #
