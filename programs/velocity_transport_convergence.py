@@ -48,8 +48,8 @@ def run(simulation_no, p):
 	# OUTPUT RATIOS #
 	#################
 	from tabulate import tabulate
-	output.output(tabulate(errors.transpose(), headers=['#Timesteps', 'mesh_no', 'DoFs', 'L2_u', 'L2_p', 'L2_up', 'E_up', 'div_u'], tablefmt='rounded_outline'), p["terminal_output"])
-	output.output(tabulate(error_ratios.transpose(), headers=['L2_u_ratio', 'L2_p_ratio', 'L2_up_ratio', 'E_up_ratio', 'div_u_ratio'], tablefmt='rounded_outline'), p["terminal_output"])
+	output.output(tabulate(errors.transpose(), headers=['#Timesteps', 'mesh_no', 'DoFs', 'L2_u', 'L2_p', 'L2_up', 'DG_up', 'div_u'], tablefmt='rounded_outline'), p["terminal_output"])
+	output.output(tabulate(error_ratios.transpose(), headers=['L2_u_ratio', 'L2_p_ratio', 'L2_up_ratio', 'DG_up_ratio', 'div_u_ratio'], tablefmt='rounded_outline'), p["terminal_output"])
 
 	########
 	# PLOT #

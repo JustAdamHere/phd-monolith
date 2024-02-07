@@ -14,7 +14,7 @@ def plot(simulation_no, errors, spatial_convergence, temporal_convergence):
     plt.plot(errors[1]**(0.5), errors[1]**(-0.5), 'k--')
     plt.plot(errors[1]**(0.5), errors[1]**(-1), 'k-.')
     plt.plot(errors[1]**(0.5), errors[1]**(-2), 'k:')
-    plt.legend(['L2_u', 'L2_p', 'L2_up', 'E_up', 'div_u', '1/(DoFs^0.5)', '1/(DoFs^1)', '1/(DoFs^2)'])
+    plt.legend(['L2_u', 'L2_p', 'L2_up', 'DG_up', 'div_u', '1/(DoFs^0.5)', '1/(DoFs^1)', '1/(DoFs^2)'])
     plt.title('Spatial convergence')
     plt.savefig(f'./images/spatial_convergence_{simulation_no}.png')
 
@@ -30,7 +30,7 @@ def plot(simulation_no, errors, spatial_convergence, temporal_convergence):
     plt.ylabel('Error')
     plt.plot(errors[0], errors[0]**(-1), 'k--')
     plt.plot(errors[0], errors[0]**(-2), 'k-.')
-    plt.legend(['L2_u', 'L2_p', 'L2_up', 'E_up', 'div_u', 'dt^-1', 'dt^-2'])
+    plt.legend(['L2_u', 'L2_p', 'L2_up', 'DG_up', 'div_u', 'dt^-1', 'dt^-2'])
     plt.title('Temporal convergence')
     plt.savefig(f'./images/temporal_convergence_{simulation_no}.png')
 

@@ -638,7 +638,7 @@ program velocity_transport
 
         no_dofs_velocity = get_no_dofs(solution_velocity)
         call error_norms_velocity(errors, mesh_data, solution_velocity)
-        write(23111993, tsvFormat) 0, 0, no_dofs_velocity, errors(1), errors(2), errors(3), errors(4), errors(5)
+        write(23111993, tsvFormat) no_time_steps, 0, no_dofs_velocity, errors(1), errors(2), errors(3), errors(4), errors(5)
     end if
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -955,7 +955,8 @@ program velocity_transport
         if (compute_error_norms) then
             no_dofs_velocity = get_no_dofs(solution_velocity)
             call error_norms_velocity(errors, mesh_data, solution_velocity)
-            write(23111993, tsvFormat) 0, time_step_no, no_dofs_velocity, errors(1), errors(2), errors(3), errors(4), errors(5)
+            write(23111993, tsvFormat) no_time_steps, time_step_no, no_dofs_velocity, errors(1), errors(2), errors(3), errors(4), &
+                errors(5)
         end if
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
