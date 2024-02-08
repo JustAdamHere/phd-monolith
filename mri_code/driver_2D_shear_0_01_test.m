@@ -14,8 +14,8 @@ N_voxels_y = 1;
 N_voxels_z = 1; % Set to 1 for 2D.
 
 % Number of points in each direction.
-N_points_x = N_voxels_x*2;
-N_points_y = N_voxels_y*2;
+N_points_x = N_voxels_x*20;
+N_points_y = N_voxels_y*20;
 N_points_z = N_voxels_z*1; % Set to 1 in 2D.
 
 % Number of time steps.
@@ -41,7 +41,6 @@ U = 1;
 % Create "interpolants".
 v_interpolant    = cell(dim, 1);
 v_interpolant{1} = @(x, y) zeros(size(x, 1), size(x, 2));
-%v_interpolant{2} = @(x, y) (1*(x<=0.5 & y<=0.5).*ones(size(x, 1), size(x, 2)) + 3*(x<=1 & y<=0.5).*ones(size(x, 1), size(x, 2)) + 5*(x<=0.5 & y<=1).*ones(size(x, 1), size(x, 2)) + 7*(x<=1 & y<=1).*ones(size(x, 1), size(x, 2)))/16;
 v_interpolant{2} = @(x, y) 0.01*(2*(x<0.5).*ones(size(x, 1), size(x, 2)) - ones(size(x, 1), size(x, 2)));
 
 % Setup useful variables from options set above.
@@ -74,5 +73,5 @@ toc
 
 % Plot phase.
 tic
-plot_particle_spins
+% plot_particle_spins
 toc

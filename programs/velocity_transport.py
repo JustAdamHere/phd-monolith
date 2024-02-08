@@ -33,6 +33,8 @@ def get_default_run_parameters():
 		'mesh_resolution'                : 0.1,
 		'mesh_velocity_type'             : 'zero',
 		'moving_mesh'                    : False,
+		'mri_simple_flow'                : False,
+		'mri_simple_flow_field'          : 'shear',
 		'newton_itns_max'                : 30,
 		'newton_tolerance'               : 1e-10,
 		'no_placentones'                 : 6,
@@ -195,7 +197,7 @@ def run(simulation_no, p):
 
 		from mri_code import calculate_mri
 
-		calculate_mri.calculate_mri(simulation_no, p["geometry"], p["no_threads"])
+		calculate_mri.calculate_mri(simulation_no, p["geometry"], p["no_threads"], p["terminal_output"], p["verbose_output"])
 
 		output_timer.time(simulation_no, "MRI calculations", p["terminal_output"])
 
@@ -554,28 +556,7 @@ def setup(clean, terminal_output, compile=True, compile_clean=True, run_type='op
 
 		make_process = subprocess.Popen(['make', compile_entry], cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-		# Display last line of output to screen, and write lines to file.
-		line_truncation = 123
-		if (verbose_output):
-			end = '\r\n'
-		else:
-			end = '\r'
-		make_output = open(f"./output/compile_{compile_entry}.txt", "w")
-		output.output("", terminal_output)
-		while make_process.poll() is None:
-			line = make_process.stdout.readline().decode('utf-8').rstrip('\r\n')
-			if (line != ""):
-				output.output(f">>> {line[:line_truncation]:<{line_truncation}}", terminal_output, end='')
-				if (len(line) > line_truncation):
-					output.output("...", terminal_output, end=end)
-				else:
-					output.output("", terminal_output, end=end)
-				make_output.write(line + '\n')
-		make_output.close()
-		if (verbose_output):
-			output.output("", terminal_output, end='\rStarting compilation... ')
-		else:
-			output.output("", terminal_output, end='\x1b[1A\rStarting compilation... ')
+		output.display_run_output(make_process, f"compile_{compile_entry}", terminal_output, verbose_output, "Starting compilation...")
 
 	# Possibly return an error.
 	if (make_process.poll() != 0):
