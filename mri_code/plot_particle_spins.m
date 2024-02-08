@@ -9,17 +9,7 @@ for voxel_xy = 1:N_voxels_x*N_voxels_y
   b_index = 15;
   grad_direction = 2;
 
-  %%%%% COPIED FROM GENERATE SIMPLE GRADIENTS %%%%%%
-  % Times in ms.
-  t_start = 0;
-  t_end   = 53;
-
-  % At some point we need to flip the gradients
-  inversion = 30.8;
-
-  % Generate times and map back to 0.
-  t = linspace(t_start, t_end, no_t_steps) - t_start;
-  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+  [t, ~, ~] = generate_simple_19b_gradients_ns(g1_list(1), no_t_steps, 0);
 
   % Correctly pick out entries from sample points.
   [i, j, k] = voxel2indices(voxel_xy, points_per_voxel_x, points_per_voxel_y, points_per_voxel_z, N_voxels_x, N_voxels_y);
