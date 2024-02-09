@@ -123,25 +123,25 @@ parfor voxel_z = 1:N_voxels_z
   title(tlo_SRGB, 'S_{RGB}')
 
   % Save figures.
-  print(fig_S, '-dpng', strcat('../', 'images/', filename_no_ext, '_s_', num2str(voxel_z), '.png'))
+  print(fig_S, '-dpng', strcat('../', 'images/', filename_no_ext, '_s_', num2str(voxel_z), '_', num2str(run_no) , '.png'))
   close(fig_S)
   pause(0.01)
 
-  print(fig_Sx, '-dpng', strcat('../', 'images/', filename_no_ext, '_sx_', num2str(voxel_z), '.png'))
+  print(fig_Sx, '-dpng', strcat('../', 'images/', filename_no_ext, '_sx_', num2str(voxel_z), '_', num2str(run_no) , '.png'))
   close(fig_Sx)
   pause(0.01)
 
-  print(fig_Sy, '-dpng', strcat('../', 'images/', filename_no_ext, '_sy_', num2str(voxel_z), '.png'))
+  print(fig_Sy, '-dpng', strcat('../', 'images/', filename_no_ext, '_sy_', num2str(voxel_z), '_', num2str(run_no) , '.png'))
   close(fig_Sy)
   pause(0.01)
 
   if (dim == 3)
-    print(fig_Sz, '-dpng', strcat('../', 'images/', filename_no_ext, '_sz_', num2str(voxel_z), '.png'))
+    print(fig_Sz, '-dpng', strcat('../', 'images/', filename_no_ext, '_sz_', num2str(voxel_z), '_', num2str(run_no) , '.png'))
     close(fig_Sz)
     pause(0.01)
   end
 
-  print(fig_SRGB, '-dpng', strcat('../', 'images/', filename_no_ext, '_srgb_', num2str(voxel_z), '.png'))
+  print(fig_SRGB, '-dpng', strcat('../', 'images/', filename_no_ext, '_srgb_', num2str(voxel_z), '_', num2str(run_no) , '.png'))
   close(fig_SRGB)
   pause(0.01)
 end

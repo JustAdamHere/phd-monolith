@@ -1,9 +1,9 @@
 % Clean workspace.
-clearvars -except total_tic
-%clf
+% clearvars -except total_tic
+% clf
 
 % Filename of solution file.
-filename_no_ext = '2D_shear_0_01_test';
+filename_no_ext = '2D_rotational_test';
 
 % Dimension of problem.
 dim = 2;
@@ -36,15 +36,17 @@ b = linspace(0, 500, 5001);
 L = 1;
 
 % Velocity scaling (1 if problem solved in dimensional units).
-U = 1;
-
-% Create "interpolants".
-v_interpolant    = cell(dim, 1);
-v_interpolant{1} = @(x, y) zeros(size(x, 1), size(x, 2));
-v_interpolant{2} = @(x, y) 0.01*(2*(x<0.5).*ones(size(x, 1), size(x, 2)) - ones(size(x, 1), size(x, 2)));
+U = 0.01;
 
 % Setup useful variables from options set above.
 setup_quantities
+
+% Create "interpolants".
+v_interpolant    = cell(dim, 1);
+% v_interpolant{1} = @(x, y) -0.01*y./sqrt(x.^2 + y.^2);
+% v_interpolant{2} = @(x, y)  0.01*x./sqrt(x.^2 + y.^2);
+v_interpolant{1} = @(x, y) -y;
+v_interpolant{2} = @(x, y)  x;
 
 % Evaluate velocity at sample points.
 tic
@@ -73,5 +75,5 @@ toc
 
 % Plot phase.
 tic
-% plot_particle_spins
+%plot_particle_spins
 toc

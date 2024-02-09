@@ -1,7 +1,7 @@
 %% Quiver plots.
 fprintf("  Plotting quiver... ")
 
-load(strcat('../output/mri-quantities_', filename_no_ext, '.mat'))
+load(strcat('../output/mri-quantities_', filename_no_ext, '_', num2str(run_no), '.mat'))
 
 % Create output folders if they are missing.
 create_missing_folders('../images/');
@@ -113,7 +113,7 @@ parfor voxel_z = 1:N_voxels_z
     ylim(L*[y_min, y_max])
 
     daspect([1 1 1])
-    print(fig, '-dpng', strcat('../', 'images/', filename_no_ext, '_quiver_', num2str(voxel_z), '.png'))
+    print(fig, '-dpng', strcat('../', 'images/', filename_no_ext, '_quiver_', num2str(voxel_z), '_', num2str(run_no), '.png'))
     close(fig)
     pause(0.01)
 end

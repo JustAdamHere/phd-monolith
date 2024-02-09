@@ -20,7 +20,6 @@ parameters["oscillation_detection"      ] = False
 
 # MRI.
 parameters["mri_simple_flow"] = True
-parameters["geometry"] = 'shear_0_01_test'
 
 # Output.
 parameters["terminal_output"] = True
@@ -33,7 +32,20 @@ parameters["verbose_output"]  = True
 velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True)
 
 # Run simulations.
+parameters["geometry"] = 'shear_test'
+parameters["mri_u1"  ] = 0.005
+parameters["mri_u2"  ] = 0.01
 velocity_transport.run(1, parameters)
+
+parameters["geometry"] = 'shear_test'
+parameters["mri_u1"  ] = 0.01
+parameters["mri_u2"  ] = 0.01
+velocity_transport.run(2, parameters)
+
+parameters["geometry"] = 'shear_test'
+parameters["mri_u1"  ] = -0.01
+parameters["mri_u2"  ] =  0.01
+velocity_transport.run(3, parameters)
 
 # Save output.
 from miscellaneous import output

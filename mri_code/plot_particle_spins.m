@@ -1,6 +1,6 @@
 fprintf("  Plotting particle spins... ")
 
-load(strcat('../output/mri-quantities_', filename_no_ext, '.mat'))
+load(strcat('../output/mri-quantities_', filename_no_ext, '_', run_no, '.mat'))
 
 % Create output folders if they are missing.
 create_missing_folders('../images/');

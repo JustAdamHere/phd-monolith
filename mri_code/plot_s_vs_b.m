@@ -1,7 +1,7 @@
 %% S against b.
 fprintf("  Plotting plot S-vs-b... ")
 
-load(strcat('../output/mri-quantities_', filename_no_ext, '.mat'))
+load(strcat('../output/mri-quantities_', filename_no_ext, '_', num2str(run_no), '.mat'))
 
 % Create output folders if they are missing.
 create_missing_folders('../images/');
@@ -111,19 +111,19 @@ parfor voxel = 1:N_voxels
     % end
 
     % Saves each individual figure.
-    print(fig, '-dpng', strcat('../', 'images/subplots/', filename_no_ext, '_s-vs-b_', num2str(voxel), '.png'))
+    print(fig, '-dpng', strcat('../', 'images/subplots/', filename_no_ext, '_s-vs-b_', num2str(voxel), '_', num2str(run_no) , '.png'))
     close(fig)
     pause(0.01) % Silly hack to close figures properly. [https://uk.mathworks.com/matlabcentral/answers/337109-unable-to-close-gui-figures]
-    print(fig_log, '-dpng', strcat('../', 'images/subplots/', filename_no_ext, '_logs-vs-b_', num2str(voxel), '.png'))
+    print(fig_log, '-dpng', strcat('../', 'images/subplots/', filename_no_ext, '_logs-vs-b_', num2str(voxel), '_', num2str(run_no) , '.png'))
     close(fig_log)
     pause(0.01)
-    print(fig_S_x, '-dpng', strcat('../', 'images/subplots/', filename_no_ext, '_sx-vs-b_', num2str(voxel), '.png'))
+    print(fig_S_x, '-dpng', strcat('../', 'images/subplots/', filename_no_ext, '_sx-vs-b_', num2str(voxel), '_', num2str(run_no) , '.png'))
     close(fig_S_x)
     pause(0.01)
-    print(fig_S_y, '-dpng', strcat('../', 'images/subplots/', filename_no_ext, '_sy-vs-b_', num2str(voxel), '.png'))
+    print(fig_S_y, '-dpng', strcat('../', 'images/subplots/', filename_no_ext, '_sy-vs-b_', num2str(voxel), '_', num2str(run_no) , '.png'))
     close(fig_S_y)
     pause(0.01)
-    print(fig_G, '-dpng', strcat('../', 'images/subplots/', filename_no_ext, '_s-vs-g_', num2str(voxel), '.png'))
+    print(fig_G, '-dpng', strcat('../', 'images/subplots/', filename_no_ext, '_s-vs-g_', num2str(voxel), '_', num2str(run_no) , '.png'))
     close(fig_G)
     pause(0.01)
     % if (dim == 3)
@@ -170,11 +170,11 @@ parfor voxel_z = 1:N_voxels_z
     % end
     for voxel_xy = 1:N_voxels_x*N_voxels_y
         pos                = voxel2subplot(voxel_xy, N_voxels_x*N_voxels_y, N_voxels_x, N_voxels_y);
-        filenames{pos}     = strcat('../images/subplots/', filename_no_ext, '_s-vs-b_', num2str((voxel_z-1)*N_voxels_x*N_voxels_y + voxel_xy), '.png');
-        filenames_log{pos} = strcat('../images/subplots/', filename_no_ext, '_logs-vs-b_', num2str((voxel_z-1)*N_voxels_x*N_voxels_y + voxel_xy), '.png');
-        filenames_x{pos}   = strcat('../images/subplots/', filename_no_ext, '_sx-vs-b_', num2str((voxel_z-1)*N_voxels_x*N_voxels_y + voxel_xy), '.png');
-        filenames_y{pos}   = strcat('../images/subplots/', filename_no_ext, '_sy-vs-b_', num2str((voxel_z-1)*N_voxels_x*N_voxels_y + voxel_xy), '.png');
-        filenames_g{pos}   = strcat('../images/subplots/', filename_no_ext, '_s-vs-g_', num2str((voxel_z-1)*N_voxels_x*N_voxels_y + voxel_xy), '.png');
+        filenames{pos}     = strcat('../images/subplots/', filename_no_ext, '_s-vs-b_', num2str((voxel_z-1)*N_voxels_x*N_voxels_y + voxel_xy), '_', num2str(run_no) , '.png');
+        filenames_log{pos} = strcat('../images/subplots/', filename_no_ext, '_logs-vs-b_', num2str((voxel_z-1)*N_voxels_x*N_voxels_y + voxel_xy), '_', num2str(run_no) , '.png');
+        filenames_x{pos}   = strcat('../images/subplots/', filename_no_ext, '_sx-vs-b_', num2str((voxel_z-1)*N_voxels_x*N_voxels_y + voxel_xy), '_', num2str(run_no) , '.png');
+        filenames_y{pos}   = strcat('../images/subplots/', filename_no_ext, '_sy-vs-b_', num2str((voxel_z-1)*N_voxels_x*N_voxels_y + voxel_xy), '_', num2str(run_no) , '.png');
+        filenames_g{pos}   = strcat('../images/subplots/', filename_no_ext, '_s-vs-g_', num2str((voxel_z-1)*N_voxels_x*N_voxels_y + voxel_xy), '_', num2str(run_no) , '.png');
         % if (dim == 3)
         %     filenames_z{pos} = strcat('../images/subplots/', filename_no_ext, '_sz-vs-b_', num2str((voxel_z-1)*N_voxels_x*N_voxels_y + voxel_xy), '.png');
         % end
@@ -190,7 +190,7 @@ parfor voxel_z = 1:N_voxels_z
     elseif (dim == 3)
         title(sprintf("voxels between z = %d and z = %d\n", x_sample{3}(1, 1, k(1)), x_sample{3}(1, 1, k(end))))
     end
-    imwrite(montage_data, strcat('../', 'images/', filename_no_ext, '_s-vs-b_', num2str(voxel_z), '.png'), 'png')
+    imwrite(montage_data, strcat('../', 'images/', filename_no_ext, '_s-vs-b_', num2str(voxel_z), '_', num2str(run_no) , '.png'), 'png')
     close(fig)
     pause(0.01)
 
@@ -201,7 +201,7 @@ parfor voxel_z = 1:N_voxels_z
     elseif (dim == 3)
         title(sprintf("voxels between z = %d and z = %d\n", x_sample{3}(1, 1, k(1)), x_sample{3}(1, 1, k(end))))
     end
-    imwrite(montage_data, strcat('../', 'images/', filename_no_ext, '_logs-vs-b_', num2str(voxel_z), '.png'), 'png')
+    imwrite(montage_data, strcat('../', 'images/', filename_no_ext, '_logs-vs-b_', num2str(voxel_z), '_', num2str(run_no) , '.png'), 'png')
     close(fig)
     pause(0.01)
 
@@ -212,7 +212,7 @@ parfor voxel_z = 1:N_voxels_z
     elseif (dim == 3)
         title(sprintf("voxels between z = %d and z = %d\n", x_sample{3}(1, 1, k(1)), x_sample{3}(1, 1, k(end))))
     end
-    imwrite(montage_data, strcat('../', 'images/', filename_no_ext, '_sx-vs-b_', num2str(voxel_z), '.png'), 'png')
+    imwrite(montage_data, strcat('../', 'images/', filename_no_ext, '_sx-vs-b_', num2str(voxel_z), '_', num2str(run_no) , '.png'), 'png')
     close(fig)
     pause(0.01)
 
@@ -223,7 +223,7 @@ parfor voxel_z = 1:N_voxels_z
     elseif (dim == 3)
         title(sprintf("voxels between z = %d and z = %d\n", x_sample{3}(1, 1, k(1)), x_sample{3}(1, 1, k(end))))
     end
-    imwrite(montage_data, strcat('../', 'images/', filename_no_ext, '_sy-vs-b_', num2str(voxel_z), '.png'), 'png')
+    imwrite(montage_data, strcat('../', 'images/', filename_no_ext, '_sy-vs-b_', num2str(voxel_z), '_', num2str(run_no) , '.png'), 'png')
     close(fig)
     pause(0.01)
 
@@ -234,7 +234,7 @@ parfor voxel_z = 1:N_voxels_z
     elseif (dim == 3)
         title(sprintf("voxels between z = %d and z = %d\n", x_sample{3}(1, 1, k(1)), x_sample{3}(1, 1, k(end))))
     end
-    imwrite(montage_data, strcat('../', 'images/', filename_no_ext, '_s-vs-g_', num2str(voxel_z), '.png'), 'png')
+    imwrite(montage_data, strcat('../', 'images/', filename_no_ext, '_s-vs-g_', num2str(voxel_z), '_', num2str(run_no) , '.png'), 'png')
     close(fig)
     pause(0.01)
 

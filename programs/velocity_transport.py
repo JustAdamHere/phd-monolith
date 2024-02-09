@@ -35,6 +35,9 @@ def get_default_run_parameters():
 		'moving_mesh'                    : False,
 		'mri_simple_flow'                : False,
 		'mri_simple_flow_field'          : 'shear',
+		'mri_u1'                         : 0.0,
+		'mri_u2'                         : 0.0,
+		'mri_x'                          : 0.0,
 		'newton_itns_max'                : 30,
 		'newton_tolerance'               : 1e-10,
 		'no_placentones'                 : 6,
@@ -196,10 +199,10 @@ def run(simulation_no, p):
 		output_timer.time(simulation_no, "MRI calculations", p["terminal_output"])
 
 		from mri_code import calculate_mri
-		calculate_mri.calculate_mri(simulation_no, p["geometry"], p["no_threads"], p["terminal_output"], p["verbose_output"])
+		calculate_mri.calculate_mri(simulation_no, p["geometry"], p["no_threads"], p["terminal_output"], p["verbose_output"], p["mri_u1"], p["mri_u2"], p["mri_x"])
 
 		from plotting import plot_mri_spins
-		plot_mri_spins.plot_spins(f'2D_{p["geometry"]}')
+		plot_mri_spins.plot_spins(simulation_no, f'2D_{p["geometry"]}')
 
 		output_timer.time(simulation_no, "MRI calculations", p["terminal_output"])
 
