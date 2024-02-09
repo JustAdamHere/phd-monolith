@@ -70,10 +70,10 @@ toc
 
 % Plot S.
 tic
-%plot_s
+plot_s
 toc
 
 % Plot phase.
 tic
-plot_particle_spins
+%plot_particle_spins
 toc

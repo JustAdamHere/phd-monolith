@@ -68,7 +68,7 @@ toc
 
 % Plot S.
 tic
-%plot_s
+plot_s
 toc
 
 % Plot phase.
