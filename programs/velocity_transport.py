@@ -196,8 +196,10 @@ def run(simulation_no, p):
 		output_timer.time(simulation_no, "MRI calculations", p["terminal_output"])
 
 		from mri_code import calculate_mri
-
 		calculate_mri.calculate_mri(simulation_no, p["geometry"], p["no_threads"], p["terminal_output"], p["verbose_output"])
+
+		from plotting import plot_mri_spins
+		plot_mri_spins.plot_spins(f'2D_{p["geometry"]}')
 
 		output_timer.time(simulation_no, "MRI calculations", p["terminal_output"])
 
