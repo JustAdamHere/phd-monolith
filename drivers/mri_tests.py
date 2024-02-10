@@ -47,6 +47,16 @@ parameters["mri_u1"  ] = -0.01
 parameters["mri_u2"  ] =  0.01
 velocity_transport.run(3, parameters)
 
+parameters["geometry"] = 'rotational_test'
+parameters["mri_u1"  ] = 0.01
+parameters["mri_u2"  ] = 0.01
+velocity_transport.run(4, parameters)
+
+parameters["geometry"] = 'accelerating_test'
+parameters["mri_u1"  ] = 0.01
+parameters["mri_x"   ] = 1
+velocity_transport.run(5, parameters)
+
 # Save output.
 from miscellaneous import output
 output.save()

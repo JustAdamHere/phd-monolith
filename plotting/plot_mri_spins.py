@@ -73,5 +73,3 @@ def plot_spins(simulation_no, filename_no_ext):
   fig.legend(handles=[individual_patch, average_patch], fontsize=20, loc='outside lower right')
   ax.set_title(f"Spins at t={53}ms", fontsize=36)
   fig.savefig(f"./images/mri-spins_{filename_no_ext}_{simulation_no}.png")
-
-plot_spins(1, '2D_shear_test')
