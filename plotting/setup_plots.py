@@ -18,11 +18,12 @@ def style(figure, axis, x_parameter_name, y_parameter_name, y_scilimits=None, y_
   else:
     axis.xaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
   axis.xaxis.set_major_locator(plt.MaxNLocator(10, integer=integer_ticks, prune='both'))
-  axis.set_ylim(bottom=y_bottom)
   if (xlim != None):
     axis.set_xlim(xlim[0], xlim[1])
   if (y_top != None):
     axis.set_ylim(top=y_top)
+  if (y_bottom != None):
+    axis.set_ylim(bottom=y_bottom)
   if (y_scilimits != None):
     axis.ticklabel_format(style="sci", axis='y', scilimits=(y_scilimits[0], y_scilimits[1]))
   axis.tick_params(axis='both', which='major', labelsize=18)

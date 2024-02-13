@@ -3,11 +3,11 @@ import numpy as np
 import copy
 
 # Import all data from completed runs.
-max_run_no  = 1000#run_no.get_completed_run_no()
-#simulations_location = None
-output_location = "output_2024-01-16 154829 (before fixing avg flow and adding signed cross flow)"
-#images_location = None
-images_location = "images_2024-01-16 154830 (before fixing avg flow and adding signed cross flow)"
+max_run_no  = 1400#run_no.get_completed_run_no()
+output_location = None
+# output_location = "output_2024-01-16 154829 (before fixing avg flow and adding signed cross flow)"
+images_location = None
+# images_location = "images_2024-01-16 154830 (before fixing avg flow and adding signed cross flow)"
 simulations = run_data.import_simulations(max_run_no, output_location)
   
 # Varying parameters.
