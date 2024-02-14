@@ -2,35 +2,74 @@ def plot(simulations, simulation_bins, parameter_values, parameter_name, paramet
   import numpy as np
 
   print(f"\rPlotting simulations...", end="")
-  no_bins = len(simulation_bins[0])
+  no_bins = len(simulation_bins[0][0])
+
+  assert(len(parameter_values) == 2)
+  assert(len(simulation_bins) == 2)
+  assert(len(simulation_bins[0]) == 2)
 
   # Setup plots.
   from plotting import setup_plots
   fig, axes = setup_plots.setup_megaplot(1, 8, 2, figsize=(8, 18))
 
   # Get data to plot.
-  data = np.zeros(2, dtype=object)
-  for i in range(2):
-    data[i] = setup_plots.get_data(no_bins, simulation_bins[i], simulations[i])
+  # data = np.zeros((2, 2), dtype=object)
+  # for j in range(2):
+  #   for i in range(2):
+  #     data[i, j] = setup_plots.get_data(no_bins, simulation_bins[i][j], simulations)
+
+  data = np.zeros((2, 2), dtype=object)
+  for j in range(2):
+    for i in range(2):
+      data[i, j] = setup_plots.get_data(len(simulation_bins[j][i]), simulation_bins[j][i], simulations)
 
   # Patches for legends.
   import matplotlib.patches as mpatches
-  patch_any = mpatches.Patch(color="C0", label='any veins')
-  patch_27  = mpatches.Patch(color="C1", label='27 veins')
+  max_no_patches = 4
+  handles = []
+  for i in range(max_no_patches):
+    handles.append(mpatches.Patch(color=f"C{i}"))
 
-  # Plot data.
+  # AXES 1: Velocity magnitude integrals.
+  for j in range(2):
+    for i in range(2):
+      axes[0][j].plot(parameter_values[j], data[i, j]["q50"]["velocity_magnitude_integral"], linestyle="dashed", color=f"C{i}")
+      axes[0][j].fill_between(parameter_values[j], data[i, j]["q25"]["velocity_magnitude_integral"], data[i, j]["q75"]["velocity_magnitude_integral"], alpha=0.2, color=f"C{i}")
+    
+  axes[0][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
+  axes[0][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
+
+  # AXES 2: Slow velocity percentages.
+  axes[1][0].plot(parameter_values[0], data[0, 0]["q50"]["slow_velocity_percentage_ivs"], linestyle="dashed", color="C0")
+  axes[1][0].plot(parameter_values[0], data[0, 0]["q50"]["slow_velocity_percentage_everywhere"], linestyle="dashed", color="C1")
+  axes[1][0].plot(parameter_values[0], data[0, 0]["q50"]["slow_velocity_percentage_dellschaft"], linestyle="dashed", color="C2")
+  axes[1][0].plot(parameter_values[0], data[0, 0]["q50"]["slow_velocity_percentage_nominal_everywhere"], linestyle="dashed", color="C3")
+  axes[1][0].fill_between(parameter_values[0], data[0, 0]["q25"]["slow_velocity_percentage_ivs"], data[0, 0]["q75"]["slow_velocity_percentage_ivs"], alpha=0.2, color="C0")
+  axes[1][0].fill_between(parameter_values[0], data[0, 0]["q25"]["slow_velocity_percentage_everywhere"], data[0, 0]["q75"]["slow_velocity_percentage_everywhere"], alpha=0.2, color="C1")
+  axes[1][0].fill_between(parameter_values[0], data[0, 0]["q25"]["slow_velocity_percentage_dellschaft"], data[0, 0]["q75"]["slow_velocity_percentage_dellschaft"], alpha=0.2, color="C2")
+  axes[1][0].fill_between(parameter_values[0], data[0, 0]["q25"]["slow_velocity_percentage_nominal_everywhere"], data[0, 0]["q75"]["slow_velocity_percentage_nominal_everywhere"], alpha=0.2, color="C3")
+  axes[1][0].legend(handles=handles[0:4], labels=["IVS", "everywhere", "Dellschaft", "nominal everywhere"])
+
+  # AXES 3: Velocity flux through different veins.
+  axes[2][0].plot(parameter_values[0], data[0, 0]["q50"]["velocity_percentage_basal_plate"], linestyle="dashed", color="C0")
+  axes[2][0].plot(parameter_values[0], data[0, 0]["q50"]["velocity_percentage_septal_wall"], linestyle="dashed", color="C1")
+  axes[2][0].plot(parameter_values[0], data[0, 0]["q50"]["velocity_percentage_marginal_sinus"], linestyle="dashed", color="C2")
+  axes[2][0].fill_between(parameter_values[0], data[0, 0]["q25"]["velocity_percentage_basal_plate"], data[0, 0]["q75"]["velocity_percentage_basal_plate"], alpha=0.2, color="C0")
+  axes[2][0].fill_between(parameter_values[0], data[0, 0]["q25"]["velocity_percentage_septal_wall"], data[0, 0]["q75"]["velocity_percentage_septal_wall"], alpha=0.2, color="C1")
+  axes[2][0].fill_between(parameter_values[0], data[0, 0]["q25"]["velocity_percentage_marginal_sinus"], data[0, 0]["q75"]["velocity_percentage_marginal_sinus"], alpha=0.2, color="C2")
+  axes[2][0].legend(handles=handles[0:3], labels=["basal plate", "septal wall", "marginal sinus"])
+
+  # AXES 4: Cross-flux velocity.
   for i in range(2):
-    axes[0][0].plot(parameter_values, data[i]["q50"]["velocity_magnitude_integral"], linestyle="dashed", color=f"C{i}")
-    axes[0][0].legend(["any #veins", "27 veins"], loc="upper left")
-    axes[0][0].fill_between(parameter_values, data[i]["q25"]["velocity_magnitude_integral"], data[i]["q75"]["velocity_magnitude_integral"], alpha=0.2, color=f"C{i}")
-
-  axes[0][0].legend(handles=[patch_any, patch_27])
+    axes[3][0].plot(parameter_values[0], data[i, 0]["q50"]["velocity_cross_flow_flux"], linestyle="dashed", color=f"C{i}")
+    axes[3][0].fill_between(parameter_values[0], data[i, 0]["q25"]["velocity_cross_flow_flux"], data[i, 0]["q75"]["velocity_cross_flow_flux"], alpha=0.2, color=f"C{i}")
+  axes[3][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
 
   # Style plots.
   setup_plots.style(fig, axes[0][0], None, r"$\bar{v}$", y_scilimits=[-3, -3] , y_bottom=0, integer_ticks=True)
   setup_plots.style(fig, axes[1][0], None, r"$v_\text{slow}(V_\text{threshold})$", y_scilimits=None , y_top=102, integer_ticks=True)
   setup_plots.style(fig, axes[2][0], None, r"$\frac{v_\text{flux}(S)}{v_\text{flux}(\Gamma_\text{in})}$", y_scilimits=None , y_top=102, integer_ticks=True)
-  setup_plots.style(fig, axes[3][0], None, r"$v_\text{cross}$", y_scilimits=None , y_top=102, integer_ticks=True)
+  setup_plots.style(fig, axes[3][0], None, r"$v_\text{cross}$", y_scilimits=[-3, -3] , y_bottom=0, integer_ticks=True)
   setup_plots.style(fig, axes[4][0], None, r"$\bar{c}$", y_scilimits=None , y_top=102, integer_ticks=True)
   setup_plots.style(fig, axes[5][0], None, r"$c_\text{flux}(\Gamma_\text{in}) - c_\text{flux}(\Gamma_\text{out})$", y_scilimits=None , y_top=102, integer_ticks=True)
   setup_plots.style(fig, axes[6][0], None, r"$E_\text{kinetic}(\Gamma_\text{in}) - E_\text{kinetic}(\Gamma_\text{out})$", y_scilimits=None , y_top=102, integer_ticks=True)
@@ -52,7 +91,7 @@ def plot(simulations, simulation_bins, parameter_values, parameter_name, paramet
     images_folder = f"images/{subfolder}"
 
   # Save.
-  fig.savefig(f"{images_folder}/mega_{parameter_safe_name}.png", dpi=300)
+  fig.savefig(f"{images_folder}/mega_{parameter_safe_name[0]}_{parameter_safe_name[1]}.png", dpi=300)
 
   # Done.
   print(f"\rPlotting simulations... Done.", end="\r\n")

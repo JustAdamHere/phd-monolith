@@ -10,7 +10,11 @@ def setup(plot_no):
 
 def setup_megaplot(plot_no, no_rows, no_cols, **kwargs):
   fig = plt.figure(plot_no, **kwargs)
+  fig.clf()
   axes = fig.subplots(no_rows, no_cols)
+  for i in range(no_rows):
+    for j in range(no_cols):
+      axes[i][j].cla()
 
   return fig, axes
 
@@ -23,7 +27,7 @@ def style(figure, axis, x_parameter_name, y_parameter_name, y_scilimits=None, y_
     axis.xaxis.set_major_formatter(plt.FormatStrFormatter('%d'))
   else:
     axis.xaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
-  axis.xaxis.set_major_locator(plt.MaxNLocator(10, integer=integer_ticks, prune='both'))
+  axis.xaxis.set_major_locator(plt.MaxNLocator(6, integer=integer_ticks, prune='both'))
   if (xlim != None):
     axis.set_xlim(xlim[0], xlim[1])
   if (y_top != None):
