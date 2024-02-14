@@ -22,7 +22,7 @@ def plot(axis, parameter_values, box_plot_data, average_data, box_plot_width=0.7
   axis.boxplot(box_plot_data, positions=parameter_values, widths=box_plot_width)
   axis.plot(parameter_values, average_data, 'k--')
 
-def style(figure, axis, x_parameter_name, y_parameter_name, y_scilimits=None, y_bottom=-2, y_top=None, integer_ticks=True, xlim=None):
+def style(figure, axis, x_parameter_name, y_parameter_name, y_scilimits=None, y_bottom=None, y_top=None, integer_ticks=True, xlim=None, y_labelpad=None):
   if (integer_ticks):
     axis.xaxis.set_major_formatter(plt.FormatStrFormatter('%d'))
   else:
@@ -41,7 +41,7 @@ def style(figure, axis, x_parameter_name, y_parameter_name, y_scilimits=None, y_
   if (x_parameter_name != None):
     axis.set_xlabel(f"{x_parameter_name}", fontsize=18)
   if (y_parameter_name != None):
-    axis.set_ylabel(f"{y_parameter_name}", fontsize=18)
+    axis.set_ylabel(f"{y_parameter_name}", fontsize=18, labelpad=y_labelpad)
   # axis.set_title(f"{y_parameter_name}\nagainst {x_parameter_name}")
   
   figure.tight_layout()

@@ -64,24 +64,58 @@ def plot(simulations, simulation_bins, parameter_values, parameter_name, paramet
   axes[3][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
   axes[3][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
 
+  # AXES 5: Transport reaction integral.
+  for j in range(2):
+    for i in range(2):
+      axes[4][j].plot(parameter_values[j], data[i, j]["q50"]["transport_reaction_integral"], linestyle="dashed", color=f"C{i}")
+      axes[4][j].fill_between(parameter_values[j], data[i, j]["q25"]["transport_reaction_integral"], data[i, j]["q75"]["transport_reaction_integral"], alpha=0.2, color=f"C{i}")
+  axes[4][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
+  axes[4][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
+
+  # AXES 6: Concentration flux through different veins.
+  for j in range(2):
+    axes[5][j].plot(parameter_values[j], data[0, j]["q50"]["transport_percentage_basal_plate"], linestyle="dashed", color="C0")
+    axes[5][j].plot(parameter_values[j], data[0, j]["q50"]["transport_percentage_septal_wall"], linestyle="dashed", color="C1")
+    axes[5][j].plot(parameter_values[j], data[0, j]["q50"]["transport_percentage_marginal_sinus"], linestyle="dashed", color="C2")
+    axes[5][j].fill_between(parameter_values[j], data[0, j]["q25"]["transport_percentage_basal_plate"], data[0, j]["q75"]["transport_percentage_basal_plate"], alpha=0.2, color="C0")
+    axes[5][j].fill_between(parameter_values[j], data[0, j]["q25"]["transport_percentage_septal_wall"], data[0, j]["q75"]["transport_percentage_septal_wall"], alpha=0.2, color="C1")
+    axes[5][j].fill_between(parameter_values[j], data[0, j]["q25"]["transport_percentage_marginal_sinus"], data[0, j]["q75"]["transport_percentage_marginal_sinus"], alpha=0.2, color="C2")
+    axes[5][j].legend(handles=handles[0:3], labels=["basal plate", "septal wall", "marginal sinus"])
+
+  # AXES 7: Kinetic energy flux difference.
+  for j in range(2):
+    for i in range(2):
+      axes[6][j].plot(parameter_values[j], data[i, j]["q50"]["kinetic_energy_flux"], linestyle="dashed", color=f"C{i}")
+      axes[6][j].fill_between(parameter_values[j], data[i, j]["q25"]["kinetic_energy_flux"], data[i, j]["q75"]["kinetic_energy_flux"], alpha=0.2, color=f"C{i}")
+  axes[6][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
+  axes[6][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
+
+  # AXES 8: Total energy flux difference.
+  for j in range(2):
+    for i in range(2):
+      axes[7][j].plot(parameter_values[j], data[i, j]["q50"]["total_energy_flux"], linestyle="dashed", color=f"C{i}")
+      axes[7][j].fill_between(parameter_values[j], data[i, j]["q25"]["total_energy_flux"], data[i, j]["q75"]["total_energy_flux"], alpha=0.2, color=f"C{i}")
+  axes[7][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
+  axes[7][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
+
   # Style plots.
-  setup_plots.style(fig, axes[0][0], None, r"$\bar{v}$", y_scilimits=[-3, -3] , y_bottom=0, integer_ticks=True)
+  setup_plots.style(fig, axes[0][0], None, r"$\bar{v}$", y_scilimits=[-3, -3] , y_bottom=0, y_top=1e-2, integer_ticks=True)
   setup_plots.style(fig, axes[1][0], None, r"$v_\text{slow}(V_\text{threshold})$", y_scilimits=None , y_top=102, integer_ticks=True)
   setup_plots.style(fig, axes[2][0], None, r"$\frac{v_\text{flux}(S)}{v_\text{flux}(\Gamma_\text{in})}$", y_scilimits=None , y_top=102, integer_ticks=True)
-  setup_plots.style(fig, axes[3][0], None, r"$v_\text{cross}$", y_scilimits=[-3, -3] , y_bottom=0, integer_ticks=True)
-  setup_plots.style(fig, axes[4][0], None, r"$\bar{c}$", y_scilimits=None , y_top=102, integer_ticks=True)
-  setup_plots.style(fig, axes[5][0], None, r"$c_\text{flux}(\Gamma_\text{in}) - c_\text{flux}(\Gamma_\text{out})$", y_scilimits=None , y_top=102, integer_ticks=True)
-  setup_plots.style(fig, axes[6][0], None, r"$E_\text{kinetic}(\Gamma_\text{in}) - E_\text{kinetic}(\Gamma_\text{out})$", y_scilimits=None , y_top=102, integer_ticks=True)
-  setup_plots.style(fig, axes[7][0], parameter_name[0], r"$E_\text{total}(\Gamma_\text{in}) - E_\text{total}(\Gamma_\text{out})$", y_scilimits=None , y_top=102, integer_ticks=True)
+  setup_plots.style(fig, axes[3][0], None, r"$v_\text{cross}$", y_scilimits=[-3, -3] , y_bottom=0, y_top=2e-2, integer_ticks=True)
+  setup_plots.style(fig, axes[4][0], None, r"$\bar{c}$", y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True)
+  setup_plots.style(fig, axes[5][0], None, r"$c_\text{flux}(\Gamma_\text{in}) - c_\text{flux}(\Gamma_\text{out})$", y_scilimits=None , y_top=102, integer_ticks=True, y_labelpad=15)
+  setup_plots.style(fig, axes[6][0], None, r"$E_\text{kinetic}(\Gamma_\text{in}) - E_\text{kinetic}(\Gamma_\text{out})$", y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True, y_labelpad=5)
+  setup_plots.style(fig, axes[7][0], parameter_name[0], r"$E_\text{total}(\Gamma_\text{in}) - E_\text{total}(\Gamma_\text{out})$", y_scilimits=[4, 4], y_bottom=0, y_top=1e5, integer_ticks=True, y_labelpad=15)
 
-  setup_plots.style(fig, axes[0][1], None, None, y_scilimits=[-3, -3] , y_bottom=0, integer_ticks=True)
+  setup_plots.style(fig, axes[0][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=True)
   setup_plots.style(fig, axes[1][1], None, None, y_scilimits=None , y_top=102, integer_ticks=True)
   setup_plots.style(fig, axes[2][1], None, None, y_scilimits=None , y_top=102, integer_ticks=True)
-  setup_plots.style(fig, axes[3][1], None, None, y_scilimits=None , y_top=102, integer_ticks=True)
-  setup_plots.style(fig, axes[4][1], None, None, y_scilimits=None , y_top=102, integer_ticks=True)
+  setup_plots.style(fig, axes[3][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-2, integer_ticks=True)
+  setup_plots.style(fig, axes[4][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True)
   setup_plots.style(fig, axes[5][1], None, None, y_scilimits=None , y_top=102, integer_ticks=True)
-  setup_plots.style(fig, axes[6][1], None, None, y_scilimits=None , y_top=102, integer_ticks=True)
-  setup_plots.style(fig, axes[7][1], parameter_name[1], None, y_scilimits=None , y_top=102, integer_ticks=True)
+  setup_plots.style(fig, axes[6][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True)
+  setup_plots.style(fig, axes[7][1], parameter_name[1], None, y_scilimits=[4, 4], y_bottom=0, y_top=1e5, integer_ticks=True)
 
   # Decide where to save plots.
   if subfolder == None:
