@@ -8,6 +8,12 @@ def setup(plot_no):
 
   return fig, ax
 
+def setup_megaplot(plot_no, no_rows, no_cols, **kwargs):
+  fig = plt.figure(plot_no, **kwargs)
+  axes = fig.subplots(no_rows, no_cols)
+
+  return fig, axes
+
 def plot(axis, parameter_values, box_plot_data, average_data, box_plot_width=0.75):
   axis.boxplot(box_plot_data, positions=parameter_values, widths=box_plot_width)
   axis.plot(parameter_values, average_data, 'k--')
@@ -27,8 +33,10 @@ def style(figure, axis, x_parameter_name, y_parameter_name, y_scilimits=None, y_
   if (y_scilimits != None):
     axis.ticklabel_format(style="sci", axis='y', scilimits=(y_scilimits[0], y_scilimits[1]))
   axis.tick_params(axis='both', which='major', labelsize=18)
-  axis.set_xlabel(f"{x_parameter_name}", fontsize=18)
-  axis.set_ylabel(f"{y_parameter_name}", fontsize=18)
+  if (x_parameter_name != None):
+    axis.set_xlabel(f"{x_parameter_name}", fontsize=18)
+  if (y_parameter_name != None):
+    axis.set_ylabel(f"{y_parameter_name}", fontsize=18)
   # axis.set_title(f"{y_parameter_name}\nagainst {x_parameter_name}")
   
   figure.tight_layout()
@@ -176,6 +184,25 @@ def get_data(no_bins, simulation_bins, simulations):
   q25_transport_percentage_septal_wall            = percentiles(transport_percentage_septal_wall           , 25)
   q25_transport_percentage_marginal_sinus         = percentiles(transport_percentage_marginal_sinus        , 25)
 
+  # Quartile 50.
+  q50_velocity_magnitude_integral                 = percentiles(velocity_magnitude_integral                , 50)
+  q50_slow_velocity_percentage_ivs                = percentiles(slow_velocity_percentage_ivs               , 50)
+  q50_slow_velocity_percentage_everywhere         = percentiles(slow_velocity_percentage_everywhere        , 50)
+  q50_slow_velocity_percentage_dellschaft         = percentiles(slow_velocity_percentage_dellschaft        , 50)
+  q50_fast_velocity_percentage_dellschaft         = percentiles(fast_velocity_percentage_dellschaft        , 50)
+  q50_slow_velocity_percentage_nominal_everywhere = percentiles(slow_velocity_percentage_nominal_everywhere, 50)
+  q50_transport_reaction_integral                 = percentiles(transport_reaction_integral                , 50)
+  q50_kinetic_energy_flux                         = percentiles(kinetic_energy_flux                        , 50)
+  q50_total_energy_flux                           = percentiles(total_energy_flux                          , 50)
+  q50_velocity_cross_flow_flux                    = percentiles(velocity_cross_flow_flux                   , 50)
+  q50_transport_flux                              = percentiles(transport_flux                             , 50)
+  q50_velocity_percentage_basal_plate             = percentiles(velocity_percentage_basal_plate            , 50)
+  q50_velocity_percentage_septal_wall             = percentiles(velocity_percentage_septal_wall            , 50)
+  q50_velocity_percentage_marginal_sinus          = percentiles(velocity_percentage_marginal_sinus         , 50)
+  q50_transport_percentage_basal_plate            = percentiles(transport_percentage_basal_plate           , 50)
+  q50_transport_percentage_septal_wall            = percentiles(transport_percentage_septal_wall           , 50)
+  q50_transport_percentage_marginal_sinus         = percentiles(transport_percentage_marginal_sinus        , 50)
+
   # Quartile 75.
   q75_velocity_magnitude_integral                 = percentiles(velocity_magnitude_integral                , 75)
   q75_slow_velocity_percentage_ivs                = percentiles(slow_velocity_percentage_ivs               , 75)
@@ -271,6 +298,25 @@ def get_data(no_bins, simulation_bins, simulations):
       'transport_percentage_basal_plate'            : q25_transport_percentage_basal_plate           ,
       'transport_percentage_septal_wall'            : q25_transport_percentage_septal_wall           ,
       'transport_percentage_marginal_sinus'         : q25_transport_percentage_marginal_sinus
+    },
+    'q50' : {
+      'velocity_magnitude_integral'                 : q50_velocity_magnitude_integral                ,
+      'slow_velocity_percentage_ivs'                : q50_slow_velocity_percentage_ivs               ,
+      'slow_velocity_percentage_everywhere'         : q50_slow_velocity_percentage_everywhere        ,
+      'slow_velocity_percentage_dellschaft'         : q50_slow_velocity_percentage_dellschaft        ,
+      'fast_velocity_percentage_dellschaft'         : q50_fast_velocity_percentage_dellschaft        ,
+      'slow_velocity_percentage_nominal_everywhere' : q50_slow_velocity_percentage_nominal_everywhere,
+      'transport_reaction_integral'                 : q50_transport_reaction_integral                ,
+      'kinetic_energy_flux'                         : q50_kinetic_energy_flux                        ,
+      'total_energy_flux'                           : q50_total_energy_flux                          ,
+      'velocity_cross_flow_flux'                    : q50_velocity_cross_flow_flux                   ,
+      'transport_flux'                              : q50_transport_flux                             ,
+      'velocity_percentage_basal_plate'             : q50_velocity_percentage_basal_plate            ,
+      'velocity_percentage_septal_wall'             : q50_velocity_percentage_septal_wall            ,
+      'velocity_percentage_marginal_sinus'          : q50_velocity_percentage_marginal_sinus         ,
+      'transport_percentage_basal_plate'            : q50_transport_percentage_basal_plate           ,
+      'transport_percentage_septal_wall'            : q50_transport_percentage_septal_wall           ,
+      'transport_percentage_marginal_sinus'         : q50_transport_percentage_marginal_sinus
     },
     'q75' : {
       'velocity_magnitude_integral'                 : q75_velocity_magnitude_integral                ,
