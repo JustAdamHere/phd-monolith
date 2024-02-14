@@ -13,11 +13,6 @@ def plot(simulations, simulation_bins, parameter_values, parameter_name, paramet
   fig, axes = setup_plots.setup_megaplot(1, 8, 2, figsize=(8, 18))
 
   # Get data to plot.
-  # data = np.zeros((2, 2), dtype=object)
-  # for j in range(2):
-  #   for i in range(2):
-  #     data[i, j] = setup_plots.get_data(no_bins, simulation_bins[i][j], simulations)
-
   data = np.zeros((2, 2), dtype=object)
   for j in range(2):
     for i in range(2):
@@ -40,30 +35,34 @@ def plot(simulations, simulation_bins, parameter_values, parameter_name, paramet
   axes[0][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
 
   # AXES 2: Slow velocity percentages.
-  axes[1][0].plot(parameter_values[0], data[0, 0]["q50"]["slow_velocity_percentage_ivs"], linestyle="dashed", color="C0")
-  axes[1][0].plot(parameter_values[0], data[0, 0]["q50"]["slow_velocity_percentage_everywhere"], linestyle="dashed", color="C1")
-  axes[1][0].plot(parameter_values[0], data[0, 0]["q50"]["slow_velocity_percentage_dellschaft"], linestyle="dashed", color="C2")
-  axes[1][0].plot(parameter_values[0], data[0, 0]["q50"]["slow_velocity_percentage_nominal_everywhere"], linestyle="dashed", color="C3")
-  axes[1][0].fill_between(parameter_values[0], data[0, 0]["q25"]["slow_velocity_percentage_ivs"], data[0, 0]["q75"]["slow_velocity_percentage_ivs"], alpha=0.2, color="C0")
-  axes[1][0].fill_between(parameter_values[0], data[0, 0]["q25"]["slow_velocity_percentage_everywhere"], data[0, 0]["q75"]["slow_velocity_percentage_everywhere"], alpha=0.2, color="C1")
-  axes[1][0].fill_between(parameter_values[0], data[0, 0]["q25"]["slow_velocity_percentage_dellschaft"], data[0, 0]["q75"]["slow_velocity_percentage_dellschaft"], alpha=0.2, color="C2")
-  axes[1][0].fill_between(parameter_values[0], data[0, 0]["q25"]["slow_velocity_percentage_nominal_everywhere"], data[0, 0]["q75"]["slow_velocity_percentage_nominal_everywhere"], alpha=0.2, color="C3")
-  axes[1][0].legend(handles=handles[0:4], labels=["IVS", "everywhere", "Dellschaft", "nominal everywhere"])
+  for j in range(2):
+    axes[1][j].plot(parameter_values[j], data[0, j]["q50"]["slow_velocity_percentage_ivs"], linestyle="dashed", color="C0")
+    axes[1][j].plot(parameter_values[j], data[0, j]["q50"]["slow_velocity_percentage_everywhere"], linestyle="dashed", color="C1")
+    axes[1][j].plot(parameter_values[j], data[0, j]["q50"]["slow_velocity_percentage_dellschaft"], linestyle="dashed", color="C2")
+    axes[1][j].plot(parameter_values[j], data[0, j]["q50"]["slow_velocity_percentage_nominal_everywhere"], linestyle="dashed", color="C3")
+    axes[1][j].fill_between(parameter_values[j], data[0, j]["q25"]["slow_velocity_percentage_ivs"], data[0, j]["q75"]["slow_velocity_percentage_ivs"], alpha=0.2, color="C0")
+    axes[1][j].fill_between(parameter_values[j], data[0, j]["q25"]["slow_velocity_percentage_everywhere"], data[0, j]["q75"]["slow_velocity_percentage_everywhere"], alpha=0.2, color="C1")
+    axes[1][j].fill_between(parameter_values[j], data[0, j]["q25"]["slow_velocity_percentage_dellschaft"], data[0, j]["q75"]["slow_velocity_percentage_dellschaft"], alpha=0.2, color="C2")
+    axes[1][j].fill_between(parameter_values[j], data[0, j]["q25"]["slow_velocity_percentage_nominal_everywhere"], data[0, j]["q75"]["slow_velocity_percentage_nominal_everywhere"], alpha=0.2, color="C3")
+    axes[1][j].legend(handles=handles[0:4], labels=["IVS", "everywhere", "Dellschaft", "nominal everywhere"])
 
   # AXES 3: Velocity flux through different veins.
-  axes[2][0].plot(parameter_values[0], data[0, 0]["q50"]["velocity_percentage_basal_plate"], linestyle="dashed", color="C0")
-  axes[2][0].plot(parameter_values[0], data[0, 0]["q50"]["velocity_percentage_septal_wall"], linestyle="dashed", color="C1")
-  axes[2][0].plot(parameter_values[0], data[0, 0]["q50"]["velocity_percentage_marginal_sinus"], linestyle="dashed", color="C2")
-  axes[2][0].fill_between(parameter_values[0], data[0, 0]["q25"]["velocity_percentage_basal_plate"], data[0, 0]["q75"]["velocity_percentage_basal_plate"], alpha=0.2, color="C0")
-  axes[2][0].fill_between(parameter_values[0], data[0, 0]["q25"]["velocity_percentage_septal_wall"], data[0, 0]["q75"]["velocity_percentage_septal_wall"], alpha=0.2, color="C1")
-  axes[2][0].fill_between(parameter_values[0], data[0, 0]["q25"]["velocity_percentage_marginal_sinus"], data[0, 0]["q75"]["velocity_percentage_marginal_sinus"], alpha=0.2, color="C2")
-  axes[2][0].legend(handles=handles[0:3], labels=["basal plate", "septal wall", "marginal sinus"])
+  for j in range(2):
+    axes[2][j].plot(parameter_values[j], data[0, j]["q50"]["velocity_percentage_basal_plate"], linestyle="dashed", color="C0")
+    axes[2][j].plot(parameter_values[j], data[0, j]["q50"]["velocity_percentage_septal_wall"], linestyle="dashed", color="C1")
+    axes[2][j].plot(parameter_values[j], data[0, j]["q50"]["velocity_percentage_marginal_sinus"], linestyle="dashed", color="C2")
+    axes[2][j].fill_between(parameter_values[j], data[0, j]["q25"]["velocity_percentage_basal_plate"], data[0, j]["q75"]["velocity_percentage_basal_plate"], alpha=0.2, color="C0")
+    axes[2][j].fill_between(parameter_values[j], data[0, j]["q25"]["velocity_percentage_septal_wall"], data[0, j]["q75"]["velocity_percentage_septal_wall"], alpha=0.2, color="C1")
+    axes[2][j].fill_between(parameter_values[j], data[0, j]["q25"]["velocity_percentage_marginal_sinus"], data[0, j]["q75"]["velocity_percentage_marginal_sinus"], alpha=0.2, color="C2")
+    axes[2][j].legend(handles=handles[0:3], labels=["basal plate", "septal wall", "marginal sinus"])
 
   # AXES 4: Cross-flux velocity.
-  for i in range(2):
-    axes[3][0].plot(parameter_values[0], data[i, 0]["q50"]["velocity_cross_flow_flux"], linestyle="dashed", color=f"C{i}")
-    axes[3][0].fill_between(parameter_values[0], data[i, 0]["q25"]["velocity_cross_flow_flux"], data[i, 0]["q75"]["velocity_cross_flow_flux"], alpha=0.2, color=f"C{i}")
+  for j in range(2):
+    for i in range(2):
+      axes[3][j].plot(parameter_values[j], data[i, j]["q50"]["velocity_cross_flow_flux"], linestyle="dashed", color=f"C{i}")
+      axes[3][j].fill_between(parameter_values[j], data[i, j]["q25"]["velocity_cross_flow_flux"], data[i, j]["q75"]["velocity_cross_flow_flux"], alpha=0.2, color=f"C{i}")
   axes[3][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
+  axes[3][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
 
   # Style plots.
   setup_plots.style(fig, axes[0][0], None, r"$\bar{v}$", y_scilimits=[-3, -3] , y_bottom=0, integer_ticks=True)
