@@ -104,13 +104,18 @@ module velocity_bc_interface
 
   subroutine setup_velocity_bcs(geometry_name)
     use aptofem_kernel
+
     use placenta_2d_bcs_velocity
     use placentone_2d_bcs_velocity
     use placentone_3d_bcs_velocity
+
     use bcs_analytic_velocity
     use bcs_constant_up_velocity
     use bcs_constant_diagonal_velocity
+    use bcs_etienne2009_velocity
+    use bcs_etienne2009_ti_velocity
     use bcs_poiseuille_velocity
+    use bcs_shear_velocity
     use bcs_zero_velocity
 
     implicit none
@@ -144,15 +149,6 @@ module velocity_bc_interface
       get_boundary_no_velocity     => placentone_3d_get_boundary_no_velocity
       dirichlet_bc_velocity        => placentone_3d_dirichlet_bc_velocity
       neumann_bc_velocity          => placentone_3d_neumann_bc_velocity
-    else if (trim(geometry_name) == 'square_zero') then
-      convert_velocity_boundary_no => zero_2d_convert_velocity_boundary_no
-      convert_velocity_region_id   => zero_2d_convert_velocity_region_id
-      forcing_function_velocity    => zero_2d_forcing_function_velocity
-      anal_soln_velocity           => zero_2d_anal_soln_velocity
-      anal_soln_velocity_1         => zero_2d_anal_soln_velocity_1
-      get_boundary_no_velocity     => zero_2d_get_boundary_no_velocity
-      dirichlet_bc_velocity        => zero_2d_dirichlet_bc_velocity
-      neumann_bc_velocity          => zero_2d_neumann_bc_velocity
     else if (trim(geometry_name) == 'square_analytic') then
       convert_velocity_boundary_no => analytic_2d_convert_velocity_boundary_no
       convert_velocity_region_id   => analytic_2d_convert_velocity_region_id
@@ -189,6 +185,42 @@ module velocity_bc_interface
       get_boundary_no_velocity     => poiseuille_2d_get_boundary_no_velocity
       dirichlet_bc_velocity        => poiseuille_2d_dirichlet_bc_velocity
       neumann_bc_velocity          => poiseuille_2d_neumann_bc_velocity
+    else if (trim(geometry_name) == 'square_etienne2009') then
+      convert_velocity_boundary_no => etienne2009_2d_convert_velocity_boundary_no
+      convert_velocity_region_id   => etienne2009_2d_convert_velocity_region_id
+      forcing_function_velocity    => etienne2009_2d_forcing_function_velocity
+      anal_soln_velocity           => etienne2009_2d_anal_soln_velocity
+      anal_soln_velocity_1         => etienne2009_2d_anal_soln_velocity_1
+      get_boundary_no_velocity     => etienne2009_2d_get_boundary_no_velocity
+      dirichlet_bc_velocity        => etienne2009_2d_dirichlet_bc_velocity
+      neumann_bc_velocity          => etienne2009_2d_neumann_bc_velocity
+    else if (trim(geometry_name) == 'square_etienne2009_ti') then
+      convert_velocity_boundary_no => etienne2009_ti_2d_convert_velocity_boundary_no
+      convert_velocity_region_id   => etienne2009_ti_2d_convert_velocity_region_id
+      forcing_function_velocity    => etienne2009_ti_2d_forcing_function_velocity
+      anal_soln_velocity           => etienne2009_ti_2d_anal_soln_velocity
+      anal_soln_velocity_1         => etienne2009_ti_2d_anal_soln_velocity_1
+      get_boundary_no_velocity     => etienne2009_ti_2d_get_boundary_no_velocity
+      dirichlet_bc_velocity        => etienne2009_ti_2d_dirichlet_bc_velocity
+      neumann_bc_velocity          => etienne2009_ti_2d_neumann_bc_velocity
+    else if (trim(geometry_name) == 'square_shear') then
+      convert_velocity_boundary_no => shear_2d_convert_velocity_boundary_no
+      convert_velocity_region_id   => shear_2d_convert_velocity_region_id
+      forcing_function_velocity    => shear_2d_forcing_function_velocity
+      anal_soln_velocity           => shear_2d_anal_soln_velocity
+      anal_soln_velocity_1         => shear_2d_anal_soln_velocity_1
+      get_boundary_no_velocity     => shear_2d_get_boundary_no_velocity
+      dirichlet_bc_velocity        => shear_2d_dirichlet_bc_velocity
+      neumann_bc_velocity          => shear_2d_neumann_bc_velocity
+    else if (trim(geometry_name) == 'square_zero') then
+      convert_velocity_boundary_no => zero_2d_convert_velocity_boundary_no
+      convert_velocity_region_id   => zero_2d_convert_velocity_region_id
+      forcing_function_velocity    => zero_2d_forcing_function_velocity
+      anal_soln_velocity           => zero_2d_anal_soln_velocity
+      anal_soln_velocity_1         => zero_2d_anal_soln_velocity_1
+      get_boundary_no_velocity     => zero_2d_get_boundary_no_velocity
+      dirichlet_bc_velocity        => zero_2d_dirichlet_bc_velocity
+      neumann_bc_velocity          => zero_2d_neumann_bc_velocity
     else 
       call write_message(io_err, "Error: Unknown geometry name: " // trim(geometry_name))
       error stop

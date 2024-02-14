@@ -8,7 +8,7 @@ module problem_options
     integer           :: no_uniform_refinements_cavity, no_uniform_refinements_everywhere, no_uniform_refinements_inlet, &
         no_time_steps, output_frequency, no_placentones
     logical           :: velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, &
-        compute_permeability, compute_uptake, moving_mesh, compute_ss_flag
+        compute_permeability, compute_uptake, compute_error_norms, moving_mesh, compute_ss_flag
     character(len=30) :: geometry_name, assembly_name, linear_solver, mesh_velocity_type
 
     real(db), dimension(:, :), allocatable :: vessel_locations
@@ -43,6 +43,8 @@ module problem_options
         call get_aptofem_key_definition('compute_permeability',              compute_permeability,              section_name, &
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('compute_uptake',                    compute_uptake,                    section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('compute_error_norms',               compute_error_norms,               section_name, &
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('transport_ic_from_ss',              transport_ic_from_ss,              section_name, &
             aptofem_stored_keys, ierr)

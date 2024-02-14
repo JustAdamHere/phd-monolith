@@ -15,10 +15,10 @@ module bcs_analytic_velocity
       boundary_no_new = boundary_no
     ! Right.
     else if (boundary_no == 102) then
-      boundary_no_new = boundary_no + 100
+      boundary_no_new = boundary_no
     ! Top.
     else if (boundary_no == 103) then
-      boundary_no_new = boundary_no
+      boundary_no_new = boundary_no + 100
     ! Left.
     else if (boundary_no == 104) then
       boundary_no_new = boundary_no + 100

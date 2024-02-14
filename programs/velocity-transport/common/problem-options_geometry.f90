@@ -44,6 +44,10 @@ module problem_options_geometry
             calculate_mesh_velocity => calculate_mesh_velocity_shear
         else if (trim(mesh_velocity_type) == 'constant_up') then
             calculate_mesh_velocity => calculate_mesh_velocity_constant_up
+        else if (trim(mesh_velocity_type) == 'constant_diagonal2') then
+            calculate_mesh_velocity => calculate_mesh_velocity_constant_diagonal2
+        else if (trim(mesh_velocity_type) == 'difference') then
+            calculate_mesh_velocity => calculate_mesh_velocity_difference
         else if (trim(mesh_velocity_type) == 'circular') then
             calculate_mesh_velocity => calculate_mesh_velocity_circular
         else if (trim(mesh_velocity_type) == 'incompressible') then
@@ -52,6 +56,8 @@ module problem_options_geometry
             calculate_mesh_velocity => calculate_mesh_velocity_incompressible2
         else if (trim(mesh_velocity_type) == 'oscillating_sine') then
             calculate_mesh_velocity => calculate_mesh_velocity_oscillating_sine
+        else if (trim(mesh_velocity_type) == 'etienne2009') then
+            calculate_mesh_velocity => calculate_mesh_velocity_etienne2009
         else
             print *, "Error: mesh_velocity_type not supported: ", trim(mesh_velocity_type)
             error stop
@@ -476,13 +482,6 @@ module problem_options_geometry
             
             mesh_data%coords(:, i) = mesh_data%coords(:, i) + mesh_velocity*time_step
         end do
-
-        ! Project the mesh velocity onto the new mesh.
-        call delete_solution(solution_moving_mesh)
-        call create_fe_solution(solution_moving_mesh, mesh_data, 'fe_projection_moving_mesh', aptofem_stored_keys, &
-            anal_soln_moving_mesh, get_boundary_no_moving_mesh)
-        call set_current_time(solution_moving_mesh, mesh_time + time_step)
-        call project_function(solution_moving_mesh, mesh_data, project_mesh_velocity)
     end subroutine
 
     subroutine anal_soln_moving_mesh(u, global_point, problem_dim, no_vars, boundary_no, t)
@@ -644,6 +643,36 @@ module problem_options_geometry
         
     end function
 
+    function calculate_mesh_velocity_constant_diagonal2(coord, problem_dim, mesh_time)
+        use param
+        
+        implicit none
+        
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: coord
+        real(db), intent(in)                         :: mesh_time
+        real(db), dimension(problem_dim)             :: calculate_mesh_velocity_constant_diagonal2
+        
+        calculate_mesh_velocity_constant_diagonal2(1) = 1.0_db
+        calculate_mesh_velocity_constant_diagonal2(2) = 2.0_db
+        
+    end function
+
+    function calculate_mesh_velocity_difference(coord, problem_dim, mesh_time)
+        use param
+        
+        implicit none
+        
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: coord
+        real(db), intent(in)                         :: mesh_time
+        real(db), dimension(problem_dim)             :: calculate_mesh_velocity_difference
+        
+        calculate_mesh_velocity_difference(1) = coord(1) - coord(2)
+        calculate_mesh_velocity_difference(2) = coord(1) - coord(2)
+        
+    end function
+
     function calculate_mesh_velocity_circular(coord, problem_dim, mesh_time)
         use param
         
@@ -706,6 +735,30 @@ module problem_options_geometry
         
         calculate_mesh_velocity_oscillating_sine(1) = x*sin(2.0_db*pi*mesh_time)
         calculate_mesh_velocity_oscillating_sine(2) = y*sin(2.0_db*pi*mesh_time)
+        
+    end function
+
+    function calculate_mesh_velocity_etienne2009(coord, problem_dim, mesh_time)
+        use param
+        
+        implicit none
+        
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: coord
+        real(db), intent(in)                         :: mesh_time
+        real(db), dimension(problem_dim)             :: calculate_mesh_velocity_etienne2009
+        
+        real(db) :: x, y, t
+
+        x = coord(1) - move_mesh_centre(1)
+        y = coord(2) - move_mesh_centre(2)
+        t = mesh_time
+        
+        ! calculate_mesh_velocity_etienne2009(1) = x*y*t**2/5.0_db
+        ! calculate_mesh_velocity_etienne2009(2) = x*y*(1-t**2/5.0_db)/10.0_db
+
+        calculate_mesh_velocity_etienne2009(1) = t*(1.0_db - x**2)*(y + 1.0_db)/32.0_db
+        calculate_mesh_velocity_etienne2009(2) = t*(1.0_db - y**2)*(x + t*(1.0_db - x**2)/32.0_db + 1.0_db)/32.0_db
         
     end function
 

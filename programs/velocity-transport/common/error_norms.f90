@@ -441,6 +441,9 @@ module error_norms
      integer, dimension(2) :: neighbors,loc_face_no
      integer, dimension(:), allocatable :: no_dofs_per_variable1, &
           no_dofs_per_variable2,no_dofs_per_variable
+     real(db) :: time
+
+     time = soln_data%current_time
    
      dim_soln_coeff = get_dim_soln_coeff(soln_data)
      no_pdes = get_no_pdes(soln_data)
@@ -481,8 +484,8 @@ module error_norms
    
    ! Determine analytical solution
    
-           call anal_soln_velocity(u,global_points_ele(:,qk),problem_dim,no_pdes,0,final_local_time,element_region_id)
-           call anal_soln_velocity_1(gradient_u,global_points_ele(:,qk),problem_dim,no_pdes,final_local_time,element_region_id)
+           call anal_soln_velocity(u,global_points_ele(:,qk),problem_dim,no_pdes,0,time,element_region_id)
+           call anal_soln_velocity_1(gradient_u,global_points_ele(:,qk),problem_dim,no_pdes,time,element_region_id)
            uh = uh_element(fe_basis_info,no_pdes,qk)
    
            errors(1) = errors(1) + jacobian(qk)*quad_weights_ele(qk) &
@@ -563,7 +566,7 @@ module error_norms
    
            do qk = 1,no_quad_points
               uh1 = uh_face1(fe_basis_info,no_pdes,qk)
-              call anal_soln_velocity(u,global_points_face(:,qk),problem_dim,no_pdes,0,final_local_time,element_region_id)
+              call anal_soln_velocity(u,global_points_face(:,qk),problem_dim,no_pdes,0,time,element_region_id)
               errors(4) = errors(4)+full_dispenal*face_jacobian(qk)*quad_weights_face(qk) &
                    *dot_product(u(1:problem_dim)-uh1(1:problem_dim), &
                    u(1:problem_dim)-uh1(1:problem_dim))

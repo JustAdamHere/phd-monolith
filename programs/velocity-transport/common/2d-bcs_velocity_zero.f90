@@ -7,39 +7,32 @@ module bcs_zero_velocity
     integer, intent(in)  :: boundary_no
     integer, intent(out) :: boundary_no_new
 
-    ! if (boundary_no == 0) then
-    !   boundary_no_new = 0
-    ! else if (100 <= boundary_no .and. boundary_no <= 199) then
-    !   boundary_no_new = boundary_no
-    ! else if (200 <= boundary_no .and. boundary_no <= 299) then
-    !   boundary_no_new = boundary_no
-    ! else
-    !   print *, "Error: no Navier-Stokes+ku boundary to convert to"
-    !   print *, boundary_no
-    !   stop
-    ! end if
-
-    boundary_no_new = boundary_no
+    ! Interior.
+    if (boundary_no == 0) then
+      boundary_no_new = 0
+    ! Bottom.
+    else if (boundary_no == 101) then
+      boundary_no_new = boundary_no
+    ! Right.
+    else if (boundary_no == 102) then
+      boundary_no_new = boundary_no
+    ! Top.
+    else if (boundary_no == 103) then
+      boundary_no_new = boundary_no
+    ! Left.
+    else if (boundary_no == 104) then
+      boundary_no_new = boundary_no + 100
+    else
+      print *, "Error: no Navier-Stokes+ku boundary to convert to"
+      print *, boundary_no
+      stop
+    end if
 
   end subroutine
 
   subroutine zero_2d_convert_velocity_region_id(region_id, region_id_new)
     integer, intent(in)  :: region_id
     integer, intent(out) :: region_id_new
-
-    ! if (region_id == -1) then
-    !   region_id_new = -1
-    ! else if (300 <= region_id .and. region_id <= 399) then
-    !   region_id_new = 301
-    ! else if (400 <= region_id .and. region_id <= 499) then
-    !   region_id_new = 501
-    ! else if (500 <= region_id .and. region_id <= 599) then
-    !   region_id_new = 501
-    ! else
-    !   print *, "Error: no Navier-Stokes+ku region to convert to"
-    !   print *, region_id
-    !   stop
-    ! end if
 
     region_id_new = region_id
 

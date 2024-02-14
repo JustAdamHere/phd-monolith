@@ -19,4 +19,4 @@ def get_norms(program, geometry, run_no):
   E_up_ratio  = E_up [:-1]/E_up [1:]
   div_u_ratio = div_u[:-1]/div_u[1:]
 
-  return np.array([no_timesteps, dofs, L2_u, L2_p, L2_up, E_up, div_u]), np.array([L2_u_ratio, L2_p_ratio, L2_up_ratio, E_up_ratio, div_u_ratio])
+  return np.array([no_timesteps, mesh_no, dofs, L2_u, L2_p, L2_up, E_up, div_u]), np.array([L2_u_ratio, L2_p_ratio, L2_up_ratio, E_up_ratio, div_u_ratio])

@@ -1,42 +1,8 @@
 def get_default_run_parameters():
-	# parameters_dictionary =  {
-	# 	'clean_files'                      : [False, False, False, False, False, False, False],
-	# 	'error_on_fail'                    : True,
-	# 	'extra_text'                       : '',
-	# 	'final_time'                       : 1.0,
-	# 	'geometry'                         : 'square_analytic',
-	# 	'linear_solver'                    : 'mumps',
-	# 	'mesh_resolution'                  : 1,
-	# 	'mesh_velocity_type'               : 'zero',
-	# 	'moving_mesh'                      : False,
-	# 	'no_threads'                       : 1,
-	# 	'no_time_steps'                    : 10,
-	# 	'plot'                             : False,
-	# 	'problem_dim'                      : 2,
-	# 	'run_type'                         : 'openmp',
-	# 	'terminal_output'                  : True,
-	# 	'test_type'                        : 'ss_velocity_space',
-	# 	'transport_convection_coefficient' : 1.0,
-	# 	'transport_diffusion_coefficient'  : 1.0,
-	# 	'transport_forcing_coefficient'    : 1.0,
-	# 	'transport_reaction_coefficient'   : 1.0,
-	# 	'transport_time_coefficient'       : 1.0,
-	# 	'velocity_convection_coefficient'  : 1.0,
-	# 	'velocity_diffusion_coefficient'   : 1.0,
-	# 	'velocity_forcing_coefficient'     : 1.0,
-	# 	'velocity_pressure_coefficient'    : 1.0,
-	# 	'velocity_reaction_coefficient'    : 1.0,
-	# 	'velocity_time_coefficient'        : 1.0,
-	# 	'velocity_model'                   : 'nsb',
-	# 	'velocity_space'                   : 'DG',
-	# 	'verbose_output'                   : False
-	# }
-
-	# return parameters_dictionary
-
 	from programs import velocity_transport
 	parameters_dictionary = velocity_transport.get_default_run_parameters()
 	parameters_dictionary["test_type"] = 'ss_velocity_space'
+	parameters_dictionary["no_tests"] = 7
 
 	return parameters_dictionary
 
@@ -74,18 +40,32 @@ def run(simulation_no, p):
 	##################
 	from programs import velocity_transport
 	output_timer.time(simulation_no, "AptoFEM simulation", p["terminal_output"])
-	velocity_transport.set_aptofem_parameters(simulation_no, p["velocity_model"], p["geometry"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["pipe_transition"], p["artery_length"], p["artery_width_sm"], p["log_cavity_transition"], p["scaling_L"], p["scaling_U"], p["scaling_mu"], p["scaling_rho"], p["scaling_k"], p["scaling_D"], p["scaling_R"], p["velocity_space"], velocity_ss, p["velocity_ic_from_ss"], p["transport_ic_from_ss"], p["compute_velocity"], p["compute_transport"], p["compute_permeability"], p["compute_uptake"], p["large_boundary_v_penalisation"], p["moving_mesh"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_time_steps"], p["final_time"], p["no_placentones"], p["no_threads"], p["run_type"], p["no_reynold_ramp_steps"], p["reynold_ramp_start_ratio"], p["reynold_ramp_step_base"], p["linear_solver"], p["wall_height_ratio"], p["basal_plate_vessel_positions"], p["rerun_with_reynold_steps"], p["mesh_velocity_type"])
-	_, errors, error_ratios = aptofem_simple_simulation(simulation_no, p["velocity_model"], p["geometry"], p["verbose_output"], p["terminal_output"], p["no_threads"], p["run_type"], p["test_type"])
+	velocity_transport.set_aptofem_parameters(simulation_no, p["velocity_model"], p["geometry"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["pipe_transition"], p["artery_length"], p["artery_width_sm"], p["log_cavity_transition"], p["scaling_L"], p["scaling_U"], p["scaling_mu"], p["scaling_rho"], p["scaling_k"], p["scaling_D"], p["scaling_R"], p["velocity_space"], velocity_ss, p["velocity_ic_from_ss"], p["transport_ic_from_ss"], p["compute_velocity"], p["compute_transport"], p["compute_permeability"], p["compute_uptake"], p["large_boundary_v_penalisation"], p["moving_mesh"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_time_steps"], p["final_time"], p["no_placentones"], p["no_threads"], p["run_type"], p["no_reynold_ramp_steps"], p["reynold_ramp_start_ratio"], p["reynold_ramp_step_base"], p["linear_solver"], p["wall_height_ratio"], p["basal_plate_vessel_positions"], p["rerun_with_reynold_steps"], p["mesh_velocity_type"], p["newton_itns_max"], p["newton_tolerance"], p["compute_error_norms"], p["zero_velocity_reaction_coefficient"])
+	_, errors, error_ratios = aptofem_simple_simulation(simulation_no, p["velocity_model"], p["geometry"], p["verbose_output"], p["terminal_output"], p["no_threads"], p["run_type"], p["test_type"], p["no_tests"])
 	output_timer.time(simulation_no, "AptoFEM simulation", p["terminal_output"])
 
 	#################
 	# OUTPUT RATIOS #
 	#################
 	from tabulate import tabulate
-	output.output(tabulate(errors.transpose(), headers=['#Timesteps', 'DoFs', 'L2_u', 'L2_p', 'L2_up', 'E_up', 'div_u'], tablefmt='rounded_outline'), p["terminal_output"])
-	output.output(tabulate(error_ratios.transpose(), headers=['L2_u_ratio', 'L2_p_ratio', 'L2_up_ratio', 'E_up_ratio', 'div_u_ratio'], tablefmt='rounded_outline'), p["terminal_output"])
+	output.output(tabulate(errors.transpose(), headers=['#Timesteps', 'mesh_no', 'DoFs', 'L2_u', 'L2_p', 'L2_up', 'DG_up', 'div_u'], tablefmt='rounded_outline'), p["terminal_output"])
+	output.output(tabulate(error_ratios.transpose(), headers=['L2_u_ratio', 'L2_p_ratio', 'L2_up_ratio', 'DG_up_ratio', 'div_u_ratio'], tablefmt='rounded_outline'), p["terminal_output"])
 
-def aptofem_simple_simulation(simulation_no, velocity_model, geometry, verbose_output, terminal_output, no_threads, run_type, test_type):
+	########
+	# PLOT #
+	########
+	if (p["plot"]):
+		if (p["test_type"][-5:] == "space"):
+			plot_spatial  = True
+			plot_temporal = False
+		else:
+			plot_spatial  = False
+			plot_temporal = True
+
+		from plotting import plot_convergence
+		plot_convergence.plot(simulation_no, errors, plot_spatial, plot_temporal)
+
+def aptofem_simple_simulation(simulation_no, velocity_model, geometry, verbose_output, terminal_output, no_threads, run_type, test_type, no_tests):
 	from miscellaneous import set_parameter, set_run_numbers, output, raise_error
 	import subprocess
 
@@ -171,7 +151,7 @@ def aptofem_simple_simulation(simulation_no, velocity_model, geometry, verbose_o
 	# 	raise ValueError(f"Unknown problem dimension: {problem_dim}")	
 	
 	# Run AptoFEM simulation.
-	run_commands = [f'./velocity-transport_convergence.out', f'{velocity_model}', f'{geometry}', f'{test_type}', '4']
+	run_commands = [f'./velocity-transport_convergence.out', f'{velocity_model}', f'{geometry}', f'{test_type}', f'{no_tests}']
 	if (run_type == 'mpi'):
 		run_commands = ['mpirun', '-n', f'{no_threads}'] + run_commands
 	run_process = subprocess.Popen(run_commands, cwd=program_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

@@ -1,9 +1,9 @@
-module bcs_constant_diagonal_velocity
+module bcs_etienne2009_ti_velocity
   implicit none
 
   contains
 
-  subroutine constant_diagonal_2d_convert_velocity_boundary_no(boundary_no, boundary_no_new)
+  subroutine etienne2009_ti_2d_convert_velocity_boundary_no(boundary_no, boundary_no_new)
     integer, intent(in)  :: boundary_no
     integer, intent(out) :: boundary_no_new
 
@@ -15,7 +15,7 @@ module bcs_constant_diagonal_velocity
       boundary_no_new = boundary_no
     ! Right.
     else if (boundary_no == 102) then
-      boundary_no_new = boundary_no + 100
+      boundary_no_new = boundary_no
     ! Top.
     else if (boundary_no == 103) then
       boundary_no_new = boundary_no + 100
@@ -30,7 +30,7 @@ module bcs_constant_diagonal_velocity
 
   end subroutine
 
-  subroutine constant_diagonal_2d_convert_velocity_region_id(region_id, region_id_new)
+  subroutine etienne2009_ti_2d_convert_velocity_region_id(region_id, region_id_new)
     integer, intent(in)  :: region_id
     integer, intent(out) :: region_id_new
 
@@ -52,7 +52,7 @@ module bcs_constant_diagonal_velocity
 
   end subroutine
 
-  subroutine constant_diagonal_2d_forcing_function_velocity(f, global_point, problem_dim, no_vars, t, element_region_id)
+  subroutine etienne2009_ti_2d_forcing_function_velocity(f, global_point, problem_dim, no_vars, t, element_region_id)
     use param
     use problem_options
     use problem_options_velocity
@@ -76,8 +76,8 @@ module bcs_constant_diagonal_velocity
     x = global_point(1)
     y = global_point(2)
 
-    call constant_diagonal_2d_anal_soln_velocity(u_exact,global_point,problem_dim,no_vars,0,t,element_region_id)
-    call constant_diagonal_2d_anal_soln_velocity_1(grad_u_exact,global_point,problem_dim,no_vars,t,element_region_id)
+    call etienne2009_ti_2d_anal_soln_velocity(u_exact,global_point,problem_dim,no_vars,0,t,element_region_id)
+    call etienne2009_ti_2d_anal_soln_velocity_1(grad_u_exact,global_point,problem_dim,no_vars,t,element_region_id)
 
     time_coefficient       = calculate_velocity_time_coefficient      (global_point, problem_dim, element_region_id)
     diffusion_coefficient  = calculate_velocity_diffusion_coefficient (global_point, problem_dim, element_region_id)
@@ -85,28 +85,14 @@ module bcs_constant_diagonal_velocity
     reaction_coefficient   = calculate_velocity_reaction_coefficient  (global_point, problem_dim, element_region_id)
     pressure_coefficient   = calculate_velocity_pressure_coefficient  (global_point, problem_dim, element_region_id)
 
-    ! u1_t = 0.0_db
-    ! u2_t = 0.0_db
+    u1_t = 0.0_db
+    u2_t = 0.0_db
 
-    ! u1_xx = -(y*cos(y)+sin(y))*exp(x)
-    ! u1_yy = -(-3.0_db*sin(y)-y*cos(y))*exp(x)
+    u1_xx =  2.0_db
+    u1_yy =  (2.0_db + 6.0_db*y)
 
-    ! u2_xx = y*sin(y)*exp(x)
-    ! u2_yy = (-sin(y)*y+2.0_db*cos(y))*exp(x)
-
-    if (no_time_steps > 0) then
-      u1_t = 0.0_db
-      u2_t = 0.0_db
-    else
-      u1_t = 0.0_db
-      u2_t = 0.0_db
-    end if
-
-    u1_xx = 0.0_db
-    u1_yy = 0.0_db
-
-    u2_xx = 0.0_db
-    u2_yy = 0.0_db
+    u2_xx =  (2.0_db + 6.0_db*x)
+    u2_yy = -1.0_db
 
     f(1) = 0.0_db + &
       time_coefficient*u1_t - &
@@ -124,7 +110,7 @@ module bcs_constant_diagonal_velocity
 
   end subroutine
 
-  subroutine constant_diagonal_2d_anal_soln_velocity(u, global_point, problem_dim, no_vars, boundary_no, t, element_region_id)
+  subroutine etienne2009_ti_2d_anal_soln_velocity(u, global_point, problem_dim, no_vars, boundary_no, t, element_region_id)
     use param
 
     implicit none
@@ -137,7 +123,7 @@ module bcs_constant_diagonal_velocity
     real(db), intent(in)                         :: t
     integer, intent(in)                          :: element_region_id
 
-    real(db) :: x, y, r
+    real(db) :: x, y, a, b
     real(db) :: left, right
     real(db) :: amplitude
     real(db) :: global_time ! TODO: check relationship between local and global t
@@ -145,12 +131,15 @@ module bcs_constant_diagonal_velocity
     x = global_point(1)
     y = global_point(2)
 
-    u(1) = 1.0_db
-    u(2) = 1.0_db
-    u(3) = 0.0_db
+    a = (-1.0_db + x + x**2 + y + y**2 + x*y + y**3)
+    b = (1.0_db + x + x**2 - y - y**2/2.0_db - 2.0_db*x*y + x**3)
+
+    u(1) = a
+    u(2) = b
+    u(3) = x**2
   end subroutine
 
-  subroutine constant_diagonal_2d_anal_soln_velocity_1(u_1, global_point, problem_dim, no_vars, t, element_region_id)
+  subroutine etienne2009_ti_2d_anal_soln_velocity_1(u_1, global_point, problem_dim, no_vars, t, element_region_id)
     use param
 
     implicit none
@@ -167,17 +156,17 @@ module bcs_constant_diagonal_velocity
     x = global_point(1)
     y = global_point(2)
 
-    u_1(1,1) = 0.0_db
-    u_1(1,2) = 0.0_db
+    u_1(1,1) = (1.0_db + 2.0_db*x + y)
+    u_1(1,2) = (1.0_db + 2.0_db*y + x + 3.0_db*y**2)
 
-    u_1(2,1) = 0.0_db
-    u_1(2,2) = 0.0_db
+    u_1(2,1) = (1.0_db + 2.0_db*x -2.0_db*y + 3.0_db*x**2)
+    u_1(2,2) = (-1.0_db - y - 2.0_db*x)
 
-    u_1(3,1) = 0.0_db
+    u_1(3,1) = 2.0_db*x
     u_1(3,2) = 0.0_db
   end subroutine
 
-  subroutine constant_diagonal_2d_get_boundary_no_velocity(boundary_no, strongly_enforced_bcs, global_point, face_coords, &
+  subroutine etienne2009_ti_2d_get_boundary_no_velocity(boundary_no, strongly_enforced_bcs, global_point, face_coords, &
       no_face_vert, problem_dim, mesh_data)
     use param
     use fe_mesh
@@ -204,7 +193,7 @@ module bcs_constant_diagonal_velocity
     end if
   end subroutine
 
-  subroutine constant_diagonal_2d_dirichlet_bc_velocity(u, global_point, problem_dim, no_vars, boundary_no, t)
+  subroutine etienne2009_ti_2d_dirichlet_bc_velocity(u, global_point, problem_dim, no_vars, boundary_no, t)
     use param
 
     implicit none
@@ -217,13 +206,13 @@ module bcs_constant_diagonal_velocity
 
     real(db), dimension(no_vars) :: sol
 
-    call constant_diagonal_2d_anal_soln_velocity(sol, global_point, problem_dim, no_vars, boundary_no, t, -1)
+    call etienne2009_ti_2d_anal_soln_velocity(sol, global_point, problem_dim, no_vars, boundary_no, t, -1)
 
     u(1:no_vars) = sol(1:no_vars)
 
   end subroutine
 
-  subroutine constant_diagonal_2d_neumann_bc_velocity(un, global_point, problem_dim, boundary_no, t, element_region_id, normal)
+  subroutine etienne2009_ti_2d_neumann_bc_velocity(un, global_point, problem_dim, boundary_no, t, element_region_id, normal)
     use param
     use problem_options
 
@@ -246,8 +235,8 @@ module bcs_constant_diagonal_velocity
     x = global_point(1)
     y = global_point(2)
 
-    call constant_diagonal_2d_anal_soln_velocity(u,global_point,problem_dim,problem_dim+1,0,t,element_region_id)
-    call constant_diagonal_2d_anal_soln_velocity_1(grad_u,global_point,problem_dim,problem_dim+1,t,element_region_id)
+    call etienne2009_ti_2d_anal_soln_velocity(u,global_point,problem_dim,problem_dim+1,0,t,element_region_id)
+    call etienne2009_ti_2d_anal_soln_velocity_1(grad_u,global_point,problem_dim,problem_dim+1,t,element_region_id)
 
     un(1) = dot_product(grad_u(1,:),normal)-u(problem_dim+1)*normal(1)
     un(2) = dot_product(grad_u(2,:),normal)-u(problem_dim+1)*normal(2)

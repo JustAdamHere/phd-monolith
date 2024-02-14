@@ -20,6 +20,7 @@ program velocity_transport
     use projections
     use previous_velocity
     use flux_output
+    use error_norms
 
     use matrix_rhs_transport
     use matrix_rhs_transport_ss
@@ -54,8 +55,8 @@ program velocity_transport
     type(dirk_time_stepping_scheme) :: dirk_scheme_velocity
     real(db)                        :: norm_diff_u
 
-    character(15), dimension(1) :: errors_format, errors_name
-    real(db), dimension(1)      :: errors
+    character(15), dimension(5) :: errors_format, errors_name
+    real(db), dimension(5)      :: errors
     integer                     :: no_errors_velocity, no_errors_transport
 
     logical :: ifail
@@ -65,7 +66,7 @@ program velocity_transport
 
     logical, dimension(20) :: mesh_smoother
 
-    character(len=100) :: flux_file, data_file, velocity_magnitude_file, one_file, slow_velocity_file
+    character(len=100) :: flux_file, data_file, velocity_magnitude_file, one_file, slow_velocity_file, norm_file
     character(len=100) :: aptofem_run_number_string
     character(len=100) :: tsvFormat
 
@@ -84,9 +85,7 @@ program velocity_transport
     real(db) :: one_ivs, one_everywhere, vmi_ivs, vmi_everywhere, velocity_average_ivs, velocity_average_everywhere, svp_ivs, &
         svp_everywhere, svp_0_0005_everywhere, fvp_0_001_everywhere, svp_nominal_ivs, svp_nominal_everywhere
 
-    !! DELETE ME !!
     type(solution) :: solution_difference
-    !! DELETE ME !! 
 
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! COMMAND LINE ARGUMENTS !!
@@ -626,6 +625,22 @@ program velocity_transport
         write(23111996, tsvFormat) 0, vmi_ivs, vmi_everywhere  
     end if
 
+    !!!!!!!!!!!!!!!!!
+    !! ERROR NORMS !!
+    !!!!!!!!!!!!!!!!!
+    if (compute_error_norms) then
+        write(aptofem_run_number_string, '(i10)') aptofem_run_number
+        norm_file = '../../output/norms' // '_' // 'velocity-transport' // '_' // &
+            trim(geometry_name) // '_' // trim(adjustl(aptofem_run_number_string)) // '.dat'
+        open(23111993, file=norm_file, status='replace')
+        tsvFormat = '(*(G0.6,:,"'//achar(9)//'"))'
+        write(23111993, tsvFormat) 'no_timesteps', 'mesh_no', 'dofs', 'L2_u', 'L2_p', 'L2_up', 'DG_up', 'L2_div_u'
+
+        no_dofs_velocity = get_no_dofs(solution_velocity)
+        call error_norms_velocity(errors, mesh_data, solution_velocity)
+        write(23111993, tsvFormat) no_time_steps, 0, no_dofs_velocity, errors(1), errors(2), errors(3), errors(4), errors(5)
+    end if
+
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     !! SAVE THE SLOW VELOCITY INTEGRAL !!
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -730,7 +745,6 @@ program velocity_transport
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! SAVE PREVIOUS VELOCITY MESH AND SOLUTION !
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-        if (moving_mesh) then
             ! TODO: re-calculate the interior penalty parameter.
 ! #ifdef OPENMP
 ! !$OMP PARALLEL PRIVATE(thread_no)
@@ -746,8 +760,7 @@ program velocity_transport
 ! #else
 !             call setup_previous_velocity(mesh_data, solution_velocity)
 ! #endif            
-            call setup_previous_velocity(mesh_data, solution_velocity)
-        end if
+        call setup_previous_velocity(mesh_data, solution_velocity)
 
         !!!!!!!!!!!!!
         ! MOVE MESH !
@@ -927,15 +940,24 @@ program velocity_transport
             end if
         end if
 
-        !! DELETE ME !!
-        if (moving_mesh) then
-            call create_fe_solution(solution_difference, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, &
-                dirichlet_bc_velocity)
-            solution_difference%soln_values = solution_velocity%soln_values - prev_solution_velocity_data%soln_values
-            call write_fe_data('solution_difference', aptofem_stored_keys, time_step_no, mesh_data, solution_difference)
-            call delete_solution(solution_difference)
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ! DIFFERENCES BETWEEN TIMESTEPS !
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        call create_fe_solution(solution_difference, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, &
+            dirichlet_bc_velocity)
+        solution_difference%soln_values = solution_velocity%soln_values - prev_solution_velocity_data%soln_values
+        call write_fe_data('solution_difference', aptofem_stored_keys, time_step_no, mesh_data, solution_difference)
+        call delete_solution(solution_difference)
+
+        !!!!!!!!!!!!!!!
+        ! ERROR NORMS !
+        !!!!!!!!!!!!!!!
+        if (compute_error_norms) then
+            no_dofs_velocity = get_no_dofs(solution_velocity)
+            call error_norms_velocity(errors, mesh_data, solution_velocity)
+            write(23111993, tsvFormat) no_time_steps, time_step_no, no_dofs_velocity, errors(1), errors(2), errors(3), errors(4), &
+                errors(5)
         end if
-        !! DELETE ME !!
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! SAVE INTEGRAL VELOCITY MAGNITUDE !
@@ -984,6 +1006,9 @@ program velocity_transport
     !! CLEAN UP !!
     !!!!!!!!!!!!!!
     close(23111999)
+    if (compute_error_norms) then
+        close(23111993)
+    end if
     if (compute_velocity) then
         close(23111994)
         close(23111995)

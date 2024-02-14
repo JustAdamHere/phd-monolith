@@ -19,11 +19,11 @@ norms 				  = error_norms.f90
 transport_bcs = bcs_transport.f90
 #transport_bcs_analytic = 2d-bcs_transport_analytic.f90
 transport_bcs_analytic = bcs_transport.f90
-velocity_bcs = 2d-bcs_velocity_placenta.f90 2d-bcs_velocity_placentone.f90 3d-bcs_velocity_placentone.f90 2d-bcs_velocity_analytic.f90 2d-bcs_velocity_constant-up.f90 2d-bcs_velocity_constant-diagonal.f90 2d-bcs_velocity_zero.f90 2d-bcs_velocity_poiseuille.f90 velocity_bc_interface.f90
+velocity_bcs = 2d-bcs_velocity_placenta.f90 2d-bcs_velocity_placentone.f90 3d-bcs_velocity_placentone.f90 2d-bcs_velocity_analytic.f90 2d-bcs_velocity_constant-up.f90 2d-bcs_velocity_constant-diagonal.f90 2d-bcs_velocity_zero.f90 2d-bcs_velocity_poiseuille.f90 2d-bcs_velocity_etienne2009.f90 2d-bcs_velocity_etienne2009_ti.f90 2d-bcs_velocity_shear.f90 velocity_bc_interface.f90
 
 .PHONY: cleanall
 
-MAIN_SOURCES = $(storage) $(fluxes) $(problem_options) $(velocity_bcs) $(transport_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) velocity_transport.f90
+MAIN_SOURCES = $(storage) $(fluxes) $(problem_options) $(velocity_bcs) $(transport_bcs) $(velocity_assembly) $(transport_assembly) $(miscellaneous) $(norms) velocity_transport.f90
 MAIN_OBJECTS = $(patsubst %.f90,./.obj/%.o,$(MAIN_SOURCES))
 CONVERGENCE_SOURCES = $(storage) $(fluxes) $(problem_options) $(velocity_bcs) $(transport_bcs_analytic) $(velocity_assembly) $(transport_assembly) $(miscellaneous) $(norms) velocity-transport_convergence.f90
 CONVERGENCE_OBJECTS = $(patsubst %.f90,./.obj/%.o,$(CONVERGENCE_SOURCES))
