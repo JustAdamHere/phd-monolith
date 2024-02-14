@@ -38,25 +38,17 @@ velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile
 # SIMULATION RUN #
 ##################
 parameters["geometry"] = "square_zero"
-parameters["mesh_velocity_type"] = "etienne2009"
+parameters["mesh_velocity_type"] = "constant_up"
 velocity_transport.run(1, parameters)
 
-parameters["geometry"] = "square_constant_up"
-parameters["mesh_velocity_type"] = "etienne2009"
+parameters["geometry"] = "square_constant_diagonal"
+parameters["mesh_velocity_type"] = "constant_diagonal2"
 velocity_transport.run(2, parameters)
 
 parameters["geometry"] = "square_constant_diagonal"
-parameters["mesh_velocity_type"] = "etienne2009"
+parameters["mesh_velocity_type"] = "difference"
 velocity_transport.run(3, parameters)
 
-parameters["geometry"] = "square_shear"
-parameters["mesh_velocity_type"] = "etienne2009"
-velocity_transport.run(4, parameters)
-
-parameters["geometry"] = "square_poiseuille"
-parameters["mesh_velocity_type"] = "etienne2009"
-velocity_transport.run(5, parameters)
-
 parameters["geometry"] = "square_analytic"
-parameters["mesh_velocity_type"] = "etienne2009"
-velocity_transport.run(6, parameters)
+parameters["mesh_velocity_type"] = "constant_up"
+velocity_transport.run(4, parameters)

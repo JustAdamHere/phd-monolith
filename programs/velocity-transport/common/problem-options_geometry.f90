@@ -44,6 +44,10 @@ module problem_options_geometry
             calculate_mesh_velocity => calculate_mesh_velocity_shear
         else if (trim(mesh_velocity_type) == 'constant_up') then
             calculate_mesh_velocity => calculate_mesh_velocity_constant_up
+        else if (trim(mesh_velocity_type) == 'constant_diagonal2') then
+            calculate_mesh_velocity => calculate_mesh_velocity_constant_diagonal2
+        else if (trim(mesh_velocity_type) == 'difference') then
+            calculate_mesh_velocity => calculate_mesh_velocity_difference
         else if (trim(mesh_velocity_type) == 'circular') then
             calculate_mesh_velocity => calculate_mesh_velocity_circular
         else if (trim(mesh_velocity_type) == 'incompressible') then
@@ -636,6 +640,36 @@ module problem_options_geometry
         
         calculate_mesh_velocity_constant_up(1) = 0.0_db
         calculate_mesh_velocity_constant_up(2) = 1.0_db
+        
+    end function
+
+    function calculate_mesh_velocity_constant_diagonal2(coord, problem_dim, mesh_time)
+        use param
+        
+        implicit none
+        
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: coord
+        real(db), intent(in)                         :: mesh_time
+        real(db), dimension(problem_dim)             :: calculate_mesh_velocity_constant_diagonal2
+        
+        calculate_mesh_velocity_constant_diagonal2(1) = 1.0_db
+        calculate_mesh_velocity_constant_diagonal2(2) = 2.0_db
+        
+    end function
+
+    function calculate_mesh_velocity_difference(coord, problem_dim, mesh_time)
+        use param
+        
+        implicit none
+        
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: coord
+        real(db), intent(in)                         :: mesh_time
+        real(db), dimension(problem_dim)             :: calculate_mesh_velocity_difference
+        
+        calculate_mesh_velocity_difference(1) = coord(1) - coord(2)
+        calculate_mesh_velocity_difference(2) = coord(1) - coord(2)
         
     end function
 
