@@ -22,13 +22,13 @@ def plot(axis, parameter_values, box_plot_data, average_data, box_plot_width=0.7
   axis.boxplot(box_plot_data, positions=parameter_values, widths=box_plot_width)
   axis.plot(parameter_values, average_data, 'k--')
 
-def style(figure, axis, x_parameter_name, y_parameter_name, y_scilimits=None, y_bottom=None, y_top=None, integer_ticks=True, xlim=None, y_labelpad=None):
+def style(figure, axis, x_parameter_name, y_parameter_name, y_scilimits=None, y_bottom=None, y_top=None, integer_ticks=True, xlim=None, y_labelpad=None, max_major_ticks=6, max_minor_ticks=50):
   if (integer_ticks):
     axis.xaxis.set_major_formatter(plt.FormatStrFormatter('%d'))
   else:
     axis.xaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
-  axis.xaxis.set_major_locator(plt.MaxNLocator(6, integer=integer_ticks, prune='both'))
-  axis.xaxis.set_minor_locator(plt.MaxNLocator(50, integer=integer_ticks, prune='both'))
+  axis.xaxis.set_major_locator(plt.MaxNLocator(max_major_ticks, integer=integer_ticks, prune='both'))
+  axis.xaxis.set_minor_locator(plt.MaxNLocator(max_minor_ticks, integer=integer_ticks, prune='both'))
   if (xlim != None):
     axis.set_xlim(xlim[0], xlim[1])
   if (y_top != None):

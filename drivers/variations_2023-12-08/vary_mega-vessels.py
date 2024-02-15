@@ -58,4 +58,4 @@ for i in range(0, 1400):
 # Plot the data.
 import plot_mega
 bins = [[bins_no_arteries_all_veins, bins_no_arteries_27_veins], [bins_no_veins_all_arteries, bins_no_veins_6_arteries]]
-plot_mega.plot(simulations, bins, parameter_values, parameter_name, parameter_safe_name, images_location)
+plot_mega.plot_vessels(simulations, bins, parameter_values, parameter_name, parameter_safe_name, images_location)
