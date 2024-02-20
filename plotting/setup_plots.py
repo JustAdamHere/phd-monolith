@@ -49,7 +49,13 @@ def style(figure, axis, x_parameter_name, y_parameter_name, y_scilimits=None, y_
 def percentiles(data, percentage):
   import numpy as np
 
-  return np.array([np.percentile(data[i], percentage) for i in range(0, len(data))])
+  output = []
+  for i in range(0, len(data)):
+    if (len(data[i]) == 0):
+      output.append(np.nan)
+    else:
+      output.append(np.percentile(data[i], percentage))
+  return np.array(output)
 
 def iqr(q25, q75):
   import numpy as np

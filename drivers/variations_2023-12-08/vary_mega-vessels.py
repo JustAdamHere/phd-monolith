@@ -71,7 +71,7 @@ for i in range(0, 1000):
   bin_no = int(np.floor((len(ratio_values)-1)*(ratio - ratio_values[0])/(ratio_values[-1] - ratio_values[0])))
   if (bin_no == len(ratio_values)):
     bin_no -= 1
-  bins_veins_to_arteries[bin_no]
+  bins_veins_to_arteries[bin_no].append(run_no)
 
 # Plot the data.
 import plot_mega

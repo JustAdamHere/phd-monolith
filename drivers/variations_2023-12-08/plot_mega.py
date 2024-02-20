@@ -141,9 +141,7 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   for j in range(3):
     for i in range(2):
       # TODO: Real nasty hack to make this run. To fix.
-      if (j == 2 and i == 1):
-        data[1, 2] = setup_plots.get_data(len(simulation_bins[2][0]), simulation_bins[2][0], simulations)
-      else:
+      if not (j == 2 and i > 0):
         data[i, j] = setup_plots.get_data(len(simulation_bins[j][i]), simulation_bins[j][i], simulations)
 
   # Patches for legends.
@@ -156,8 +154,9 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   # AXES 1: Velocity magnitude integrals.
   for j in range(3):
     for i in range(2):
-      axes[0][j].plot(parameter_values[j], data[i, j]["q50"]["velocity_magnitude_integral"], linestyle="dashed", color=f"C{i}")
-      axes[0][j].fill_between(parameter_values[j], data[i, j]["q25"]["velocity_magnitude_integral"], data[i, j]["q75"]["velocity_magnitude_integral"], alpha=0.2, color=f"C{i}")
+      if not (j == 2 and i > 0):
+        axes[0][j].plot(parameter_values[j], data[i, j]["q50"]["velocity_magnitude_integral"], linestyle="dashed", color=f"C{i}")
+        axes[0][j].fill_between(parameter_values[j], data[i, j]["q25"]["velocity_magnitude_integral"], data[i, j]["q75"]["velocity_magnitude_integral"], alpha=0.2, color=f"C{i}")
     
   axes[0][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
   axes[0][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
@@ -187,16 +186,18 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   # AXES 4: Cross-flux velocity.
   for j in range(3):
     for i in range(2):
-      axes[3][j].plot(parameter_values[j], data[i, j]["q50"]["velocity_cross_flow_flux"], linestyle="dashed", color=f"C{i}")
-      axes[3][j].fill_between(parameter_values[j], data[i, j]["q25"]["velocity_cross_flow_flux"], data[i, j]["q75"]["velocity_cross_flow_flux"], alpha=0.2, color=f"C{i}")
+      if not (j == 2 and i > 0):
+        axes[3][j].plot(parameter_values[j], data[i, j]["q50"]["velocity_cross_flow_flux"], linestyle="dashed", color=f"C{i}")
+        axes[3][j].fill_between(parameter_values[j], data[i, j]["q25"]["velocity_cross_flow_flux"], data[i, j]["q75"]["velocity_cross_flow_flux"], alpha=0.2, color=f"C{i}")
   axes[3][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
   axes[3][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
 
   # AXES 5: Transport reaction integral.
   for j in range(3):
     for i in range(2):
-      axes[4][j].plot(parameter_values[j], data[i, j]["q50"]["transport_reaction_integral"], linestyle="dashed", color=f"C{i}")
-      axes[4][j].fill_between(parameter_values[j], data[i, j]["q25"]["transport_reaction_integral"], data[i, j]["q75"]["transport_reaction_integral"], alpha=0.2, color=f"C{i}")
+      if not (j == 2 and i > 0):
+        axes[4][j].plot(parameter_values[j], data[i, j]["q50"]["transport_reaction_integral"], linestyle="dashed", color=f"C{i}")
+        axes[4][j].fill_between(parameter_values[j], data[i, j]["q25"]["transport_reaction_integral"], data[i, j]["q75"]["transport_reaction_integral"], alpha=0.2, color=f"C{i}")
   axes[4][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
   axes[4][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
 
@@ -213,16 +214,18 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   # AXES 7: Kinetic energy flux difference.
   for j in range(3):
     for i in range(2):
-      axes[6][j].plot(parameter_values[j], data[i, j]["q50"]["kinetic_energy_flux"], linestyle="dashed", color=f"C{i}")
-      axes[6][j].fill_between(parameter_values[j], data[i, j]["q25"]["kinetic_energy_flux"], data[i, j]["q75"]["kinetic_energy_flux"], alpha=0.2, color=f"C{i}")
+      if not (j == 2 and i > 0):
+        axes[6][j].plot(parameter_values[j], data[i, j]["q50"]["kinetic_energy_flux"], linestyle="dashed", color=f"C{i}")
+        axes[6][j].fill_between(parameter_values[j], data[i, j]["q25"]["kinetic_energy_flux"], data[i, j]["q75"]["kinetic_energy_flux"], alpha=0.2, color=f"C{i}")
   axes[6][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
   axes[6][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
 
   # AXES 8: Total energy flux difference.
   for j in range(3):
     for i in range(2):
-      axes[7][j].plot(parameter_values[j], data[i, j]["q50"]["total_energy_flux"], linestyle="dashed", color=f"C{i}")
-      axes[7][j].fill_between(parameter_values[j], data[i, j]["q25"]["total_energy_flux"], data[i, j]["q75"]["total_energy_flux"], alpha=0.2, color=f"C{i}")
+      if not (j == 2 and i > 0):
+        axes[7][j].plot(parameter_values[j], data[i, j]["q50"]["total_energy_flux"], linestyle="dashed", color=f"C{i}")
+        axes[7][j].fill_between(parameter_values[j], data[i, j]["q25"]["total_energy_flux"], data[i, j]["q75"]["total_energy_flux"], alpha=0.2, color=f"C{i}")
   axes[7][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
   axes[7][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
 
@@ -261,7 +264,18 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
     images_folder = f"images/{subfolder}"
 
   # Save.
-  fig.savefig(f"{images_folder}/mega_{parameter_safe_name[0]}_{parameter_safe_name[1]}.png", dpi=300)
+  fig.savefig(f"{images_folder}/mega_{parameter_safe_name[0]}_{parameter_safe_name[1]}_{parameter_safe_name[2]}.png", dpi=300)
 
   # Done.
   print(f"\rPlotting simulations... Done.", end="\r\n")
+
+  # Print number of subsamples in each bin.
+  from tabulate import tabulate
+  rows = []
+  for j in range(3):
+    for i in range(2):
+      if not (j == 2 and i > 0):
+        no_per_bin = [len(simulation_bins[j][i][k]) for k in range(0, len(simulation_bins[j][i]))]
+        no_simulations = sum(no_per_bin)
+        rows.append([parameter_name[j], no_simulations, np.mean(no_per_bin), np.median(no_per_bin), np.std(no_per_bin), np.min(no_per_bin), np.max(no_per_bin), no_per_bin])
+  print(tabulate(rows, headers=["Name", "#", "Mean", "Median", "Std", "Minimum", "Maximum", "Number per bin"], tablefmt="rounded_outline", floatfmt=".2f"))
