@@ -40,8 +40,8 @@ U = 1;
 
 % Create "interpolants".
 v_interpolant    = cell(dim, 1);
-v_interpolant{1} = @(x, y) zeros(size(x, 1), size(x, 2));
-v_interpolant{2} = @(x, y) U_1*exp(X*(x-1));
+v_interpolant{1} = @(x, y) U_1*exp(X*(x-1));
+v_interpolant{2} = @(x, y) zeros(size(x, 1), size(x, 2));
 
 % Setup useful variables from options set above.
 setup_quantities

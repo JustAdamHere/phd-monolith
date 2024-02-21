@@ -43,8 +43,8 @@ parameters["mri_u2"  ] = 0.01
 velocity_transport.run(2, parameters)
 
 parameters["geometry"] = 'shear_test'
-parameters["mri_u1"  ] = -0.01
-parameters["mri_u2"  ] =  0.01
+parameters["mri_u1"  ] =  0.0025
+parameters["mri_u2"  ] = -0.0025
 velocity_transport.run(3, parameters)
 
 parameters["geometry"] = 'rotational_test'
@@ -52,9 +52,10 @@ parameters["mri_u1"  ] = 0.01
 parameters["mri_u2"  ] = 0.01
 velocity_transport.run(4, parameters)
 
+import numpy as np
 parameters["geometry"] = 'accelerating_test'
 parameters["mri_u1"  ] = 0.01
-parameters["mri_x"   ] = 1
+parameters["mri_x"   ] = np.log(10)
 velocity_transport.run(5, parameters)
 
 # Save output.

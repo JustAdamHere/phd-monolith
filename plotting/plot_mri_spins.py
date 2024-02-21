@@ -6,8 +6,11 @@ def plot_spins(simulation_no, filename_no_ext):
   mat_vars = import_mat(simulation_no, filename_no_ext)
 
   import numpy as np
-  b_index = 14
-  grad_direction = 1
+  b_index = 20
+  if (filename_no_ext == '2D_accelerating_test'):
+    grad_direction = 0
+  else:
+    grad_direction = 1
 
   # Radius and coordinates of each molecule's spin.
   r = 0.9/2
@@ -21,40 +24,55 @@ def plot_spins(simulation_no, filename_no_ext):
 
   # Plot setup.
   import matplotlib.pyplot as plt
-  fig = plt.figure(figsize=(10, 10))
-  ax = fig.add_subplot(111)
+  fig_avg = plt.figure(figsize=(10, 10))
+  ax_avg = fig_avg.add_subplot(111)
+
+  fig_b = plt.figure(figsize=(10, 10))
+  ax_b = fig_b.add_subplot(111)
 
   # Plot a circle.
-  circle = plt.Circle((0.5, 0.5), 0.5, color='k', fill=False)
-  ax.add_patch(circle)
+  circle_avg = plt.Circle((0.5, 0.5), 0.5, color='k', fill=False)
+  ax_avg.add_patch(circle_avg)
+  circle_b = plt.Circle((0.5, 0.5), 0.5, color='k', fill=False)
+  ax_b.add_patch(circle_b)
 
   # Plot arrows.
   centre_x = 0.5*np.ones((mat_vars['points_per_voxel'][0]))
   centre_y = 0.5*np.ones((mat_vars['points_per_voxel'][0]))
-  ax.quiver(centre_x, centre_y, arrows_u, arrows_v, scale=0.4/arrows_mag, scale_units='xy', angles='xy', color=[0, 0, 0, 1.0/400], width=0.02) 
+  ax_avg.quiver(centre_x, centre_y, arrows_u, arrows_v, scale=0.4/arrows_mag, scale_units='xy', angles='xy', color=[0, 0, 0, 1.0/400], width=0.02) 
+
+  # Magnetic spin for b=0.
+  r_0 = np.abs(np.sum(np.exp(-1j * mat_vars['phi'][0, 0][0, :, grad_direction])))
 
   # Plot all average spins.
   max_color = 0.8
   cmap = plt.get_cmap('Greens')
   #for i in range(mat_vars['b'][0].shape[0]):
   for i in range(b_index+1):
+
+    # Average magnetic spin.
+    avg_m = np.sum(np.exp(-1j * mat_vars['phi'][0, 0][i, :, grad_direction]))
+
     # Average phase.
-    avg_phi = -np.angle(np.sum(np.exp(-1j * mat_vars['phi'][0, 0][i, :, grad_direction])))
+    avg_phi = -np.angle(avg_m)
 
     # Radius and coordinates of average spin.
-    r_avg = r
+    r_avg = r*np.abs(avg_m)/r_0
     x_avg = r_avg*np.cos(avg_phi) + 0.5
     y_avg = r_avg*np.sin(avg_phi) + 0.5
 
     color = list(cmap(max_color*float(i+1)/b_index))
     color[-1] = 0.5 + 0.5*float(i)/b_index
-    ax.quiver(centre_x[0], centre_y[0], x_avg - 0.5, y_avg - 0.5, scale=0.4/r_avg, scale_units='xy', angles='xy', color=color, width=0.02)
+    ax_b.quiver(centre_x[0], centre_y[0], x_avg - 0.5, y_avg - 0.5, scale=0.4/r_avg, scale_units='xy', angles='xy', color=color, width=0.02)
+
+    if (i == b_index):
+      ax_avg.quiver(centre_x[0], centre_y[0], x_avg - 0.5, y_avg - 0.5, scale=0.4/r_avg, scale_units='xy', angles='xy', color=color, width=0.02)
 
     # Label the quiver.
     if i == 0:
-      ax.text((x_avg + 0.5)/2, (y_avg + 0.5)/2 + 0.03, f'b={mat_vars["b"][0][i]:.2f}', fontsize=20, color=cmap(max_color), ha='center', va='bottom')
+      ax_b.text((x_avg + 0.5)/2, (y_avg + 0.5)/2 + 0.03, f'b={mat_vars["b"][0][i]:.2f}', fontsize=20, color=cmap(max_color), ha='center', va='bottom')
     if i == b_index:
-      ax.text((x_avg + 0.5)/2 - 0.1, (2*y_avg + 1*0.5)/3, f'b={mat_vars["b"][0][i]:.2f}', fontsize=20, color=cmap(max_color), ha='center', va='bottom')
+      ax_b.text((x_avg + 0.5)/2 - 0.2, (2*y_avg + 1*0.5)/3 + 0.03, f'b={mat_vars["b"][0][i]:.2f}', fontsize=20, color=cmap(max_color), ha='center', va='bottom')
 
   # Patches for legend.
   import matplotlib.patches as mpatches
@@ -66,10 +84,13 @@ def plot_spins(simulation_no, filename_no_ext):
   # norm = colors.Normalize(vmin=mat_vars['b'][0][0], vmax=mat_vars['b'][0][b_index])
   # sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
   # sm.set_array([])
-  # fig.colorbar(sm, ticks=np.linspace(0, b_index, b_index+1), label='b')
+  # fig_b.colorbar(sm, ax=ax_b, ticks=np.linspace(0, b_index, b_index+1), label='b', orientation='horizontal')
 
   # Output.
-  ax.axis('off')
-  fig.legend(handles=[individual_patch, average_patch], fontsize=20, loc='outside lower right')
-  ax.set_title(f"Spins at t={53}ms", fontsize=36)
-  fig.savefig(f"./images/mri-spins_{filename_no_ext}_{simulation_no}.png")
+  ax_avg.axis('off')
+  ax_b.axis('off')
+  fig_avg.legend(handles=[individual_patch, average_patch], fontsize=20, loc='outside lower center')
+  ax_avg.set_title(f"Spins at t={53}ms", fontsize=36)
+  ax_b.set_title(f"Spins at t={53}ms", fontsize=36)
+  fig_avg.savefig(f"./images/mri-spins_avg_{filename_no_ext}_{simulation_no}.png")
+  fig_b.savefig(f"./images/mri-spins_b_{filename_no_ext}_{simulation_no}.png")
