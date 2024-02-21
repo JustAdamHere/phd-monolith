@@ -31,6 +31,9 @@ function velocity = importdata_fem(dim, x_sample, filename_no_ext, aptofem_run_n
 
     fprintf('Running: ./evaluate-solution_bb.out %s %s %s %d > NUL\n', 'nsb', type, filename_no_ext, aptofem_run_no);
 
+    create_missing_folders('../programs/evaluate-solution/.mod')
+    create_missing_folders('../programs/evaluate-solution/.obj')
+
     % Call to program to evaluate the velocity field.
     system(sprintf('make -C ../programs/evaluate-solution > NUL'));
     cd    ('../programs/evaluate-solution/')
