@@ -56,6 +56,8 @@ module problem_options_geometry
             calculate_mesh_velocity => calculate_mesh_velocity_incompressible2
         else if (trim(mesh_velocity_type) == 'oscillating_sine') then
             calculate_mesh_velocity => calculate_mesh_velocity_oscillating_sine
+        else if (trim(mesh_velocity_type) == 'oscillating_sine_x') then
+            calculate_mesh_velocity => calculate_mesh_velocity_oscillating_sine_x
         else if (trim(mesh_velocity_type) == 'etienne2009') then
             calculate_mesh_velocity => calculate_mesh_velocity_etienne2009
         else
@@ -735,6 +737,26 @@ module problem_options_geometry
         
         calculate_mesh_velocity_oscillating_sine(1) = x*sin(2.0_db*pi*mesh_time)
         calculate_mesh_velocity_oscillating_sine(2) = y*sin(2.0_db*pi*mesh_time)
+        
+    end function
+
+    function calculate_mesh_velocity_oscillating_sine_x(coord, problem_dim, mesh_time)
+        use param
+        
+        implicit none
+        
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: coord
+        real(db), intent(in)                         :: mesh_time
+        real(db), dimension(problem_dim)             :: calculate_mesh_velocity_oscillating_sine_x
+        
+        real(db) :: x, y
+
+        x = coord(1) - move_mesh_centre(1)
+        y = coord(2) - move_mesh_centre(2)
+        
+        calculate_mesh_velocity_oscillating_sine_x(1) = x*sin(2.0_db*pi*mesh_time)
+        calculate_mesh_velocity_oscillating_sine_x(2) = 0.0_db
         
     end function
 

@@ -116,6 +116,7 @@ module velocity_bc_interface
     use bcs_etienne2009_ti_velocity
     use bcs_poiseuille_velocity
     use bcs_shear_velocity
+    use bcs_tb_free_lr_solid_velocity
     use bcs_zero_velocity
 
     implicit none
@@ -212,6 +213,15 @@ module velocity_bc_interface
       get_boundary_no_velocity     => shear_2d_get_boundary_no_velocity
       dirichlet_bc_velocity        => shear_2d_dirichlet_bc_velocity
       neumann_bc_velocity          => shear_2d_neumann_bc_velocity
+    else if (trim(geometry_name) == 'square_tb_free_lr_solid') then
+      convert_velocity_boundary_no => tb_free_lr_solid_2d_convert_velocity_boundary_no
+      convert_velocity_region_id   => tb_free_lr_solid_2d_convert_velocity_region_id
+      forcing_function_velocity    => tb_free_lr_solid_2d_forcing_function_velocity
+      anal_soln_velocity           => tb_free_lr_solid_2d_anal_soln_velocity
+      anal_soln_velocity_1         => tb_free_lr_solid_2d_anal_soln_velocity_1
+      get_boundary_no_velocity     => tb_free_lr_solid_2d_get_boundary_no_velocity
+      dirichlet_bc_velocity        => tb_free_lr_solid_2d_dirichlet_bc_velocity
+      neumann_bc_velocity          => tb_free_lr_solid_2d_neumann_bc_velocity
     else if (trim(geometry_name) == 'square_zero') then
       convert_velocity_boundary_no => zero_2d_convert_velocity_boundary_no
       convert_velocity_region_id   => zero_2d_convert_velocity_region_id

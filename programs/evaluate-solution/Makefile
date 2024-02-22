@@ -9,7 +9,7 @@ BIN_DIR=./
 velocity_problem_options = problem-options.f90 problem-options_geometry.f90 problem-options_velocity.f90
 refine_region            = refine_region.f90
 
-velocity_bcs = 2d-bcs_velocity_placenta.f90 2d-bcs_velocity_placentone.f90 3d-bcs_velocity_placentone.f90 velocity_bc_interface.f90
+velocity_bcs = 2d-bcs_velocity_placenta.f90 2d-bcs_velocity_placentone.f90 3d-bcs_velocity_placentone.f90 2d-bcs_velocity_tb_free_lr_solid.f90 velocity_bc_interface.f90
 
 .PHONY: cleanall
 
