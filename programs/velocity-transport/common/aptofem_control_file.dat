@@ -94,6 +94,7 @@ compute_error_norms .false.
 large_boundary_v_penalisation .false.
 moving_mesh .false.
 mesh_velocity_type zero
+solid_wall_mesh_velocity .false.
 no_reynold_ramp_steps 1
 reynold_ramp_start_ratio 0.1
 reynold_ramp_step_base 2.0
