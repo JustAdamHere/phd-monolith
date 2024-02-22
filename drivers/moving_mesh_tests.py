@@ -6,14 +6,14 @@ parameters = velocity_transport.get_default_run_parameters()
 
 parameters["verbose_output"] = False
 
-parameters["mesh_resolution"] = 0.1
+parameters["mesh_resolution"] = 0.05
 
 parameters["run_type"]      = 'openmp'
 parameters["linear_solver"] = 'mumps'
-parameters["no_threads"]    = 1
+parameters["no_threads"]    = 20
 
 parameters["moving_mesh"]   = True
-parameters["no_time_steps"] = 10
+parameters["no_time_steps"] = 100
 parameters["final_time"]    = 1.0
 
 parameters["error_on_fail"] = False
