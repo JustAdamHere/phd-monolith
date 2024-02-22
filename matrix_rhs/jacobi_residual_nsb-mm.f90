@@ -482,6 +482,10 @@ module jacobi_residual_nsb_mm
 
           call anal_soln_velocity(uloc(:,qk),global_points_face(:,qk),problem_dim,no_pdes,bdry_face,current_time, &
             face_element_region_ids(1))
+          ! if (solid_wall_mesh_velocity .and. uloc(1, qk) == 0.0_db .and. uloc(2, qk) == 0.0_db) then
+          if (solid_wall_mesh_velocity) then
+            uloc(1:2, qk) = uloc(1:2, qk) + mesh_velocity
+          end if
           call compute_boundary_condition(interpolant_uh2(:,qk), &
             interpolant_uh1(:,qk),uloc(:,qk),abs(bdry_face),problem_dim,no_pdes)
           call neumann_bc_velocity(unloc(:,qk),global_points_face(:,qk),problem_dim,bdry_face,current_time, &
@@ -616,6 +620,10 @@ module jacobi_residual_nsb_mm
 
           call anal_soln_velocity(uloc(:,qk),global_points_face(:,qk),problem_dim,no_pdes,bdry_face,current_time, &
             face_element_region_ids(1))
+          ! if (solid_wall_mesh_velocity .and. uloc(1, qk) == 0.0_db .and. uloc(2, qk) == 0.0_db) then
+          if (solid_wall_mesh_velocity) then
+            uloc(1:2, qk) = uloc(1:2, qk) + mesh_velocity
+          end if
           call compute_boundary_condition(interpolant_uh2(:,qk), &
             interpolant_uh1(:,qk),uloc(:,qk),abs(bdry_face),problem_dim,no_pdes)
           call neumann_bc_velocity(unloc(:,qk),global_points_face(:,qk),problem_dim,bdry_face,current_time, &
@@ -1156,6 +1164,10 @@ module jacobi_residual_nsb_mm
 
           call anal_soln_velocity(uloc(:,qk),global_points_face(:,qk),problem_dim,no_pdes,0,current_time, &
             face_element_region_ids(1))
+          ! if (solid_wall_mesh_velocity .and. uloc(1, qk) == 0.0_db .and. uloc(2, qk) == 0.0_db) then
+          if (solid_wall_mesh_velocity) then
+            uloc(1:2, qk) = uloc(1:2, qk) + mesh_velocity
+          end if
           call compute_boundary_condition(interpolant_uh2(:,qk), &
             interpolant_uh1(:,qk),uloc(:,qk),abs(bdry_face),problem_dim,no_pdes)
           alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
@@ -1573,6 +1585,10 @@ module jacobi_residual_nsb_mm
 
           call anal_soln_velocity(uloc(:,qk),global_points_face(:,qk),problem_dim,no_pdes,0,current_time, &
             face_element_region_ids(1))
+          ! if (solid_wall_mesh_velocity .and. uloc(1, qk) == 0.0_db .and. uloc(2, qk) == 0.0_db) then
+          if (solid_wall_mesh_velocity) then
+            uloc(1:2, qk) = uloc(1:2, qk) + mesh_velocity
+          end if
           ! The solution is continuous, so we only need to do this on one side of the face.
           mesh_uh = uh_face1(mesh_fe_basis_info, mesh_no_pdes, qk)
           mesh_velocity = mesh_uh(1:2)
