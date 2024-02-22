@@ -526,9 +526,11 @@ def set_aptofem_parameters(simulation_no, velocity_model, geometry, central_cavi
 
 def setup(clean, terminal_output, compile=True, compile_clean=True, run_type='openmp', verbose_output=False, compile_entry='velocity-transport'):
 	from miscellaneous import output
+	from datetime import datetime
 
 	output.output("##########################", terminal_output)
 	output.output("🔨 Setting up simulations...", terminal_output)
+	output.output(f"{datetime.now()}", terminal_output)
 	output.output("##########################", terminal_output)
 
 	program           = "velocity-transport"
