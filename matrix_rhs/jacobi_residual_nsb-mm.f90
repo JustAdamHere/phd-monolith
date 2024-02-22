@@ -46,14 +46,14 @@ module jacobi_residual_nsb_mm
     facet_data%problem_dim,maxval(facet_data%no_dofs_per_variable)) :: grad_phi
     real(db), dimension(facet_data%dim_soln_coeff,facet_data%no_quad_points, &
     maxval(facet_data%no_dofs_per_variable)) :: phi
-    real(db) :: dirk_scaling_factor,current_time
+    real(db) :: dirk_scaling_factor,current_time,time_step
 
     real(db) :: diffusion_terms, convection_terms, reaction_terms, forcing_terms, pressure_terms, incompressibility_terms, &
       time_terms, prev_time_terms
     integer  :: element_region_id
 
     ! Previous solution variables.
-    real(db), dimension(facet_data%no_pdes) :: prev_uh
+    real(db), dimension(facet_data%no_pdes) :: prev_mesh_uh
     real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: prev_global_points_ele
     real(db), dimension(facet_data%no_quad_points) :: prev_jacobian, prev_quad_weights_ele
     real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable)) :: prev_phi
@@ -97,7 +97,7 @@ module jacobi_residual_nsb_mm
     call compute_max_no_quad_points(mesh_no_quad_points_volume_max, mesh_no_quad_points_face_max, prev_mesh_data, &
       solution_moving_mesh, mesh_npinc)
 
-    control_parameter = 'uh_ele'
+    control_parameter = 'fo_deriv_uh_ele'
     call initialize_fe_basis_storage(prev_fe_basis_info, control_parameter, prev_solution_velocity_data, &
       prev_problem_dim, prev_no_quad_points_volume_max, prev_no_quad_points_face_max)
     call initialize_fe_basis_storage(mesh_fe_basis_info, control_parameter, solution_moving_mesh, &
@@ -141,6 +141,7 @@ module jacobi_residual_nsb_mm
 
       dirk_scaling_factor = scheme_user_data%dirk_scaling_factor
       current_time = scheme_user_data%current_time
+      time_step = scheme_user_data%time_step
       ! call compute_uh_with_basis_fns_pts_from_array(uh_previous_time_step,no_pdes, &
       !        no_quad_points,dim_soln_coeff,facet_data%no_dofs_per_variable, &
       !        facet_data%global_dof_numbers,fe_basis_info%basis_element,soln_data, &
@@ -150,54 +151,46 @@ module jacobi_residual_nsb_mm
 
       element_rhs = 0.0_db
 
-      ! Calculate value of forcing function at quadrature points
+      ! Note: use of global_points_eles assumes the coefficients take the same values on both meshes.
+      prev_global_points_ele = global_points_ele
 
       do qk = 1,no_quad_points
-        interpolant_uh(1:no_pdes,qk) = uh_element(fe_basis_info,no_pdes,qk)
+        ! Mesh velocity.
+        prev_mesh_uh  = uh_element(mesh_fe_basis_info, prev_no_pdes, qk)
+        mesh_velocity = prev_mesh_uh(1:2)
+
+        ! Previous velocity solution.
+        interpolant_uh     (1:no_pdes,qk) = uh_element(fe_basis_info     ,no_pdes,qk)
+        prev_interpolant_uh(1:no_pdes,qk) = uh_element(prev_fe_basis_info,no_pdes,qk)
         do i = 1,no_pdes
-          gradient_uh(i,qk,1:problem_dim) = grad_uh_element(fe_basis_info,problem_dim,i,qk,1)
+          gradient_uh     (i,qk,1:problem_dim) = grad_uh_element(fe_basis_info     ,problem_dim,i,qk,1)
+          prev_gradient_uh(i,qk,1:problem_dim) = grad_uh_element(prev_fe_basis_info,problem_dim,i,qk,1)
         end do
         call forcing_function_velocity(floc(:,qk),global_points_ele(:,qk),problem_dim,no_pdes,current_time,&
           element_region_id)
-        !mesh_velocity = calculate_mesh_velocity(global_points_ele(:,qk),problem_dim,current_time)
-        ! call compute_uh_glob_pt(mesh_velocity, problem_dim, element_number, prev_global_points_ele(:, qk), problem_dim, &
-        !   prev_mesh_data, solution_moving_mesh)
-        prev_uh = uh_element(mesh_fe_basis_info, prev_no_pdes, qk)
-        mesh_velocity = prev_uh(1:2)
+        call forcing_function_velocity(prev_floc(:,qk),prev_global_points_ele(:,qk),problem_dim,no_pdes,current_time-time_step,&
+          element_region_id)
         call convective_fluxes(interpolant_uh(:,qk),fluxes(:,:,qk),problem_dim,no_pdes,mesh_velocity)
-
+        call convective_fluxes(prev_interpolant_uh(:,qk),prev_fluxes(:,:,qk),problem_dim,no_pdes,mesh_velocity)
       end do
 
       ! Calculate Basis Functions
 
       do i = 1,dim_soln_coeff
-        grad_phi(i,1:no_quad_points,1:problem_dim,1:no_dofs_per_variable(i)) = fe_basis_info%basis_element &
-        %deriv_basis_fns(i)%grad_data(1:no_quad_points,1:problem_dim,1:no_dofs_per_variable(i),1)
-        phi(i,1:no_quad_points,1:no_dofs_per_variable(i)) = fe_basis_info%basis_element%basis_fns(i) &
-        %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable(i),1)
+        grad_phi(i,1:no_quad_points,1:problem_dim,1:no_dofs_per_variable(i)) = &
+          fe_basis_info%basis_element%deriv_basis_fns(i)%grad_data(1:no_quad_points,1:problem_dim,1:no_dofs_per_variable(i),1)
+        phi(i,1:no_quad_points,1:no_dofs_per_variable(i)) = &
+          fe_basis_info%basis_element%basis_fns(i)%fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable(i),1)
       end do
 
       ! Calculate basis functions on previous mesh.
       do i = 1, prev_dim_soln_coeff
+        prev_grad_phi(i, 1:prev_no_quad_points, 1:prev_problem_dim, 1:prev_no_dofs_per_variable(i)) = &
+          prev_fe_basis_info%basis_element%deriv_basis_fns(i)%grad_data(1:prev_no_quad_points, 1:prev_problem_dim, &
+            1:prev_no_dofs_per_variable(i), 1)
         prev_phi(i, 1:prev_no_quad_points, 1:prev_no_dofs_per_variable(i)) = &
           prev_fe_basis_info%basis_element%basis_fns(i)%fem_basis_fns(1:prev_no_quad_points, 1:prev_no_dofs_per_variable(i), 1)
       end do
-
-      ! ! Separately doing the previous mesh integral.
-      ! do qk = 1, prev_no_quad_points
-      !   prev_uh = uh_element(prev_fe_basis_info, prev_no_pdes, qk)
-
-      !   do ieqn = 1, prev_problem_dim
-      !     do i = 1, prev_no_dofs_per_variable(ieqn)
-      !       prev_time_terms = calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
-      !         element_region_id)* &
-      !           dirk_scaling_factor*prev_uh(ieqn)*prev_phi(ieqn, qk, i)
-
-      !       element_rhs(ieqn, i) = element_rhs(ieqn, i) + &
-      !         prev_jacobian(qk)*prev_quad_weights_ele(qk)*prev_time_terms
-      !     end do
-      !   end do
-      ! end do
 
       ! Momentum Equations
 
@@ -211,33 +204,40 @@ module jacobi_residual_nsb_mm
 
           ! Really inefficient way of doing this...
           prev_uh = uh_element(prev_fe_basis_info, prev_no_pdes, qk)
+          do i = 1, problem_dim
+            prev_gradient_uh(i, :) = grad_uh_element(prev_fe_basis_info, problem_dim, i, qk, 1)
+          end do
 
           do i = 1,no_dofs_per_variable(ieqn)
-            ! TODO: DIRK scaling factor needs investigation. I think this only appeared on one term in Paul's original
-            !   discretisation.
-            ! Note: this assumes the time coefficient takes the same value on both meshes.
-            prev_time_terms = calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
+            ! Previous terms.
+            prev_time_terms = calculate_velocity_time_coefficient(prev_global_points_ele(:, qk), problem_dim, &
               element_region_id)* &
                 dirk_scaling_factor*prev_uh(ieqn)*prev_phi(ieqn, qk, i)
 
+            prev_diffusion_terms = calculate_velocity_diffusion_coefficient(prev_global_points_ele(:, qk), problem_dim, &
+                element_region_id)* &
+              (-1.0_db) * dot_product(prev_gradient_uh(ieqn, qk, :), prev_grad_phi(ieqn, qk, :, i))
+
+            prev_convection_terms = calculate_velocity_convection_coefficient(prev_global_points_ele(:, qk), problem_dim, &
+                element_region_id)* &
+              dot_product(prev_fluxes(1:problem_dim, ieqn, qk), prev_grad_phi(ieqn, qk, 1:problem_dim, i))
+
+            prev_pressure_terms = calculate_velocity_pressure_coefficient(prev_global_points_ele(:, qk), problem_dim, &
+                element_region_id)* &
+              prev_interpolant_uh(problem_dim+1, qk)*prev_grad_phi(ieqn, qk, ieqn, i)
+
+            prev_forcing_terms = calculate_velocity_forcing_coefficient(prev_global_points_ele(:, qk), problem_dim, &
+                element_region_id)* &
+              prev_floc(ieqn, qk)*prev_phi(ieqn, qk, i)
+
+            prev_reaction_terms = -calculate_velocity_reaction_coefficient(prev_global_points_ele(:, qk), problem_dim, &
+                element_region_id)* &
+              prev_interpolant_uh(ieqn, qk)*prev_phi(ieqn, qk, i)
+
+            ! Current terms.
             time_terms = -calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
                   dirk_scaling_factor*interpolant_uh(ieqn, qk)*phi(ieqn, qk, i)
-
-            ! prev_time_terms = 1e10*prev_jacobian(qk)
-
-            ! print *, prev_uh(ieqn)
-
-            ! DID CHANGE: prev_uh(ieqn)
-
-            ! time_terms = 0.0_db
-            ! prev_time_terms = 0.0_db
-
-            ! if (prev_time_terms > time_terms) then
-            !   print *, "+: ", prev_time_terms, time_terms
-            ! else
-            !   print *, "-: ", prev_time_terms, time_terms
-            ! end if
 
             diffusion_terms = calculate_velocity_diffusion_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
@@ -245,7 +245,7 @@ module jacobi_residual_nsb_mm
 
             convection_terms = calculate_velocity_convection_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
-            dot_product(fluxes(1:problem_dim,ieqn,qk), grad_phi(ieqn,qk,1:problem_dim,i))
+              dot_product(fluxes(1:problem_dim,ieqn,qk), grad_phi(ieqn,qk,1:problem_dim,i))
 
             pressure_terms = calculate_velocity_pressure_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
@@ -259,15 +259,23 @@ module jacobi_residual_nsb_mm
                 element_region_id)* &
               interpolant_uh(ieqn, qk)*phi(ieqn, qk, i)
 
-            element_rhs(ieqn, i) = element_rhs(ieqn, i) + integral_weighting(qk) * ( &
-              time_terms + &
-              diffusion_terms + &
-              convection_terms + &
-              reaction_terms + &
-              pressure_terms + &
-              forcing_terms &
-            ) &
-            + prev_jacobian(qk)*prev_quad_weights_ele(qk)*prev_time_terms
+            element_rhs(ieqn, i) = &
+              element_rhs(ieqn, i) + integral_weighting(qk) * ( &
+                time_terms + &
+                diffusion_terms + &
+                convection_terms + &
+                reaction_terms + &
+                pressure_terms + &
+                forcing_terms &
+              ) + &
+              prev_jacobian(qk)*prev_quad_weights_ele(qk) * ( &
+                prev_time_terms + &
+                prev_diffusion_terms + &
+                prev_convection_terms + &
+                prev_reaction_terms + &
+                prev_pressure_terms + &
+                prev_forcing_terms &
+              )
 
           end do
         end do
@@ -282,16 +290,23 @@ module jacobi_residual_nsb_mm
         ! Loop over phi_i
 
         do i = 1,no_dofs_per_variable(problem_dim+1)
-          div_u = 0.0_db
+          div_u      = 0.0_db
+          prev_div_u = 0.0_db
           do ieqn = 1,problem_dim
-            div_u = div_u+gradient_uh(ieqn,qk,ieqn)
+            div_u      = div_u      + gradient_uh     (ieqn, qk, ieqn)
+            prev_div_u = prev_div_u + prev_gradient_uh(ieqn, qk, ieqn)
           end do
 
-          incompressibility_terms = (floc(problem_dim+1, qk) - div_u)*phi(problem_dim+1, qk, i)
+          incompressibility_terms      = (floc     (problem_dim+1, qk) - div_u)*phi     (problem_dim+1, qk, i)
+          prev_incompressibility_terms = (prev_floc(problem_dim+1, qk) - div_u)*prev_phi(problem_dim+1, qk, i)
 
-          element_rhs(no_pdes, i) = element_rhs(no_pdes, i) + integral_weighting(qk) * ( &
-            incompressibility_terms &
-          )
+          element_rhs(no_pdes, i) = element_rhs(no_pdes, i) + &
+            integral_weighting(qk) * ( &
+              incompressibility_terms &
+            ) + &
+            prev_jacobian(qk)*prev_quad_weights_ele(qk) * ( &
+              prev_incompressibility_terms &
+            )
 
         end do
       end do
