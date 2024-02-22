@@ -52,3 +52,13 @@ velocity_transport.run(3, parameters)
 parameters["geometry"] = "square_analytic"
 parameters["mesh_velocity_type"] = "constant_up"
 velocity_transport.run(4, parameters)
+
+parameters["geometry"] = "square_tb_free_lr_solid"
+parameters["mesh_velocity_type"] = "oscillating_sine"
+parameters["solid_wall_mesh_velocity"] = True
+velocity_transport.run(5, parameters)
+
+parameters["geometry"] = "square_tb_free_lr_solid"
+parameters["mesh_velocity_type"] = "oscillating_sine_x"
+parameters["solid_wall_mesh_velocity"] = True
+velocity_transport.run(6, parameters)
