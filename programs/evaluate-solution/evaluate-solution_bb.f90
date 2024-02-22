@@ -123,7 +123,7 @@ program evaluate_solution
   call get_user_data          ('user_data', aptofem_stored_keys)
   call get_user_data_velocity ('user_data', aptofem_stored_keys)
   call set_space_type_velocity(aptofem_stored_keys)
-  call initialise_geometry    (geometry_name, no_placentones)
+  call initialise_geometry    (geometry_name, mesh_data, aptofem_stored_keys)
 
   problem_dim = get_problem_dim(mesh_data)
 
