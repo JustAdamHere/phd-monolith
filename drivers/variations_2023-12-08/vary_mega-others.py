@@ -13,7 +13,7 @@ simulations[1] = run_data.import_simulations(1000, output_location_permeability)
 simulations[2] = run_data.import_simulations(1000, output_location_wall_height)
   
 # Varying parameters.
-parameter_name      = ["artery width", "permeability", "wall height ratio"]
+parameter_name      = ["artery width", "permeability ($\log_{10}$)", "wall height ratio"]
 parameter_safe_name = ["artery_width", "permeability", "wall_height_ratio"]
 artery_width_values = np.linspace(0.0125, 0.075, 10)
 permeability_values = np.linspace(-10, -6, 10)
