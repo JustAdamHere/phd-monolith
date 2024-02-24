@@ -88,7 +88,7 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   setup_plots.style(fig, axes[4][0], None, r"$\bar{c}$", y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=False)
   setup_plots.style(fig, axes[5][0], None, r"$\frac{C_\text{flux}(S)}{C_\text{flux}(\Gamma_\text{in})}$ (%)", y_scilimits=None , y_top=102, integer_ticks=False)
   setup_plots.style(fig, axes[6][0], None, r"$E_\text{kinetic}(\Gamma_\text{in}) - E_\text{kinetic}(\Gamma_\text{out})$", y_scilimits=[2, 2], y_bottom=0, y_top=1e2, integer_ticks=False, max_major_ticks=4)
-  setup_plots.style(fig, axes[7][0], parameter_name[0], r"$E_\text{total}(\Gamma_\text{in}) - E_\text{total}(\Gamma_\text{out})$", y_scilimits=[3, 3], y_bottom=0, y_top=1.5e3, integer_ticks=False, max_major_ticks=4, y_labelpad=25)
+  setup_plots.style(fig, axes[7][0], parameter_name[0], r"$E_\text{total}(\Gamma_\text{in}) - E_\text{total}(\Gamma_\text{out})$", y_scilimits=[3, 3], y_bottom=0, y_top=3e3, integer_ticks=False, max_major_ticks=4, y_labelpad=25)
 
   setup_plots.style(fig, axes[0][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[1][1], None, None, y_scilimits=None , y_top=102, integer_ticks=True, max_major_ticks=4)
@@ -97,7 +97,7 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   setup_plots.style(fig, axes[4][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[5][1], None, None, y_scilimits=None , y_top=102, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[6][1], None, None, y_scilimits=[2, 2], y_bottom=0, y_top=1e2, integer_ticks=True, max_major_ticks=4)
-  setup_plots.style(fig, axes[7][1], parameter_name[1], None, y_scilimits=[3, 3], y_bottom=0, y_top=1.5e3, integer_ticks=True, max_major_ticks=4)
+  setup_plots.style(fig, axes[7][1], parameter_name[1], None, y_scilimits=[3, 3], y_bottom=0, y_top=3e3, integer_ticks=True, max_major_ticks=4)
 
   setup_plots.style(fig, axes[0][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=False, max_major_ticks=4)
   setup_plots.style(fig, axes[1][2], None, None, y_scilimits=None , y_top=102, integer_ticks=False, max_major_ticks=4)
@@ -106,7 +106,7 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   setup_plots.style(fig, axes[4][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=False, max_major_ticks=4)
   setup_plots.style(fig, axes[5][2], None, None, y_scilimits=None , y_top=102, integer_ticks=False, max_major_ticks=4)
   setup_plots.style(fig, axes[6][2], None, None, y_scilimits=[2, 2], y_bottom=0, y_top=1e2, integer_ticks=False, max_major_ticks=4)
-  setup_plots.style(fig, axes[7][2], parameter_name[2], None, y_scilimits=[3, 3], y_bottom=0, y_top=1.5e3, integer_ticks=False, max_major_ticks=4)
+  setup_plots.style(fig, axes[7][2], parameter_name[2], None, y_scilimits=[3, 3], y_bottom=0, y_top=3e3, integer_ticks=False, max_major_ticks=4)
 
   # Decide where to save plots.
   if subfolder == None:
@@ -135,6 +135,7 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   # Setup plots.
   from plotting import setup_plots
   fig, axes = setup_plots.setup_megaplot(1, 8, 3, figsize=(10, 18))
+  fig_mini, axes_mini = setup_plots.setup_megaplot(2, 2, 3, figsize=(10, 6))
 
   # Get data to plot.
   data = np.zeros((2, 3), dtype=object)
@@ -157,6 +158,8 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
       if not (j == 2 and i > 0):
         axes[0][j].plot(parameter_values[j], data[i, j]["q50"]["velocity_magnitude_integral"], linestyle="dashed", color=f"C{i}")
         axes[0][j].fill_between(parameter_values[j], data[i, j]["q25"]["velocity_magnitude_integral"], data[i, j]["q75"]["velocity_magnitude_integral"], alpha=0.2, color=f"C{i}")
+    axes_mini[0][j].plot(parameter_values[j], data[0, j]["q50"]["velocity_magnitude_integral"], linestyle="dashed", color=f"C0")
+    axes_mini[0][j].fill_between(parameter_values[j], data[0, j]["q25"]["velocity_magnitude_integral"], data[0, j]["q75"]["velocity_magnitude_integral"], alpha=0.2, color=f"C0")
     
   axes[0][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
   axes[0][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
@@ -198,6 +201,8 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
       if not (j == 2 and i > 0):
         axes[4][j].plot(parameter_values[j], data[i, j]["q50"]["transport_reaction_integral"], linestyle="dashed", color=f"C{i}")
         axes[4][j].fill_between(parameter_values[j], data[i, j]["q25"]["transport_reaction_integral"], data[i, j]["q75"]["transport_reaction_integral"], alpha=0.2, color=f"C{i}")
+    axes_mini[1][j].plot(parameter_values[j], data[0, j]["q50"]["transport_reaction_integral"], linestyle="dashed", color=f"C0")
+    axes_mini[1][j].fill_between(parameter_values[j], data[0, j]["q25"]["transport_reaction_integral"], data[0, j]["q75"]["transport_reaction_integral"], alpha=0.2, color=f"C0")
   axes[4][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
   axes[4][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
 
@@ -229,6 +234,23 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   axes[7][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
   axes[7][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
 
+  # Plot indiviudal simulations on mini axes.
+  simulation_nos = [11, 28, 29, 100]
+  colours = ["tab:orange", "tab:purple", "tab:green", "tab:red"]
+  for i in range(4):
+    sim_no = simulation_nos[i]
+
+    no_arteries = simulations[sim_no-1].get_no_arteries()
+    no_veins = simulations[sim_no-1].get_no_veins()
+
+    axes_mini[0][0].plot(no_arteries,          simulations[sim_no-1].velocity_magnitude_integral_ivs, 'x', markersize=10, linewidth=3, color=colours[i])
+    axes_mini[0][1].plot(no_veins,             simulations[sim_no-1].velocity_magnitude_integral_ivs, 'x', markersize=10, linewidth=3, color=colours[i])
+    axes_mini[0][2].plot(no_veins/no_arteries, simulations[sim_no-1].velocity_magnitude_integral_ivs, 'x', markersize=10, linewidth=3, color=colours[i])
+
+    axes_mini[1][0].plot(no_arteries,          simulations[sim_no-1].transport_reaction_integral,     'x', markersize=10, linewidth=3, color=colours[i])
+    axes_mini[1][1].plot(no_veins,             simulations[sim_no-1].transport_reaction_integral,     'x', markersize=10, linewidth=3, color=colours[i])
+    axes_mini[1][2].plot(no_veins/no_arteries, simulations[sim_no-1].transport_reaction_integral,     'x', markersize=10, linewidth=3, color=colours[i])
+
   # Style plots.
   setup_plots.style(fig, axes[0][0], None, r"$\bar{v}$", y_scilimits=[-3, -3] , y_bottom=0, y_top=1e-2, integer_ticks=True)
   setup_plots.style(fig, axes[1][0], None, r"$v_\text{slow}(V_\text{threshold})$", y_scilimits=None , y_top=102, integer_ticks=True)
@@ -257,6 +279,15 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   setup_plots.style(fig, axes[6][2], None, None, y_scilimits=[2, 2], y_bottom=0, y_top=1e2, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[7][2], parameter_name[2], None, y_scilimits=[3, 3], y_bottom=0, y_top=1.5e3, integer_ticks=True, max_major_ticks=4)
 
+  setup_plots.style(fig_mini, axes_mini[0][0], None, r"$\bar{v}$", y_scilimits=[-3, -3] , y_bottom=0, y_top=1e-2, integer_ticks=True)
+  setup_plots.style(fig_mini, axes_mini[1][0], parameter_name[0], r"$\bar{c}$", y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True)
+
+  setup_plots.style(fig_mini, axes_mini[0][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=True, max_major_ticks=4)
+  setup_plots.style(fig_mini, axes_mini[1][1], parameter_name[1], None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True, max_major_ticks=4)
+
+  setup_plots.style(fig_mini, axes_mini[0][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=True, max_major_ticks=4)
+  setup_plots.style(fig_mini, axes_mini[1][2], parameter_name[2], None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True, max_major_ticks=4)
+
   # Decide where to save plots.
   if subfolder == None:
     images_folder = "images"
@@ -265,6 +296,7 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
 
   # Save.
   fig.savefig(f"{images_folder}/mega_{parameter_safe_name[0]}_{parameter_safe_name[1]}_{parameter_safe_name[2]}.png", dpi=300)
+  fig_mini.savefig(f"{images_folder}/mega-mini_{parameter_safe_name[0]}_{parameter_safe_name[1]}_{parameter_safe_name[2]}.png", dpi=300)
 
   # Done.
   print(f"\rPlotting simulations... Done.", end="\r\n")

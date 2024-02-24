@@ -12,6 +12,8 @@ def setup_megaplot(plot_no, no_rows, no_cols, **kwargs):
   fig = plt.figure(plot_no, **kwargs)
   fig.clf()
   axes = fig.subplots(no_rows, no_cols)
+  if (no_rows == 1):
+    axes = [axes]
   for i in range(no_rows):
     for j in range(no_cols):
       axes[i][j].cla()
