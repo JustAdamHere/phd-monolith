@@ -2,6 +2,15 @@ def import_mat(simulation_no, filename_no_ext):
   import scipy.io
   return scipy.io.loadmat(f"./output/mri-quantities_{filename_no_ext}_{simulation_no}.mat")
 
+  # import h5py
+  # return h5py.File(f"./output/mri-quantities_{filename_no_ext}_{simulation_no}.mat", 'r')
+
+  # import mat73
+  # return mat73.loadmat(f"./output/mri-quantities_{filename_no_ext}_{simulation_no}.mat")
+
+  # from pymatreader import read_mat
+  # return read_mat(f"./output/mri-quantities_{filename_no_ext}_{simulation_no}.mat")
+
 def plot_spins(simulation_no, filename_no_ext):
   mat_vars = import_mat(simulation_no, filename_no_ext)
 
@@ -16,6 +25,8 @@ def plot_spins(simulation_no, filename_no_ext):
   r = 0.9/2
   x = r*np.cos(mat_vars['phi'][0, 0][b_index, :, grad_direction]) + 0.5
   y = r*np.sin(mat_vars['phi'][0, 0][b_index, :, grad_direction]) + 0.5
+  # x = r*np.cos(mat_vars['phi'][0][0][b_index, :, grad_direction]) + 0.5
+  # y = r*np.sin(mat_vars['phi'][0][0][b_index, :, grad_direction]) + 0.5
 
   # Arrows from centre to each molecule's spin.
   arrows_u = x - 0.5
@@ -39,10 +50,13 @@ def plot_spins(simulation_no, filename_no_ext):
   # Plot arrows.
   centre_x = 0.5*np.ones((mat_vars['points_per_voxel'][0]))
   centre_y = 0.5*np.ones((mat_vars['points_per_voxel'][0]))
+  # centre_x = 0.5*np.ones((mat_vars['points_per_voxel']))
+  # centre_y = 0.5*np.ones((mat_vars['points_per_voxel']))
   ax_avg.quiver(centre_x, centre_y, arrows_u, arrows_v, scale=0.4/arrows_mag, scale_units='xy', angles='xy', color=[0, 0, 0, 1.0/400], width=0.02) 
 
   # Magnetic spin for b=0.
   r_0 = np.abs(np.sum(np.exp(-1j * mat_vars['phi'][0, 0][0, :, grad_direction])))
+  # r_0 = np.abs(np.sum(np.exp(-1j * mat_vars['phi'][0][0][0, :, grad_direction])))
 
   # Plot all average spins.
   max_color = 0.8
@@ -52,6 +66,7 @@ def plot_spins(simulation_no, filename_no_ext):
 
     # Average magnetic spin.
     avg_m = np.sum(np.exp(-1j * mat_vars['phi'][0, 0][i, :, grad_direction]))
+    # avg_m = np.sum(np.exp(-1j * mat_vars['phi'][0][0][i, :, grad_direction]))
 
     # Average phase.
     avg_phi = -np.angle(avg_m)

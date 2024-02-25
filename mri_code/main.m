@@ -41,6 +41,7 @@ parfor voxel = 1:N_voxels
   end
 end
 
-save(strcat('../output/mri-quantities_', filename_no_ext, '.mat'), "-v7.3")
+save(strcat('../output/mri-quantities_', filename_no_ext, '_', num2str(run_no), '.mat'), "-v7.3")
+% save(strcat('../output/mri-quantities_', filename_no_ext, '_', num2str(run_no), '.mat'))
 
 fprintf("Got quantities.\n")
