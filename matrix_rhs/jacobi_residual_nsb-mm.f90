@@ -49,7 +49,7 @@ module jacobi_residual_nsb_mm
     real(db) :: dirk_scaling_factor,current_time,time_step
 
     real(db) :: diffusion_terms, convection_terms, reaction_terms, forcing_terms, pressure_terms, incompressibility_terms, &
-      time_terms, prev_time_terms
+        time_terms
     integer  :: element_region_id
 
     ! Previous solution variables.
@@ -60,6 +60,16 @@ module jacobi_residual_nsb_mm
     integer, dimension(facet_data%dim_soln_coeff, maxval(facet_data%no_dofs_per_variable)) :: prev_global_dof_numbers
     integer, dimension(facet_data%dim_soln_coeff) :: prev_no_dofs_per_variable
     integer :: prev_no_quad_points
+    real(db), dimension(facet_data%no_pdes, facet_data%no_quad_points) :: prev_floc
+    real(db), dimension(facet_data%problem_dim, facet_data%problem_dim, facet_data%no_quad_points) :: prev_fluxes
+    real(db) :: prev_div_u
+    real(db), dimension(facet_data%no_pdes, facet_data%no_quad_points) :: prev_interpolant_uh
+    real(db), dimension(facet_data%no_pdes, facet_data%no_quad_points, facet_data%problem_dim) :: prev_gradient_uh
+    real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, facet_data%problem_dim, &
+      maxval(facet_data%no_dofs_per_variable)) :: prev_grad_phi
+    real(db), dimension(facet_data%problem_dim) :: prev_uh
+    real(db) :: prev_diffusion_terms, prev_convection_terms, prev_reaction_terms, prev_forcing_terms, prev_pressure_terms, &
+      prev_incompressibility_terms, prev_time_terms
 
     character(len=aptofem_length_key_def) :: control_parameter
 
@@ -88,7 +98,7 @@ module jacobi_residual_nsb_mm
     mesh_no_pdes        = get_no_pdes(solution_moving_mesh)
 
     call get_mesh_info(prev_no_elements, prev_no_nodes, prev_no_faces, prev_problem_dim, prev_mesh_data)
-    call get_mesh_info(mesh_no_elements, mesh_no_nodes, mesh_no_faces, mesh_problem_dim, prev_mesh_data)
+    call get_mesh_info(mesh_no_elements, mesh_no_nodes, mesh_no_faces, mesh_problem_dim, mesh_data)
 
     prev_npinc = facet_data%npinc
     mesh_npinc = facet_data%npinc + 1
@@ -204,9 +214,6 @@ module jacobi_residual_nsb_mm
 
           ! Really inefficient way of doing this...
           prev_uh = uh_element(prev_fe_basis_info, prev_no_pdes, qk)
-          do i = 1, problem_dim
-            prev_gradient_uh(i, :) = grad_uh_element(prev_fe_basis_info, problem_dim, i, qk, 1)
-          end do
 
           do i = 1,no_dofs_per_variable(ieqn)
             ! Previous terms.
@@ -259,15 +266,15 @@ module jacobi_residual_nsb_mm
                 element_region_id)* &
               interpolant_uh(ieqn, qk)*phi(ieqn, qk, i)
 
-            element_rhs(ieqn, i) = &
-              element_rhs(ieqn, i) + integral_weighting(qk) * ( &
+            element_rhs(ieqn, i) = element_rhs(ieqn, i) + &
+              integral_weighting(qk) * ( &
                 time_terms + &
                 diffusion_terms + &
                 convection_terms + &
                 reaction_terms + &
                 pressure_terms + &
                 forcing_terms &
-              ) + &
+              )/2.0_db + &
               prev_jacobian(qk)*prev_quad_weights_ele(qk) * ( &
                 prev_time_terms + &
                 prev_diffusion_terms + &
@@ -275,7 +282,7 @@ module jacobi_residual_nsb_mm
                 prev_reaction_terms + &
                 prev_pressure_terms + &
                 prev_forcing_terms &
-              )
+              )/2.0_db
 
           end do
         end do
@@ -303,10 +310,10 @@ module jacobi_residual_nsb_mm
           element_rhs(no_pdes, i) = element_rhs(no_pdes, i) + &
             integral_weighting(qk) * ( &
               incompressibility_terms &
-            ) + &
+            )/2.0_db + &
             prev_jacobian(qk)*prev_quad_weights_ele(qk) * ( &
               prev_incompressibility_terms &
-            )
+            )/2.0_db
 
         end do
       end do
@@ -368,6 +375,30 @@ module jacobi_residual_nsb_mm
       penalty_terms, boundary_terms
     integer               :: region_id
 
+    ! Previous solution variables.
+    real(db), dimension(facet_data%no_pdes, facet_data%no_quad_points) :: prev_uloc
+    real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: prev_unloc, prev_nflxsoln
+    real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: prev_global_points_face, prev_face_normals
+    real(db), dimension(facet_data%no_quad_points_face_max) :: prev_face_jacobian, prev_quad_weights_face
+    real(db), dimension(facet_data%no_pdes, facet_data%no_quad_points, facet_data%problem_dim) :: prev_gradient_uh1, &
+      prev_gradient_uh2
+    real(db), dimension(facet_data%no_pdes,facet_data%no_quad_points, facet_data%problem_dim, &
+      maxval(facet_data%no_dofs_per_variable1)) :: prev_grad_phi1
+    real(db), dimension(facet_data%no_pdes,facet_data%no_quad_points, facet_data%problem_dim, &
+      maxval(facet_data%no_dofs_per_variable2)) :: prev_grad_phi2
+    integer, dimension(facet_data%dim_soln_coeff, maxval(facet_data%no_dofs_per_variable1)) :: prev_global_dof_numbers1, &
+      prev_global_dof_numbers2
+    integer, dimension(facet_data%dim_soln_coeff) :: prev_no_dofs_per_variable1, prev_no_dofs_per_variable2
+    real(db), dimension(facet_data%dim_soln_coeff,facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable1)) :: prev_phi1
+    real(db), dimension(facet_data%dim_soln_coeff,facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable2)) :: prev_phi2
+    real(db), dimension(facet_data%no_pdes, facet_data%no_quad_points) :: prev_interpolant_uh1, prev_interpolant_uh2
+    integer :: prev_dim_soln_coeff, prev_no_pdes, prev_no_elements, prev_no_nodes, prev_no_faces, prev_problem_dim, &
+      prev_npinc, prev_no_quad_points_volume_max, prev_no_quad_points_face_max, prev_no_quad_points
+    real(db) :: prev_convection_terms, prev_pressure_terms, prev_diffusion_terms, prev_forcing_terms, &
+      prev_incompressibility_terms, prev_penalty_terms, prev_boundary_terms
+    real(db) :: prev_full_dispenal
+    type(basis_storage) :: prev_fe_basis_info
+
     ! Moving mesh variables.
     real(db), dimension(facet_data%problem_dim) :: mesh_velocity
     real(db), dimension(facet_data%no_pdes) :: mesh_uh
@@ -388,26 +419,40 @@ module jacobi_residual_nsb_mm
     type(basis_storage) :: mesh_fe_basis_info
 
     ! Setup basis storage (purely for quadrature points).
+    prev_dim_soln_coeff = get_dim_soln_coeff(prev_solution_velocity_data)
     mesh_dim_soln_coeff = get_dim_soln_coeff(solution_moving_mesh)
+    prev_no_pdes        = get_no_pdes(prev_solution_velocity_data)
     mesh_no_pdes        = get_no_pdes(solution_moving_mesh)
-    call get_mesh_info(mesh_no_elements, mesh_no_nodes, mesh_no_faces, mesh_problem_dim, prev_mesh_data)
 
+    call get_mesh_info(prev_no_elements, prev_no_nodes, prev_no_faces, prev_problem_dim, prev_mesh_data)
+    call get_mesh_info(mesh_no_elements, mesh_no_nodes, mesh_no_faces, mesh_problem_dim, mesh_data)
+
+    prev_npinc = facet_data%npinc
     mesh_npinc = facet_data%npinc + 1
+    call compute_max_no_quad_points(prev_no_quad_points_volume_max, prev_no_quad_points_face_max, prev_mesh_data, &
+      prev_solution_velocity_data, prev_npinc)
     call compute_max_no_quad_points(mesh_no_quad_points_volume_max, mesh_no_quad_points_face_max, prev_mesh_data, &
       solution_moving_mesh, mesh_npinc)
 
-    control_parameter = 'uh_face'
+    control_parameter = 'fo_deriv_uh_face'
+    call initialize_fe_basis_storage(prev_fe_basis_info, control_parameter, prev_solution_velocity_data, &
+      prev_problem_dim, prev_no_quad_points_volume_max, prev_no_quad_points_face_max)
     call initialize_fe_basis_storage(mesh_fe_basis_info, control_parameter, solution_moving_mesh, &
       mesh_problem_dim, mesh_no_quad_points_volume_max, mesh_no_quad_points_face_max)
 
-    ! Not necessary as we're just using this for the quadrature points.
+    call create_aptofem_dg_penalisation(prev_mesh_data, prev_solution_velocity_data)
     call create_aptofem_dg_penalisation(prev_mesh_data, solution_moving_mesh)
 
-    ! Integration info on the previous mesh.    
+    ! Integration info on the previous mesh.
+    call face_integration_info(prev_dim_soln_coeff, prev_problem_dim, prev_mesh_data, prev_solution_velocity_data, &
+      facet_data%face_number, mesh_neighbors, mesh_loc_face_no, prev_npinc, prev_no_quad_points_face_max, &
+      prev_no_quad_points, prev_global_points_face, prev_face_jacobian, prev_face_normals, prev_quad_weights_face, &
+      prev_global_dof_numbers1, prev_no_dofs_per_variable1, bdry_face, prev_global_dof_numbers2, prev_no_dofs_per_variable2, &
+      prev_fe_basis_info)
     call face_integration_info(mesh_dim_soln_coeff, mesh_problem_dim, prev_mesh_data, solution_moving_mesh, &
       facet_data%face_number, mesh_neighbors, mesh_loc_face_no, mesh_npinc, mesh_no_quad_points_face_max, &
       mesh_no_quad_points, mesh_global_points_face, mesh_face_jacobian, mesh_face_normals, mesh_quad_weights_face, &
-      mesh_global_dof_numbers1, mesh_no_dofs_per_variable1, mesh_bdry_face, mesh_global_dof_numbers2, mesh_no_dofs_per_variable2, &
+      mesh_global_dof_numbers1, mesh_no_dofs_per_variable1, bdry_face, mesh_global_dof_numbers2, mesh_no_dofs_per_variable2, &
       mesh_fe_basis_info)
 
     ! print *, "Before face_integration_info in element_residual_face_nsb_mm."
@@ -473,6 +518,11 @@ module jacobi_residual_nsb_mm
 
       full_dispenal = interior_penalty_parameter*dispenal(1)
 
+      ! TODO: This almost certainly needs to be changed, as faces may be distorted under mesh movement.
+      prev_face_normals = face_normals
+      prev_global_points_face = global_points_face
+      prev_full_dispenal = full_dispenal
+
       call convert_velocity_boundary_no(bdry_face_old, bdry_face)
       call convert_velocity_region_id(face_element_region_ids_old(1), face_element_region_ids(1))
       call convert_velocity_region_id(face_element_region_ids_old(2), face_element_region_ids(2))
@@ -487,8 +537,10 @@ module jacobi_residual_nsb_mm
 
         do qk = 1,no_quad_points
           interpolant_uh1(1:no_pdes,qk) = uh_face1(fe_basis_info,no_pdes,qk)
+          prev_interpolant_uh1(1:no_pdes,qk) = uh_face1(prev_fe_basis_info,no_pdes,qk)
           do i = 1,no_pdes
             gradient_uh1(i,qk,1:problem_dim) = grad_uh_face1(fe_basis_info,problem_dim,i,qk,1)
+            prev_gradient_uh1(i,qk,1:problem_dim) = grad_uh_face1(prev_fe_basis_info,problem_dim,i,qk,1)
           end do
 
           ! The solution is continuous, so we only need to do this on one side of the face.
@@ -512,9 +564,14 @@ module jacobi_residual_nsb_mm
 
         do i = 1,no_pdes
           grad_phi1(i,1:no_quad_points,1:problem_dim,1:no_dofs_per_variable1(i)) = fe_basis_info%basis_face1 &
-          %deriv_basis_fns(i)%grad_data(1:no_quad_points,:,1:no_dofs_per_variable1(i),1)
+            %deriv_basis_fns(i)%grad_data(1:no_quad_points,:,1:no_dofs_per_variable1(i),1)
           phi1(i,1:no_quad_points,1:no_dofs_per_variable1(i)) = fe_basis_info%basis_face1%basis_fns(i) &
-          %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable1(i),1)
+            %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable1(i),1)
+
+          prev_grad_phi1(i,1:no_quad_points,1:problem_dim,1:no_dofs_per_variable1(i)) = prev_fe_basis_info%basis_face1 &
+            %deriv_basis_fns(i)%grad_data(1:no_quad_points,:,1:no_dofs_per_variable1(i),1)
+            prev_phi1(i,1:no_quad_points,1:no_dofs_per_variable1(i)) = prev_fe_basis_info%basis_face1%basis_fns(i) &
+            %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable1(i),1)
         end do
 
         if (100 <= abs(bdry_face) .and. abs(bdry_face) <= 199) then
@@ -526,9 +583,17 @@ module jacobi_residual_nsb_mm
                     face_element_region_ids(1))* &
                   (-1.0_db) * nflxsoln(ieqn,qk)*phi1(ieqn,qk,i)
 
-                face_residual_p(ieqn, i) = face_residual_p(ieqn, i) + integral_weighting(qk)*( &
-                  convection_terms &
-                )
+                prev_convection_terms = calculate_velocity_convection_coefficient(prev_global_points_face(:, qk), problem_dim, &
+                  face_element_region_ids(1))* &
+                (-1.0_db) * prev_nflxsoln(ieqn,qk)*prev_phi1(ieqn,qk,i)
+
+                face_residual_p(ieqn, i) = face_residual_p(ieqn, i) + &
+                  integral_weighting(qk)*( &
+                    convection_terms &
+                  )/2.0_db + &
+                  prev_face_jacobian(qk)*prev_quad_weights_face(qk)*( &
+                    prev_convection_terms &
+                  )/2.0_db
 
               end do
             end do
@@ -543,9 +608,17 @@ module jacobi_residual_nsb_mm
                     face_element_region_ids(1))* &
                   (-1.0_db) * nflxsoln(ieqn,qk)*phi1(ieqn,qk,i)
 
-                face_residual_p(ieqn, i) = face_residual_p(ieqn, i) + integral_weighting(qk) * ( &
-                  convection_terms &
-                )
+                prev_convection_terms = calculate_velocity_convection_coefficient(prev_global_points_face(:, qk), problem_dim, &
+                    face_element_region_ids(1))* &
+                  (-1.0_db) * prev_nflxsoln(ieqn,qk)*prev_phi1(ieqn,qk,i)
+
+                face_residual_p(ieqn, i) = face_residual_p(ieqn, i) + &
+                  integral_weighting(qk) * ( &
+                    convection_terms &
+                  ) + &
+                  prev_face_jacobian(qk)*prev_quad_weights_face(qk)*( &
+                    prev_convection_terms &
+                  )
 
               end do
             end do
@@ -593,9 +666,18 @@ module jacobi_residual_nsb_mm
                   region_id) * &
                 (-1.0_db) * nflxsoln(ieqn, qk)*phi1(ieqn, qk, i)
 
-              face_residual_p(ieqn, i) = face_residual_p(ieqn, i) + integral_weighting(qk)* ( &
-                convection_terms &
-              )
+
+              prev_convection_terms = calculate_velocity_convection_coefficient(prev_global_points_face(:, qk), problem_dim, &
+                  region_id) * &
+                (-1.0_db) * prev_nflxsoln(ieqn, qk)*prev_phi1(ieqn, qk, i)
+
+              face_residual_p(ieqn, i) = face_residual_p(ieqn, i) + &
+                integral_weighting(qk)* ( &
+                  convection_terms &
+                )/2.0_db + &
+                prev_face_jacobian(qk)*prev_quad_weights_face(qk)* ( &
+                  prev_convection_terms &
+                )/2.0_db
 
             end do
 
@@ -605,9 +687,17 @@ module jacobi_residual_nsb_mm
                   region_id) * &
                 nflxsoln(ieqn, qk)*phi2(ieqn, qk, i)
 
-              face_residual_m(ieqn, i) = face_residual_m(ieqn, i) + integral_weighting(qk) * ( &
-                convection_terms &
-              )
+              convection_terms = calculate_velocity_convection_coefficient(prev_global_points_face(:, qk), problem_dim, &
+                  region_id) * &
+                prev_nflxsoln(ieqn, qk)*prev_phi2(ieqn, qk, i)
+
+              face_residual_m(ieqn, i) = face_residual_m(ieqn, i) + &
+                integral_weighting(qk)* ( &
+                  convection_terms &
+                )/2.0_db + &
+                prev_face_jacobian(qk)*prev_quad_weights_face(qk)* ( &
+                  prev_convection_terms &
+                )/2.0_db
 
             end do
           end do
@@ -624,8 +714,10 @@ module jacobi_residual_nsb_mm
 
         do qk = 1,no_quad_points
           interpolant_uh1(1:no_pdes,qk) = uh_face1(fe_basis_info,no_pdes,qk)
+          prev_interpolant_uh1(1:no_pdes,qk) = uh_face1(prev_fe_basis_info,no_pdes,qk)
           do i = 1,no_pdes
             gradient_uh1(i,qk,1:problem_dim) = grad_uh_face1(fe_basis_info,problem_dim,i,qk,1)
+            prev_gradient_uh1(i,qk,1:problem_dim) = grad_uh_face1(prev_fe_basis_info,problem_dim,i,qk,1)
           end do
 
           ! The solution is continuous, so we only need to do this on one side of the face.
@@ -650,9 +742,14 @@ module jacobi_residual_nsb_mm
 
         do i = 1,no_pdes
           grad_phi1(i,1:no_quad_points,1:problem_dim,1:no_dofs_per_variable1(i)) = fe_basis_info%basis_face1 &
-          %deriv_basis_fns(i)%grad_data(1:no_quad_points,:,1:no_dofs_per_variable1(i),1)
+            %deriv_basis_fns(i)%grad_data(1:no_quad_points,:,1:no_dofs_per_variable1(i),1)
           phi1(i,1:no_quad_points,1:no_dofs_per_variable1(i)) = fe_basis_info%basis_face1%basis_fns(i) &
-          %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable1(i),1)
+            %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable1(i),1)
+
+          prev_grad_phi1(i,1:no_quad_points,1:problem_dim,1:no_dofs_per_variable1(i)) = prev_fe_basis_info%basis_face1 &
+            %deriv_basis_fns(i)%grad_data(1:no_quad_points,:,1:no_dofs_per_variable1(i),1)
+            prev_phi1(i,1:no_quad_points,1:no_dofs_per_variable1(i)) = prev_fe_basis_info%basis_face1%basis_fns(i) &
+            %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable1(i),1)
         end do
 
         if (100 <= abs(bdry_face) .and. abs(bdry_face) <= 199) then
@@ -660,6 +757,7 @@ module jacobi_residual_nsb_mm
             do qk = 1,no_quad_points
               do i = 1,no_dofs_per_variable1(ieqn)
 
+                ! Current terms.
                 diffusion_terms = calculate_velocity_diffusion_coefficient(global_points_face(:, qk), problem_dim, &
                     face_element_region_ids(1))* ( &
                   dot_product(gradient_uh1(ieqn, qk, :), face_normals(:, qk))*phi1(ieqn,qk,i) + &
@@ -674,11 +772,33 @@ module jacobi_residual_nsb_mm
                     face_element_region_ids(1))* &
                   (-1.0_db) * full_dispenal*(interpolant_uh1(ieqn,qk)-uloc(ieqn,qk))*phi1(ieqn,qk,i)
 
-                face_residual_p(ieqn, i) = face_residual_p(ieqn, i) + integral_weighting(qk)*( &
-                  diffusion_terms + &
-                  pressure_terms + &
-                  boundary_terms &
+                ! Previous terms.
+                prev_diffusion_terms = calculate_velocity_diffusion_coefficient(prev_global_points_face(:, qk), problem_dim, &
+                    face_element_region_ids(1))* ( &
+                  dot_product(prev_gradient_uh1(ieqn, qk, :), prev_face_normals(:, qk))*prev_phi1(ieqn,qk,i) + &
+                  (prev_interpolant_uh1(ieqn,qk)-prev_uloc(ieqn,qk))*dot_product(prev_grad_phi1(ieqn,qk,:,i), &
+                    prev_face_normals(:,qk)) &
                 )
+
+                prev_pressure_terms = calculate_velocity_pressure_coefficient(prev_global_points_face(:, qk), problem_dim, &
+                    face_element_region_ids(1))* &
+                  (-1.0_db) * prev_interpolant_uh1(problem_dim+1,qk)*prev_face_normals(ieqn,qk)*prev_phi1(ieqn,qk,i)
+
+                prev_boundary_terms = calculate_velocity_diffusion_coefficient(prev_global_points_face(:, qk), problem_dim, &
+                    face_element_region_ids(1))* &
+                  (-1.0_db) * prev_full_dispenal*(prev_interpolant_uh1(ieqn,qk)-prev_uloc(ieqn,qk))*prev_phi1(ieqn,qk,i)
+
+                face_residual_p(ieqn, i) = face_residual_p(ieqn, i) + &
+                  integral_weighting(qk)*( &
+                    diffusion_terms + &
+                    pressure_terms + &
+                    boundary_terms &
+                  )/2.0_db + &
+                  prev_face_jacobian(qk)*prev_quad_weights_face(qk)* ( &
+                    prev_diffusion_terms + &
+                    prev_pressure_terms + &
+                    prev_boundary_terms &
+                  )/2.0_db
 
               end do
             end do
@@ -690,8 +810,16 @@ module jacobi_residual_nsb_mm
               incompressibility_terms = dot_product(interpolant_uh1(1:problem_dim, qk) - uloc(1:problem_dim, qk), &
                 face_normals(:, qk)) * phi1(problem_dim+1, qk, i)
 
-              face_residual_p(no_pdes, i) = face_residual_p(no_pdes, i) + integral_weighting(qk) * &
-                incompressibility_terms
+              incompressibility_terms = dot_product(prev_interpolant_uh1(1:problem_dim, qk) - prev_uloc(1:problem_dim, qk), &
+                prev_face_normals(:, qk)) * prev_phi1(problem_dim+1, qk, i)
+
+              face_residual_p(no_pdes, i) = face_residual_p(no_pdes, i) + &
+                integral_weighting(qk) * (&
+                  incompressibility_terms &
+                )/2.0_db + &
+                prev_face_jacobian(qk)*prev_quad_weights_face(qk)* (&
+                  prev_incompressibility_terms &
+                )/2.0_db
 
             end do
           end do
@@ -704,10 +832,18 @@ module jacobi_residual_nsb_mm
                 forcing_terms = calculate_velocity_forcing_coefficient(global_points_face(:, qk), problem_dim, &
                     face_element_region_ids(1))* &
                   unloc(ieqn,qk)*phi1(ieqn,qk,i)
+                
+                forcing_terms = calculate_velocity_forcing_coefficient(prev_global_points_face(:, qk), problem_dim, &
+                    face_element_region_ids(1))* &
+                  prev_unloc(ieqn,qk)*prev_phi1(ieqn,qk,i)
 
-                face_residual_p(ieqn, i) = face_residual_p(ieqn, i) + integral_weighting(qk) * ( &
-                  forcing_terms &
-                )
+                face_residual_p(ieqn, i) = face_residual_p(ieqn, i) + &
+                  integral_weighting(qk) * ( &
+                    forcing_terms &
+                  )/2.0_db + &
+                  prev_face_jacobian(qk)*prev_quad_weights_face(qk) * ( &
+                    prev_forcing_terms &
+                  )/2.0_db
 
               end do
             end do
@@ -719,9 +855,13 @@ module jacobi_residual_nsb_mm
         do qk = 1,no_quad_points
           interpolant_uh1(:,qk) = uh_face1(fe_basis_info,no_pdes,qk)
           interpolant_uh2(:,qk) = uh_face2(fe_basis_info,no_pdes,qk)
+          prev_interpolant_uh1(:,qk) = uh_face1(prev_fe_basis_info,no_pdes,qk)
+          prev_interpolant_uh2(:,qk) = uh_face2(prev_fe_basis_info,no_pdes,qk)
           do i = 1,no_pdes
             gradient_uh1(i,qk,1:problem_dim) = grad_uh_face1(fe_basis_info,problem_dim,i,qk,1)
             gradient_uh2(i,qk,1:problem_dim) = grad_uh_face2(fe_basis_info,problem_dim,i,qk,1)
+            prev_gradient_uh1(i,qk,1:problem_dim) = grad_uh_face1(prev_fe_basis_info,problem_dim,i,qk,1)
+            prev_gradient_uh2(i,qk,1:problem_dim) = grad_uh_face2(prev_fe_basis_info,problem_dim,i,qk,1)
           end do
           ! The solution is continuous, so we only need to do this on one side of the face.
           ! The solution is continuous, so we only need to do this on one side of the face.
@@ -729,17 +869,28 @@ module jacobi_residual_nsb_mm
           mesh_velocity = mesh_uh(1:2)
           call lax_friedrichs(nflxsoln(:,qk),interpolant_uh1(:,qk), &
             interpolant_uh2(:,qk),face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
+          call lax_friedrichs(prev_nflxsoln(:,qk),prev_interpolant_uh1(:,qk), &
+            prev_interpolant_uh2(:,qk),prev_face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
         end do
 
         do i = 1,no_pdes
           grad_phi1(i,1:no_quad_points,1:problem_dim,1:no_dofs_per_variable1(i)) = fe_basis_info%basis_face1 &
-          %deriv_basis_fns(i)%grad_data(1:no_quad_points,:,1:no_dofs_per_variable1(i),1)
+            %deriv_basis_fns(i)%grad_data(1:no_quad_points,:,1:no_dofs_per_variable1(i),1)
           grad_phi2(i,1:no_quad_points,1:problem_dim,1:no_dofs_per_variable2(i)) = fe_basis_info%basis_face2 &
-          %deriv_basis_fns(i)%grad_data(1:no_quad_points,:,1:no_dofs_per_variable2(i),1)
+            %deriv_basis_fns(i)%grad_data(1:no_quad_points,:,1:no_dofs_per_variable2(i),1)
           phi1(i,1:no_quad_points,1:no_dofs_per_variable1(i)) = fe_basis_info%basis_face1%basis_fns(i) &
-          %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable1(i),1)
+            %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable1(i),1)
           phi2(i,1:no_quad_points,1:no_dofs_per_variable2(i)) = fe_basis_info%basis_face2%basis_fns(i) &
-          %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable2(i),1)
+            %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable2(i),1)
+
+          prev_grad_phi1(i,1:no_quad_points,1:problem_dim,1:no_dofs_per_variable1(i)) = prev_fe_basis_info%basis_face1 &
+            %deriv_basis_fns(i)%grad_data(1:no_quad_points,:,1:no_dofs_per_variable1(i),1)
+          prev_grad_phi2(i,1:no_quad_points,1:problem_dim,1:no_dofs_per_variable2(i)) = prev_fe_basis_info%basis_face2 &
+            %deriv_basis_fns(i)%grad_data(1:no_quad_points,:,1:no_dofs_per_variable2(i),1)
+          prev_phi1(i,1:no_quad_points,1:no_dofs_per_variable1(i)) = prev_fe_basis_info%basis_face1%basis_fns(i) &
+            %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable1(i),1)
+          prev_phi2(i,1:no_quad_points,1:no_dofs_per_variable2(i)) = prev_fe_basis_info%basis_face2%basis_fns(i) &
+            %fem_basis_fns(1:no_quad_points,1:no_dofs_per_variable2(i),1)
         end do
 
         do ieqn = 1,problem_dim
@@ -762,17 +913,29 @@ module jacobi_residual_nsb_mm
                   face_element_region_ids(1)) * &
                 (-0.5_db)*(interpolant_uh1(problem_dim+1, qk) + interpolant_uh2(problem_dim+1, qk))* &
                   face_normals(ieqn, qk)*phi1(ieqn, qk, i)
+                
+              prev_pressure_terms = calculate_velocity_pressure_coefficient(prev_global_points_face(:, qk), problem_dim, &
+                  face_element_region_ids(1)) * &
+                (-0.5_db)*(prev_interpolant_uh1(problem_dim+1, qk) + prev_interpolant_uh2(problem_dim+1, qk))* &
+                  prev_face_normals(ieqn, qk)*prev_phi1(ieqn, qk, i)              
 
-              face_residual_p(ieqn, i) = face_residual_p(ieqn, i) + integral_weighting(qk)* ( &
-                penalty_terms + &
-                diffusion_terms + &
-                pressure_terms &
-              )
+              face_residual_p(ieqn, i) = face_residual_p(ieqn, i) + &
+                integral_weighting(qk)* ( &
+                  penalty_terms + &
+                  diffusion_terms + &
+                  pressure_terms &
+                )/2.0_db + &
+                prev_face_jacobian(qk)*prev_quad_weights_face(qk)* ( &
+                  prev_penalty_terms + &
+                  prev_diffusion_terms + &
+                  prev_pressure_terms &
+                )/2.0_db
 
             end do
 
             do i = 1,no_dofs_per_variable2(ieqn)
 
+              ! Current terms.
               penalty_terms = calculate_velocity_diffusion_coefficient(global_points_face(:, qk), problem_dim, &
                   face_element_region_ids(1))* &
                 full_dispenal*(interpolant_uh1(ieqn, qk) - interpolant_uh2(ieqn, qk)) * phi2(ieqn, qk, i)
@@ -790,11 +953,35 @@ module jacobi_residual_nsb_mm
                 0.5_db*(interpolant_uh1(problem_dim+1, qk) + interpolant_uh2(problem_dim+1, qk))* &
                   face_normals(ieqn, qk)*phi2(ieqn, qk, i)
 
-              face_residual_m(ieqn, i) = face_residual_m(ieqn, i) + integral_weighting(qk) * ( &
-                penalty_terms + &
-                diffusion_terms + &
-                pressure_terms &
+              ! Previous terms.
+              prev_penalty_terms = calculate_velocity_diffusion_coefficient(prev_global_points_face(:, qk), problem_dim, &
+                  face_element_region_ids(1))* &
+                prev_full_dispenal*(prev_interpolant_uh1(ieqn, qk) - prev_interpolant_uh2(ieqn, qk)) * prev_phi2(ieqn, qk, i)
+
+              prev_diffusion_terms = calculate_velocity_diffusion_coefficient(prev_global_points_face(:, qk), problem_dim, &
+                  face_element_region_ids(1)) * ( &
+                (-0.5_db)*dot_product(prev_gradient_uh1(ieqn, qk, :) + prev_gradient_uh2(ieqn, qk, :), prev_face_normals(:, qk)) &
+                  * prev_phi2(ieqn, qk, i) + &
+                0.5_db *(prev_interpolant_uh1(ieqn, qk) - prev_interpolant_uh2(ieqn, qk))  &
+                  *dot_product(prev_grad_phi2(ieqn, qk, :, i), prev_face_normals(:, qk)) &
               )
+
+              prev_pressure_terms = calculate_velocity_pressure_coefficient(prev_global_points_face(:, qk), problem_dim, &
+                  face_element_region_ids(1)) * &
+                0.5_db*(prev_interpolant_uh1(problem_dim+1, qk) + prev_interpolant_uh2(problem_dim+1, qk))* &
+                  prev_face_normals(ieqn, qk)*prev_phi2(ieqn, qk, i)
+
+              face_residual_m(ieqn, i) = face_residual_m(ieqn, i) + &
+                integral_weighting(qk) * ( &
+                  penalty_terms + &
+                  diffusion_terms + &
+                  pressure_terms &
+                )/2.0_db + &
+                prev_face_jacobian(qk)*prev_quad_weights_face(qk) * ( &
+                  prev_penalty_terms + &
+                  prev_diffusion_terms + &
+                  prev_pressure_terms &
+                )/2.0_db
 
             end do
           end do
@@ -808,9 +995,19 @@ module jacobi_residual_nsb_mm
                 face_normals(:, qk)) &
               *phi1(problem_dim+1, qk, i)
 
-            face_residual_p(no_pdes, i) = face_residual_p(no_pdes, i) + integral_weighting(qk) * ( &
-              incompressibility_terms &
-            )
+            prev_incompressibility_terms = 0.5_db*dot_product(prev_interpolant_uh1(1:problem_dim, qk) - &
+              prev_interpolant_uh2(1:problem_dim, qk), &
+                prev_face_normals(:, qk)) &
+              *prev_phi1(problem_dim+1, qk, i)
+
+            face_residual_p(no_pdes, i) = face_residual_p(no_pdes, i) + &
+              integral_weighting(qk) * ( &
+                incompressibility_terms &
+              )/2.0_db + &
+              prev_face_jacobian(qk)*prev_quad_weights_face(qk) * ( &
+                prev_incompressibility_terms &
+              )/2.0_db
+
 
           end do
 
@@ -820,9 +1017,18 @@ module jacobi_residual_nsb_mm
                 face_normals(:, qk)) &
               *phi2(problem_dim+1, qk, i)
 
-            face_residual_m(no_pdes, i) = face_residual_m(no_pdes, i) + integral_weighting(qk) * ( &
-              incompressibility_terms &
-            )
+            prev_incompressibility_terms = 0.5_db*dot_product(prev_interpolant_uh1(1:problem_dim, qk) - &
+              prev_interpolant_uh2(1:problem_dim, qk), &
+                prev_face_normals(:, qk)) &
+              *prev_phi2(problem_dim+1, qk, i)
+
+            face_residual_m(no_pdes, i) = face_residual_m(no_pdes, i) + &
+              integral_weighting(qk) * ( &
+                incompressibility_terms &
+              ) + &
+              prev_face_jacobian(qk)*prev_quad_weights_face(qk) * ( &
+                prev_incompressibility_terms &
+              )
 
           end do
         end do
@@ -830,6 +1036,9 @@ module jacobi_residual_nsb_mm
       end if
 
     end associate
+
+    call delete_fe_basis_storage(prev_fe_basis_info)
+    call delete_fe_basis_storage(mesh_fe_basis_info)
 
   end subroutine element_residual_face_nsb_mm
   !--------------------------------------------------------------------
