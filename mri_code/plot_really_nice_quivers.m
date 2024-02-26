@@ -8,10 +8,10 @@
 velocity_calculation = "mean"; % or "centre";
 
 % Whether interesting voxels should be coloured.
-colour_voxels = false; % or true;
+colour_voxels = true; % or false;
 coloured_voxels = [...
     672, ... % Rotational.
-    489, 490, 491, ... % Decellerating.
+    491, ... % Decellerating.
     1726 ... % Shear.
 ];
 voxel_colours = ["#005992", "#db6000", "#008002", "#b30002", "#74499c", "#6c382e", "#c058a0", "#606060"];
@@ -50,6 +50,18 @@ fig.InnerPosition = [0 0 image_scaling_resolution*x_range image_scaling_resoluti
 
 % "Hack" that gives us the z indices in this z-slice.
 [~, ~, k] = voxel2indices(N_voxels_x*N_voxels_y, points_per_voxel_x, points_per_voxel_y, 1, N_voxels_x, N_voxels_y);
+
+%% Plot outline.
+if (show_placenta_outline)
+    outline_vtk = readVTK('..\meshes\outline-mesh_1.vtk');
+    outline_cells  = outline_vtk.cells;
+    outline_points = outline_vtk.points*L;
+
+    hold on
+    for i = 1:length(outline_cells)
+        plot([outline_points(outline_cells(i, 1), 1) outline_points(outline_cells(i, 2), 1)], [outline_points(outline_cells(i, 1), 2) outline_points(outline_cells(i, 2), 2)], 'k-', 'LineWidth', 2)
+    end
+end
 
 %% Plot voxels.
 coloured_voxel_count = 0;
@@ -136,7 +148,7 @@ for voxel_xy = 1:N_voxels_x*N_voxels_y
 end
 
 %% Plot quiver.
-title(sprintf("Quiver plot"))
+%title(sprintf("Quiver plot"))
 
 %quiver(x, y, u, v, 2e-1, 'Color', [0 0 0], 'LineWidth', 0.5)
 quiver(x, y, u, v, 2e-1, 'Color', [0 0 0], 'LineWidth', 1)
@@ -148,18 +160,6 @@ xlim(L*[x_min, x_max])
 ylim(L*[y_min, y_max])
 
 daspect([1 1 1])
-
-%% Plot outline.
-if (show_placenta_outline)
-    outline_vtk = readVTK('..\meshes\outline-mesh_1.vtk');
-    outline_cells  = outline_vtk.cells;
-    outline_points = outline_vtk.points*L;
-
-    hold on
-    for i = 1:length(outline_cells)
-        plot([outline_points(outline_cells(i, 1), 1) outline_points(outline_cells(i, 2), 1)], [outline_points(outline_cells(i, 1), 2) outline_points(outline_cells(i, 2), 2)], 'k-', 'LineWidth', 2)
-    end
-end
 
 %% Style the plot.
 set(gca, 'XTick', []);
