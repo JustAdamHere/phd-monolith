@@ -117,11 +117,12 @@ module velocity_bc_interface
     use bcs_poiseuille_velocity
     use bcs_shear_velocity
     use bcs_tb_free_lr_solid_velocity
+    use bcs_t_free_b_constant_lr_solid_velocity
     use bcs_zero_velocity
 
     implicit none
 
-    character(len=30), intent(in) :: geometry_name
+    character(len=50), intent(in) :: geometry_name
 
     if (trim(geometry_name) == 'placentone') then
       convert_velocity_boundary_no => placentone_2d_convert_velocity_boundary_no
@@ -222,6 +223,15 @@ module velocity_bc_interface
       get_boundary_no_velocity     => tb_free_lr_solid_2d_get_boundary_no_velocity
       dirichlet_bc_velocity        => tb_free_lr_solid_2d_dirichlet_bc_velocity
       neumann_bc_velocity          => tb_free_lr_solid_2d_neumann_bc_velocity
+    else if (trim(geometry_name) == 'square_t_free_b_constant_lr_solid') then
+      convert_velocity_boundary_no => t_free_b_constant_lr_solid_2d_convert_velocity_boundary_no
+      convert_velocity_region_id   => t_free_b_constant_lr_solid_2d_convert_velocity_region_id
+      forcing_function_velocity    => t_free_b_constant_lr_solid_2d_forcing_function_velocity
+      anal_soln_velocity           => t_free_b_constant_lr_solid_2d_anal_soln_velocity
+      anal_soln_velocity_1         => t_free_b_constant_lr_solid_2d_anal_soln_velocity_1
+      get_boundary_no_velocity     => t_free_b_constant_lr_solid_2d_get_boundary_no_velocity
+      dirichlet_bc_velocity        => t_free_b_constant_lr_solid_2d_dirichlet_bc_velocity
+      neumann_bc_velocity          => t_free_b_constant_lr_solid_2d_neumann_bc_velocity
     else if (trim(geometry_name) == 'square_zero') then
       convert_velocity_boundary_no => zero_2d_convert_velocity_boundary_no
       convert_velocity_region_id   => zero_2d_convert_velocity_region_id
