@@ -1,6 +1,6 @@
 base_dir = '/mnt/c/Users/adam/Git'
 project_name = 'phd-monolith'
-file_name    = 'mm_oscillating_x'
+file_name    = 'mm_oscillating_xy'
 frame_rate   = 10
 
 source = ''

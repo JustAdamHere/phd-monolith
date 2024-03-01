@@ -34,7 +34,7 @@ def get_default_run_parameters():
 		'mesh_resolution'                    : 0.1 ,
 		'mesh_velocity_type'                 : 'zero' ,
 		'moving_mesh'                        : False ,
-        'mri_u1'                             : 0.0,
+		'mri_u1'                             : 0.0,
 		'mri_u2'                             : 0.0,
 		'mri_x'                              : 0.0,
 		'mri_simple_flow'                    : False,
