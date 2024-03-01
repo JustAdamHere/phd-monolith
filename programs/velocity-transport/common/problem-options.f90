@@ -9,7 +9,7 @@ module problem_options
         no_time_steps, output_frequency, no_placentones
     logical           :: velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, &
         compute_permeability, compute_uptake, compute_error_norms, moving_mesh, compute_ss_flag, solid_wall_mesh_velocity
-    character(len=30) :: geometry_name, assembly_name, linear_solver, mesh_velocity_type
+    character(len=50) :: geometry_name, assembly_name, linear_solver, mesh_velocity_type
 
     real(db), dimension(:, :), allocatable :: vessel_locations
     real(db), dimension(:), allocatable    :: central_cavity_widths, central_cavity_heights

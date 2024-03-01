@@ -6,14 +6,14 @@ parameters = velocity_transport.get_default_run_parameters()
 
 parameters["verbose_output"] = False
 
-parameters["mesh_resolution"] = 0.1
+parameters["mesh_resolution"] = 0.05
 
 parameters["run_type"]      = 'openmp'
 parameters["linear_solver"] = 'mumps'
-parameters["no_threads"]    = 1
+parameters["no_threads"]    = 20
 
 parameters["moving_mesh"]   = True
-parameters["no_time_steps"] = 10
+parameters["no_time_steps"] = 100
 parameters["final_time"]    = 1.0
 
 parameters["error_on_fail"] = False
@@ -52,3 +52,13 @@ velocity_transport.run(3, parameters)
 parameters["geometry"] = "square_analytic"
 parameters["mesh_velocity_type"] = "constant_up"
 velocity_transport.run(4, parameters)
+
+parameters["geometry"] = "square_tb_free_lr_solid"
+parameters["mesh_velocity_type"] = "oscillating_sine"
+parameters["solid_wall_mesh_velocity"] = True
+velocity_transport.run(5, parameters)
+
+parameters["geometry"] = "square_tb_free_lr_solid"
+parameters["mesh_velocity_type"] = "oscillating_sine_x"
+parameters["solid_wall_mesh_velocity"] = True
+velocity_transport.run(6, parameters)

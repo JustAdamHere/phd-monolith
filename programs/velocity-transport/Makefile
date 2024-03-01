@@ -19,7 +19,7 @@ norms 				  = error_norms.f90
 transport_bcs = bcs_transport.f90
 #transport_bcs_analytic = 2d-bcs_transport_analytic.f90
 transport_bcs_analytic = bcs_transport.f90
-velocity_bcs = 2d-bcs_velocity_placenta.f90 2d-bcs_velocity_placentone.f90 3d-bcs_velocity_placentone.f90 2d-bcs_velocity_analytic.f90 2d-bcs_velocity_constant-up.f90 2d-bcs_velocity_constant-diagonal.f90 2d-bcs_velocity_zero.f90 2d-bcs_velocity_poiseuille.f90 2d-bcs_velocity_etienne2009.f90 2d-bcs_velocity_etienne2009_ti.f90 2d-bcs_velocity_shear.f90 2d-bcs_velocity_tb_free_lr_solid.f90 velocity_bc_interface.f90
+velocity_bcs = 2d-bcs_velocity_placenta.f90 2d-bcs_velocity_placentone.f90 3d-bcs_velocity_placentone.f90 2d-bcs_velocity_analytic.f90 2d-bcs_velocity_constant-up.f90 2d-bcs_velocity_constant-diagonal.f90 2d-bcs_velocity_zero.f90 2d-bcs_velocity_poiseuille.f90 2d-bcs_velocity_etienne2009.f90 2d-bcs_velocity_etienne2009_ti.f90 2d-bcs_velocity_shear.f90 2d-bcs_velocity_tb_free_lr_solid.f90 2d-bcs_velocity_t_free_b_constant_lr_solid.f90 velocity_bc_interface.f90
 
 .PHONY: cleanall
 
