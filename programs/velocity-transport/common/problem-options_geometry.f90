@@ -769,25 +769,126 @@ module problem_options_geometry
         integer                :: i, j
         real(db)               :: x, y
 
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        !! PLACENTONE WIDTHS AND SIDES !!
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        do i = 1, no_placentones
+            do j = 1, 2
+                update_velocity           = calculate_mesh_velocity(placentone_sides(i, j, :), 2, mesh_time)
+                placentone_sides(i, j, :) = placentone_sides(i, j, :) + update_velocity*time_step
+            end do
+
+            placentone_widths(i) = placentone_sides(i, 2, 1) - placentone_sides(i, 1, 1)
+        end do
+
+        cumulative_placentone_widths(1) = placentone_sides(1, 1, 1)
+        do i = 2, no_placentones
+            cumulative_placentone_widths(i) = cumulative_placentone_widths(i-1) + placentone_widths(i-1) + wall_width
+        end do
+
+        !!!!!!!!!!!!!!!!!!
+        !! ARTERY SIDES !!
+        !!!!!!!!!!!!!!!!!!
+        do i = 1, no_placentones
+            do j = 1, 2
+                update_velocity       = calculate_mesh_velocity(artery_sides(i, j, :), 2, mesh_time)
+                artery_sides(i, j, :) = artery_sides(i, j, :) + update_velocity(:)*time_step
+            end do
+        end do
+
+        ! TODO: investigate why you need to divide by 2...
+        artery_width_sm = sqrt((artery_sides(1, 1, 1) - artery_sides(1, 2, 1))**2 + &
+            (artery_sides(1, 1, 2) - artery_sides(1, 2, 2))**2)/2.0_db
+        
+        x = (artery_sides(1, 1, 1) + artery_sides(1, 2, 1))/2.0_db
+        y = (artery_sides(1, 1, 2) + artery_sides(1, 2, 2))/2.0_db
+        artery_length = sqrt((x - vessel_tops(1, 2, 1))**2 + (y - vessel_tops(1, 2, 2))**2)
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        !! CAVITY TRANSITIONS AND VESSEL TOPS/ANGLES !!
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (trim(control_file) == 'placenta') then
+            do i = 1, no_placentones
+                ! Cavity tops.
+                do j = 1, 3
+                    update_velocity      = calculate_mesh_velocity(cavity_tops(i, j, :), 2, mesh_time)
+                    cavity_tops(i, j, :) = cavity_tops(i, j, :) + update_velocity*time_step
+                end do
+
+                ! Cavity sides.
+                do j = 1, 3
+                    update_velocity       = calculate_mesh_velocity(cavity_sides(i, j, :), 2, mesh_time)
+                    cavity_sides(i, j, :) = cavity_sides(i, j, :) + update_velocity*time_step
+                end do
+
+                ! Vessel tops.
+                do j = 1, 3
+                    update_velocity      = calculate_mesh_velocity(vessel_tops(i, j, :), 2, mesh_time)
+                    vessel_tops(i, j, :) = vessel_tops(i, j, :) + update_velocity*time_step
+                    vessel_angles(i, j)  = -atan2((vessel_tops(i, j, 2)-y_centre), (vessel_tops(i, j, 1)-x_centre))
+                end do
+
+                ! Cavity widths and heights.
+                central_cavity_heights(i) = 2*sqrt( &
+                    (cavity_tops(i, 2, 1) - vessel_tops(i, 2, 1))**2 + (cavity_tops(i, 2, 2) - vessel_tops(i, 2, 2))**2 &
+                )
+
+                ! Cavity transition.
+                central_cavity_widths(i) = 2*sqrt( &
+                    (cavity_sides(i, 2, 1) - vessel_tops(i, 2, 1))**2 + (cavity_sides(i, 2, 2) - vessel_tops(i, 2, 2))**2 &
+                )
+
+                ! Cavity ratios
+                central_cavity_ratios(i) = central_cavity_heights(i)/central_cavity_widths(i)
+            end do
+        else
+            ! Cavity tops.
+            do j = 1, 3
+                update_velocity      = calculate_mesh_velocity(cavity_tops(1, j, :), 2, mesh_time)
+                cavity_tops(1, j, :) = cavity_tops(1, j, :) + update_velocity*time_step
+            end do
+
+            ! Cavity sides.
+            do j = 1, 3
+                update_velocity       = calculate_mesh_velocity(cavity_sides(1, j, :), 2, mesh_time)
+                cavity_sides(1, j, :) = cavity_sides(1, j, :) + update_velocity*time_step
+            end do
+
+            ! Vessel tops.
+            do j = 1, 3
+                update_velocity      = calculate_mesh_velocity(vessel_tops(1, j, :), 2, mesh_time)
+                vessel_tops(1, j, :) = vessel_tops(1, j, :) + update_velocity*time_step
+                vessel_angles(1, j)  = 0.0_db
+            end do
+
+            ! Cavity widths and heights.
+            central_cavity_heights(1) = 2*sqrt( &
+                (cavity_tops(1, 2, 1) - vessel_tops(1, 2, 1))**2 + (cavity_tops(1, 2, 2) - vessel_tops(1, 2, 2))**2 &
+            )
+
+            ! Cavity transition.
+            central_cavity_widths(1) = 2*sqrt( &
+                (cavity_sides(1, 2, 1) - vessel_tops(1, 2, 1))**2 + (cavity_sides(1, 2, 2) - vessel_tops(1, 2, 2))**2 &
+            )
+
+            ! Cavity ratios
+            central_cavity_ratios(1) = central_cavity_heights(1)/central_cavity_widths(1)
+        end if
+
+        ! Cavity transition.
+        if (trim(control_file) == 'placenta') then
+            i = 4
+        else
+            i = 1
+        end if
+        central_cavity_transition = sqrt((cavity_sides(i, 3, 1) - cavity_sides(i, 1, 1))**2 + &
+            (cavity_sides(i, 3, 2) - cavity_sides(i, 1, 2))**2)
+
         if (trim(control_file) == 'placenta') then
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             !! PLACENTONE WIDTHS AND SIDES !!
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            do i = 1, no_placentones
-                do j = 1, 2
-                    update_velocity           = calculate_mesh_velocity(placentone_sides(i, j, :), 2, mesh_time)
-                    placentone_sides(i, j, :) = placentone_sides(i, j, :) + update_velocity*time_step
-                end do
-
-                placentone_widths(i) = placentone_sides(i, 2, 1) - placentone_sides(i, 1, 1)
-            end do
-
             wall_width = placentone_sides(4, 1, 1) - placentone_sides(3, 2, 1)
-
-            cumulative_placentone_widths(1) = placentone_sides(1, 1, 1)
-            do i = 2, no_placentones
-                cumulative_placentone_widths(i) = cumulative_placentone_widths(i-1) + placentone_widths(i-1) + wall_width
-            end do
 
             !!!!!!!!!!!!!!!!!!!!!!!!!
             !! PLACENTA DIMENSIONS !!
@@ -827,24 +928,6 @@ module problem_options_geometry
             update_velocity                 = calculate_mesh_velocity(right_marginal_sinus_tops(2, :), 2, mesh_time)
             right_marginal_sinus_tops(2, :) = right_marginal_sinus_tops(2, :) + update_velocity*time_step
 
-            !!!!!!!!!!!!!!!!!!
-            !! ARTERY SIDES !!
-            !!!!!!!!!!!!!!!!!!
-            do i = 1, no_placentones
-                do j = 1, 2
-                    update_velocity       = calculate_mesh_velocity(artery_sides(i, j, :), 2, mesh_time)
-                    artery_sides(i, j, :) = artery_sides(i, j, :) + update_velocity(:)*time_step
-                end do
-            end do
-
-            ! TODO: investigate why you need to divide by 2...
-            artery_width_sm = sqrt((artery_sides(1, 1, 1) - artery_sides(1, 2, 1))**2 + &
-                (artery_sides(1, 1, 2) - artery_sides(1, 2, 2))**2)/2.0_db
-            
-            x = (artery_sides(1, 1, 1) + artery_sides(1, 2, 1))/2.0_db
-            y = (artery_sides(1, 1, 2) + artery_sides(1, 2, 2))/2.0_db
-            artery_length = sqrt((x - vessel_tops(1, 2, 1))**2 + (y - vessel_tops(1, 2, 2))**2)
-
             !!!!!!!!!!!!!!!!!
             !! WALL ANGLES !!
             !!!!!!!!!!!!!!!!!
@@ -867,47 +950,6 @@ module problem_options_geometry
                     (placentone_sides(i, 2, 2) - wall_tops(i, 1, 2))**2)
             end do
 
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !! CAVITY TRANSITIONS AND VESSEL TOPS/ANGLES !!
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            do i = 1, no_placentones
-                ! Cavity tops.
-                do j = 1, 3
-                    update_velocity      = calculate_mesh_velocity(cavity_tops(i, j, :), 2, mesh_time)
-                    cavity_tops(i, j, :) = cavity_tops(i, j, :) + update_velocity*time_step
-                end do
-
-                ! Cavity sides.
-                do j = 1, 3
-                    update_velocity       = calculate_mesh_velocity(cavity_sides(i, j, :), 2, mesh_time)
-                    cavity_sides(i, j, :) = cavity_sides(i, j, :) + update_velocity*time_step
-                end do
-
-                ! Vessel tops.
-                do j = 1, 3
-                    update_velocity      = calculate_mesh_velocity(vessel_tops(i, j, :), 2, mesh_time)
-                    vessel_tops(i, j, :) = vessel_tops(i, j, :) + update_velocity*time_step
-                    vessel_angles(i, j)  = -atan2((vessel_tops(i, j, 2)-y_centre), (vessel_tops(i, j, 1)-x_centre))
-                end do
-
-                ! Cavity widths and heights.
-                central_cavity_heights(i) = 2*sqrt( &
-                    (cavity_tops(i, 2, 1) - vessel_tops(i, 2, 1))**2 + (cavity_tops(i, 2, 2) - vessel_tops(i, 2, 2))**2 &
-                )
-
-                ! Cavity transition.
-                central_cavity_widths(i) = 2*sqrt( &
-                    (cavity_sides(i, 2, 1) - vessel_tops(i, 2, 1))**2 + (cavity_sides(i, 2, 2) - vessel_tops(i, 2, 2))**2 &
-                )
-
-                ! Cavity ratios
-                central_cavity_ratios(i) = central_cavity_heights(i)/central_cavity_widths(i)
-            end do
-
-            ! Cavity transition.
-            central_cavity_transition = sqrt((cavity_sides(4, 3, 1) - cavity_sides(4, 1, 1))**2 + &
-                (cavity_sides(4, 3, 2) - cavity_sides(4, 1, 2))**2)
-
             if (processor_no == 0) then
                 print *, "UPDATING..."
                 print *, "CAVITY HEIGHT: ", central_cavity_heights(4)
@@ -923,6 +965,8 @@ module problem_options_geometry
                 print *, "Y_CENTRE: ", y_centre
                 print *, "PLACENTONE WIDTH: ", placentone_widths(4)
             end if
+        else if (trim(control_file) == 'placentone') then
+            
         else
             call write_message(io_msg, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             call write_message(io_msg, "!! WARNING: update_geometry not implemented for this geometry. !!")
@@ -1143,6 +1187,39 @@ module problem_options_geometry
         y0 = y2 - pipe_transition
         
         calculate_placentone_pipe_transition = smooth_tanh_function(y, steepness, y0, y2)
+    end function
+
+    function translate_placentone_to_placentone_point(problem_dim, placentone_point, element_region_id)
+        use param
+        
+        implicit none
+        
+        real(db), dimension(problem_dim)             :: translate_placentone_to_placentone_point
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: placentone_point
+        integer, intent(in)                          :: element_region_id
+
+        real(db) :: offset, scaling_factor
+
+        ! translate_placentone_to_placentone_point = -0.01_db
+
+        if (411 <= element_region_id .and. element_region_id <= 413) then
+            translate_placentone_to_placentone_point = (placentone_point - &
+                [0.0_db, vessel_tops(1, 2, 2)])*0.25_db/central_cavity_widths(1)
+        else if ( &
+            (411 <= element_region_id .and. element_region_id <= 413) .or. &
+            (501 <= element_region_id .and. element_region_id <= 521) &
+        ) then
+            offset = 0.5_db
+            scaling_factor = 1.0_db!0.25_db/central_cavity_widths(1)
+
+            translate_placentone_to_placentone_point = &
+                (placentone_point - [offset, vessel_tops(1, 2, 2)])/scaling_factor + [offset, 0.0_db]
+        else
+            print *, "Error in translate_placentone_to_placentone_point. Missed case: element_region_id = ", element_region_id
+            error stop
+        end if
+
     end function
     
     function translate_placenta_to_placentone_point(problem_dim, placenta_point, element_region_id)

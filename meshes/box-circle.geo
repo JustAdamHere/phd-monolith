@@ -11,10 +11,11 @@ SetFactory("OpenCASCADE");
 //=/   Inlet:               111
 //=/   Outlets:             211, 212
 //=/  SURFACES
-//=/   IVS:      301
-//=/   Inlet:    412
-//=/   Outlets:  411, 413
-//=/   Cavities: 501
+//=/   IVS:        301
+//=/   Inlet:      412
+//=/   Outlets:    411, 413
+//=/   Cavities:   501
+//=/   Transition: 511, 521
 //=/
 //=/=/=/=/=/=/=/=/=/=//
 
