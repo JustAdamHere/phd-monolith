@@ -97,6 +97,14 @@ module problem_options_geometry
         real(db) :: x, y, r
 
         call select_mesh_velocity(mesh_velocity_type)
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!!
+        !! CAVITY LENGTH RATIOS !!
+        !!!!!!!!!!!!!!!!!!!!!!!!!!
+        allocate(central_cavity_ratios(no_placentones))
+        do i = 1, no_placentones
+            central_cavity_ratios(i) = central_cavity_heights(i)/central_cavity_widths(i)
+        end do
         
         ! TODO: THIS NEEDS TO CHANGE BASED ON USER INPUT.
         placentone_width = 1.0_db                        ! 40 mm
@@ -292,7 +300,7 @@ module problem_options_geometry
                 vessel_tops(1, j, 2) = 0.0_db
                 vessel_angles(1, j)  = 0.0_db
             end do
-
+            
             !!!!!!!!!!!!!!!!!!!
             !! ARTERTY SIDES !!
             !!!!!!!!!!!!!!!!!!!
@@ -303,60 +311,10 @@ module problem_options_geometry
             artery_sides(1, 2, 1) = vessel_locations(1, 2) + artery_width_sm/2.0_db
             artery_sides(1, 2, 2) = -artery_length
 
-            !!!!!!!!!!!!!!!!!!!!!!!!!!
-            !! CAVITY LENGTH RATIOS !!
-            !!!!!!!!!!!!!!!!!!!!!!!!!!
-            allocate(central_cavity_ratios(1))
-            central_cavity_ratios(1) = central_cavity_heights(1)/central_cavity_widths(1)
-
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !! CAVITY TRANSITION POINTS !!
-            !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-            !  cavity_tops(1, 1, :) = lower cavity top
-            !  cavity_tops(1, 2, :) = middle cavity top
-            !  cavity_tops(1, 3, :) = upper cavity top
-            allocate(cavity_tops(1, 3, problem_dim))
-            cavity_tops(1, 1, 1) = vessel_tops(1, 2, 1) - &
-                (central_cavity_heights(1)/2 - central_cavity_transition*central_cavity_ratios(1)/2)
-            cavity_tops(1, 1, 2) = vessel_tops(1, 2, 2) + &
-                (central_cavity_heights(1)/2 - central_cavity_transition*central_cavity_ratios(1)/2)
-            cavity_tops(1, 2, 1) = vessel_tops(1, 2, 1) - &
-                (central_cavity_heights(1)/2                                                       )
-            cavity_tops(1, 2, 2) = vessel_tops(1, 2, 2) + &
-                (central_cavity_heights(1)/2                                                       )
-            cavity_tops(1, 3, 1) = vessel_tops(1, 2, 1) - &
-                (central_cavity_heights(1)/2 + central_cavity_transition*central_cavity_ratios(1)/2)
-            cavity_tops(1, 3, 2) = vessel_tops(1, 2, 2) + &
-                (central_cavity_heights(1)/2 + central_cavity_transition*central_cavity_ratios(1)/2)
-
-            !  cavity_sides(1, 1, :) = closest cavity side
-            !  cavity_sides(1, 2, :) = middle cavity side
-            !  cavity_sides(1, 3, :) = furthest cavity side
-            allocate(cavity_sides(1, 3, problem_dim))
-            cavity_sides(1, 1, 1) = x_centre + &
-                (central_cavity_widths(1) - central_cavity_transition)/2
-            cavity_sides(1, 1, 2) = y_centre + &
-                (central_cavity_widths(1) - central_cavity_transition)/2
-            cavity_sides(1, 2, 1) = x_centre + &
-                (central_cavity_widths(1)                            )/2
-            cavity_sides(1, 2, 2) = y_centre + &
-                (central_cavity_widths(1)                            )/2
-            cavity_sides(1, 3, 1) = x_centre + &
-                (central_cavity_widths(1) + central_cavity_transition)/2
-            cavity_sides(1, 3, 2) = y_centre + &
-                (central_cavity_widths(1) + central_cavity_transition)/2
         else
             call write_message(io_err, "Geometry not supported: " // control_file)
             error stop
         end if
-
-        !!!!!!!!!!!!!!!!!!!!!!!!!!
-        !! CAVITY LENGTH RATIOS !!
-        !!!!!!!!!!!!!!!!!!!!!!!!!!
-        allocate(central_cavity_ratios(no_placentones))
-        do i = 1, no_placentones
-            central_cavity_ratios(i) = central_cavity_heights(i)/central_cavity_widths(i)
-        end do
 
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         !! CAVITY TRANSITION POINTS !!
@@ -384,20 +342,29 @@ module problem_options_geometry
         !  cavity_sides(:, 2, :) = middle cavity side
         !  cavity_sides(:, 3, :) = furthest cavity side
         allocate(cavity_sides(no_placentones, 3, problem_dim))
-        do i = 1, no_placentones
-            cavity_sides(i, 1, 1) = x_centre + boundary_radius* &
-                cos(vessel_angles(i, 2) + ((central_cavity_widths(i) - central_cavity_transition)/2)/boundary_radius)
-            cavity_sides(i, 1, 2) = y_centre - boundary_radius* &
-                sin(vessel_angles(i, 2) + ((central_cavity_widths(i) - central_cavity_transition)/2)/boundary_radius)
-            cavity_sides(i, 2, 1) = x_centre + boundary_radius* &
-                cos(vessel_angles(i, 2) + ((central_cavity_widths(i)                            )/2)/boundary_radius)
-            cavity_sides(i, 2, 2) = y_centre - boundary_radius* &
-                sin(vessel_angles(i, 2) + ((central_cavity_widths(i)                            )/2)/boundary_radius)
-            cavity_sides(i, 3, 1) = x_centre + boundary_radius* &
-                cos(vessel_angles(i, 2) + ((central_cavity_widths(i) + central_cavity_transition)/2)/boundary_radius)
-            cavity_sides(i, 3, 2) = y_centre - boundary_radius* &
-                sin(vessel_angles(i, 2) + ((central_cavity_widths(i) + central_cavity_transition)/2)/boundary_radius)
-        end do
+        if (trim(control_file) == "placenta") then
+            do i = 1, no_placentones
+                cavity_sides(i, 1, 1) = x_centre + boundary_radius* &
+                    cos(vessel_angles(i, 2) + ((central_cavity_widths(i) - central_cavity_transition)/2)/boundary_radius)
+                cavity_sides(i, 1, 2) = y_centre - boundary_radius* &
+                    sin(vessel_angles(i, 2) + ((central_cavity_widths(i) - central_cavity_transition)/2)/boundary_radius)
+                cavity_sides(i, 2, 1) = x_centre + boundary_radius* &
+                    cos(vessel_angles(i, 2) + ((central_cavity_widths(i)                            )/2)/boundary_radius)
+                cavity_sides(i, 2, 2) = y_centre - boundary_radius* &
+                    sin(vessel_angles(i, 2) + ((central_cavity_widths(i)                            )/2)/boundary_radius)
+                cavity_sides(i, 3, 1) = x_centre + boundary_radius* &
+                    cos(vessel_angles(i, 2) + ((central_cavity_widths(i) + central_cavity_transition)/2)/boundary_radius)
+                cavity_sides(i, 3, 2) = y_centre - boundary_radius* &
+                    sin(vessel_angles(i, 2) + ((central_cavity_widths(i) + central_cavity_transition)/2)/boundary_radius)
+            end do
+        else
+            cavity_sides(1, 1, 1) = vessel_locations(1, 2) + (central_cavity_widths(1) - central_cavity_transition)/2
+            cavity_sides(1, 1, 2) = 0.0_db
+            cavity_sides(1, 2, 1) = vessel_locations(1, 2) + (central_cavity_widths(1)                            )/2
+            cavity_sides(1, 2, 2) = 0.0_db
+            cavity_sides(1, 3, 1) = vessel_locations(1, 2) + (central_cavity_widths(1) + central_cavity_transition)/2
+            cavity_sides(1, 3, 2) = 0.0_db
+        end if
 
         ! Recalculated here to help with the boundary conditions being consistent between timesteps.
         do i = 1, no_placentones
@@ -409,23 +376,31 @@ module problem_options_geometry
             )
             central_cavity_ratios(i) = central_cavity_heights(i)/central_cavity_widths(i)
         end do
-        central_cavity_transition = sqrt((cavity_sides(4, 3, 1) - cavity_sides(4, 1, 1))**2 + &
-            (cavity_sides(4, 3, 2) - cavity_sides(4, 1, 2))**2)
+        if (trim(control_file) == "placenta") then
+            central_cavity_transition = sqrt((cavity_sides(4, 3, 1) - cavity_sides(4, 1, 1))**2 + &
+                (cavity_sides(4, 3, 2) - cavity_sides(4, 1, 2))**2)
+        end if
 
         if (processor_no == 0) then
+            if (trim(control_file) == "placenta") then
+                i = 4
+            else
+                i = 1
+            end if
+
             print *, "INITIALISING..."
-            print *, "CAVITY HEIGHT: ", central_cavity_heights(4)
-            print *, "CAVITY WIDTH:  ", central_cavity_widths(4)
-            print *, "CAVITY RATIO: ", central_cavity_ratios(4)
+            print *, "CAVITY HEIGHT: ", central_cavity_heights(i)
+            print *, "CAVITY WIDTH:  ", central_cavity_widths(i)
+            print *, "CAVITY RATIO: ", central_cavity_ratios(i)
             print *, "CAVITY TRANSITION: ", central_cavity_transition
-            print *, "CAVITY TOP: ", cavity_tops(4, 2, :)
-            print *, "VESSEL TOP: ", vessel_tops(4, 2, :)
+            print *, "CAVITY TOP: ", cavity_tops(i, 2, :)
+            print *, "VESSEL TOP: ", vessel_tops(i, 2, :)
             print *, "ARTERY WIDTH SM: ", artery_width_sm
             print *, "ARTERY LENGTH: ", artery_length
             print *, "BOUNDARY RADIUS: ", boundary_radius
             print *, "X_CENTRE: ", x_centre
             print *, "Y_CENTRE: ", y_centre
-            print *, "PLACENTONE WIDTH: ", placentone_widths(4)
+            print *, "PLACENTONE WIDTH: ", placentone_widths(i)
         end if
 
         call create_fe_solution(solution_moving_mesh, mesh_data, 'fe_projection_moving_mesh', aptofem_stored_keys, &
