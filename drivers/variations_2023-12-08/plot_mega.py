@@ -158,6 +158,10 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
       if not (j == 2 and i > 0):
         axes[0][j].plot(parameter_values[j], data[i, j]["q50"]["velocity_magnitude_integral"], linestyle="dashed", color=f"C{i}")
         axes[0][j].fill_between(parameter_values[j], data[i, j]["q25"]["velocity_magnitude_integral"], data[i, j]["q75"]["velocity_magnitude_integral"], alpha=0.2, color=f"C{i}")
+      # if not (j == 2 and i > 0):
+      #   for k in range(len(data[i, j]["data"]["velocity_magnitude_integral"])):
+      #     for l in range(len(data[i, j]["data"]["velocity_magnitude_integral"][k])):
+            # axes[0][j].scatter(parameter_values[j][k], data[i, j]["data"]["velocity_magnitude_integral"][k][l], marker=".", color=f"C{i}", alpha=1.0/10)
     axes_mini[0][j].plot(parameter_values[j], data[0, j]["q50"]["velocity_magnitude_integral"], linestyle="dashed", color=f"C0")
     axes_mini[0][j].fill_between(parameter_values[j], data[0, j]["q25"]["velocity_magnitude_integral"], data[0, j]["q75"]["velocity_magnitude_integral"], alpha=0.2, color=f"C0")
     
@@ -222,6 +226,10 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
       if not (j == 2 and i > 0):
         axes[6][j].plot(parameter_values[j], data[i, j]["q50"]["kinetic_energy_flux"], linestyle="dashed", color=f"C{i}")
         axes[6][j].fill_between(parameter_values[j], data[i, j]["q25"]["kinetic_energy_flux"], data[i, j]["q75"]["kinetic_energy_flux"], alpha=0.2, color=f"C{i}")
+
+        # for k in range(len(data[i, j]["data"]["kinetic_energy_flux"])):
+        #   for l in range(len(data[i, j]["data"]["kinetic_energy_flux"][k])):
+        #     axes[6][j].scatter(parameter_values[j][k], data[i, j]["data"]["kinetic_energy_flux"][k][l], marker=".", color=f"C{i}", alpha=1.0/10)
   axes[6][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
   axes[6][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
 
@@ -231,6 +239,10 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
       if not (j == 2 and i > 0):
         axes[7][j].plot(parameter_values[j], data[i, j]["q50"]["total_energy_flux"], linestyle="dashed", color=f"C{i}")
         axes[7][j].fill_between(parameter_values[j], data[i, j]["q25"]["total_energy_flux"], data[i, j]["q75"]["total_energy_flux"], alpha=0.2, color=f"C{i}")
+
+        # for k in range(len(data[i, j]["data"]["total_energy_flux"])):
+        #   for l in range(len(data[i, j]["data"]["total_energy_flux"][k])):
+        #     axes[7][j].scatter(parameter_values[j][k], data[i, j]["data"]["total_energy_flux"][k][l], marker=".", color=f"C{i}", alpha=1.0/10)
   axes[7][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
   axes[7][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
 
