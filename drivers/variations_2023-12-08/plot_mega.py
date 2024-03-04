@@ -87,8 +87,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   setup_plots.style(fig, axes[3][0], None, r"$v_\text{cross}$", y_scilimits=[-3, -3] , y_bottom=0, y_top=2e-2, integer_ticks=False, max_major_ticks=3)
   setup_plots.style(fig, axes[4][0], None, r"$\bar{c}$", y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=False, max_major_ticks=3)
   setup_plots.style(fig, axes[5][0], None, r"$\frac{C_\text{flux}(S)}{C_\text{flux}(\Gamma_\text{in})}$ (%)", y_scilimits=None , y_top=102, integer_ticks=False, max_major_ticks=3)
-  setup_plots.style(fig, axes[6][0], None, r"$E_\text{kinetic}(\Gamma_\text{in}) - E_\text{kinetic}(\Gamma_\text{out})$", y_scilimits=[1, 1], y_bottom=0, y_top=6e1, integer_ticks=False, max_major_ticks=3)
-  setup_plots.style(fig, axes[7][0], parameter_name[0], r"$E_\text{total}(\Gamma_\text{in}) - E_\text{total}(\Gamma_\text{out})$", y_scilimits=[2, 2], y_bottom=0, y_top=1e3, integer_ticks=False, max_major_ticks=3, y_labelpad=25)
+  setup_plots.style(fig, axes[6][0], None, r"$\frac{E_\text{kinetic}(\Gamma_\text{in}) - E_\text{kinetic}(\Gamma_\text{out})}{E_\text{kinetic}(\Gamma_\text{in})}$", y_scilimits=None, y_bottom=0.8, y_top=1.02, integer_ticks=False, max_major_ticks=3)
+  setup_plots.style(fig, axes[7][0], parameter_name[0], r"$\frac{E_\text{total}(\Gamma_\text{in}) - E_\text{total}(\Gamma_\text{out})}{E_\text{total}(\Gamma_\text{in})}$", y_scilimits=None, y_bottom=0.8, y_top=1.02, integer_ticks=False, max_major_ticks=3, y_labelpad=25)
 
   setup_plots.style(fig, axes[0][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=True, max_major_ticks=5)
   setup_plots.style(fig, axes[1][1], None, None, y_scilimits=None , y_top=102, integer_ticks=True, max_major_ticks=5)
@@ -96,8 +96,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   setup_plots.style(fig, axes[3][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-2, integer_ticks=True, max_major_ticks=5)
   setup_plots.style(fig, axes[4][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True, max_major_ticks=5)
   setup_plots.style(fig, axes[5][1], None, None, y_scilimits=None , y_top=102, integer_ticks=True, max_major_ticks=5)
-  setup_plots.style(fig, axes[6][1], None, None, y_scilimits=[1, 1], y_bottom=0, y_top=6e1, integer_ticks=True, max_major_ticks=5)
-  setup_plots.style(fig, axes[7][1], parameter_name[1], None, y_scilimits=[2, 2], y_bottom=0, y_top=None, integer_ticks=True, max_major_ticks=5)
+  setup_plots.style(fig, axes[6][1], None, None, y_scilimits=None, y_bottom=0.8, y_top=1.02, integer_ticks=True, max_major_ticks=5)
+  setup_plots.style(fig, axes[7][1], parameter_name[1], None, y_scilimits=None, y_bottom=0.8, y_top=1.02, integer_ticks=True, max_major_ticks=5)
 
   setup_plots.style(fig, axes[0][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=False, max_major_ticks=3)
   setup_plots.style(fig, axes[1][2], None, None, y_scilimits=None , y_top=102, integer_ticks=False, max_major_ticks=3)
@@ -105,8 +105,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   setup_plots.style(fig, axes[3][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-2, integer_ticks=False, max_major_ticks=3)
   setup_plots.style(fig, axes[4][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=False, max_major_ticks=3)
   setup_plots.style(fig, axes[5][2], None, None, y_scilimits=None , y_top=102, integer_ticks=False, max_major_ticks=3)
-  setup_plots.style(fig, axes[6][2], None, None, y_scilimits=[1, 1], y_bottom=0, y_top=6e1, integer_ticks=False, max_major_ticks=3)
-  setup_plots.style(fig, axes[7][2], parameter_name[2], None, y_scilimits=[2, 2], y_bottom=0, y_top=1e3, integer_ticks=False, max_major_ticks=3)
+  setup_plots.style(fig, axes[6][2], None, None, y_scilimits=None, y_bottom=0.8, y_top=1.02, integer_ticks=False, max_major_ticks=3)
+  setup_plots.style(fig, axes[7][2], parameter_name[2], None, y_scilimits=None, y_bottom=0.8, y_top=1.02, integer_ticks=False, max_major_ticks=3)
 
   # Decide where to save plots.
   if subfolder == None:
@@ -156,12 +156,12 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   for j in range(3):
     for i in range(2):
       if not (j == 2 and i > 0):
+        for k in range(len(data[i, j]["outside_iqr"]["velocity_magnitude_integral"])):
+          for l in range(len(data[i, j]["outside_iqr"]["velocity_magnitude_integral"][k])):
+            axes[0][j].scatter(parameter_values[j][k], data[i, j]["outside_iqr"]["velocity_magnitude_integral"][k][l], marker=".", color=f"C{i}", alpha=1.0/10)
+
         axes[0][j].plot(parameter_values[j], data[i, j]["q50"]["velocity_magnitude_integral"], linestyle="dashed", color=f"C{i}")
         axes[0][j].fill_between(parameter_values[j], data[i, j]["q25"]["velocity_magnitude_integral"], data[i, j]["q75"]["velocity_magnitude_integral"], alpha=0.2, color=f"C{i}")
-      # if not (j == 2 and i > 0):
-      #   for k in range(len(data[i, j]["data"]["velocity_magnitude_integral"])):
-      #     for l in range(len(data[i, j]["data"]["velocity_magnitude_integral"][k])):
-            # axes[0][j].scatter(parameter_values[j][k], data[i, j]["data"]["velocity_magnitude_integral"][k][l], marker=".", color=f"C{i}", alpha=1.0/10)
     axes_mini[0][j].plot(parameter_values[j], data[0, j]["q50"]["velocity_magnitude_integral"], linestyle="dashed", color=f"C0")
     axes_mini[0][j].fill_between(parameter_values[j], data[0, j]["q25"]["velocity_magnitude_integral"], data[0, j]["q75"]["velocity_magnitude_integral"], alpha=0.2, color=f"C0")
     
@@ -170,6 +170,18 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
 
   # AXES 2: Slow velocity percentages.
   for j in range(3):
+    for k in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_ivs"])):
+      for l in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_ivs"][k])):
+        axes[1][j].scatter(parameter_values[j][k], data[0, j]["outside_iqr"]["slow_velocity_percentage_ivs"][k][l], marker=".", color=f"C0", alpha=1.0/10)
+    for k in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_everywhere"])):
+      for l in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_everywhere"][k])):
+        axes[1][j].scatter(parameter_values[j][k], data[0, j]["outside_iqr"]["slow_velocity_percentage_everywhere"][k][l], marker=".", color=f"C1", alpha=1.0/10)
+    for k in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_dellschaft"])):
+      for l in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_dellschaft"][k])):
+        axes[1][j].scatter(parameter_values[j][k], data[0, j]["outside_iqr"]["slow_velocity_percentage_dellschaft"][k][l], marker=".", color=f"C2", alpha=1.0/10)
+    for k in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_nominal_everywhere"])):
+      for l in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_nominal_everywhere"][k])):
+        axes[1][j].scatter(parameter_values[j][k], data[0, j]["outside_iqr"]["slow_velocity_percentage_nominal_everywhere"][k][l], marker=".", color=f"C3", alpha=1.0/10)
     axes[1][j].plot(parameter_values[j], data[0, j]["q50"]["slow_velocity_percentage_ivs"], linestyle="dashed", color="C0")
     axes[1][j].plot(parameter_values[j], data[0, j]["q50"]["slow_velocity_percentage_everywhere"], linestyle="dashed", color="C1")
     axes[1][j].plot(parameter_values[j], data[0, j]["q50"]["slow_velocity_percentage_dellschaft"], linestyle="dashed", color="C2")
@@ -182,6 +194,15 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
 
   # AXES 3: Velocity flux through different veins.
   for j in range(3):
+    for k in range(len(data[0, j]["outside_iqr"]["velocity_percentage_basal_plate"])):
+      for l in range(len(data[0, j]["outside_iqr"]["velocity_percentage_basal_plate"][k])):
+        axes[2][j].scatter(parameter_values[j][k], data[0, j]["outside_iqr"]["velocity_percentage_basal_plate"][k][l], marker=".", color=f"C0", alpha=1.0/10)
+    for k in range(len(data[0, j]["outside_iqr"]["velocity_percentage_septal_wall"])):
+      for l in range(len(data[0, j]["outside_iqr"]["velocity_percentage_septal_wall"][k])):
+        axes[2][j].scatter(parameter_values[j][k], data[0, j]["outside_iqr"]["velocity_percentage_septal_wall"][k][l], marker=".", color=f"C1", alpha=1.0/10)
+    for k in range(len(data[0, j]["outside_iqr"]["velocity_percentage_marginal_sinus"])):
+      for l in range(len(data[0, j]["outside_iqr"]["velocity_percentage_marginal_sinus"][k])):
+        axes[2][j].scatter(parameter_values[j][k], data[0, j]["outside_iqr"]["velocity_percentage_marginal_sinus"][k][l], marker=".", color=f"C2", alpha=1.0/10)
     axes[2][j].plot(parameter_values[j], data[0, j]["q50"]["velocity_percentage_basal_plate"], linestyle="dashed", color="C0")
     axes[2][j].plot(parameter_values[j], data[0, j]["q50"]["velocity_percentage_septal_wall"], linestyle="dashed", color="C1")
     axes[2][j].plot(parameter_values[j], data[0, j]["q50"]["velocity_percentage_marginal_sinus"], linestyle="dashed", color="C2")
@@ -194,6 +215,10 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   for j in range(3):
     for i in range(2):
       if not (j == 2 and i > 0):
+        for k in range(len(data[i, j]["outside_iqr"]["velocity_cross_flow_flux"])):
+          for l in range(len(data[i, j]["outside_iqr"]["velocity_cross_flow_flux"][k])):
+            axes[3][j].scatter(parameter_values[j][k], data[i, j]["outside_iqr"]["velocity_cross_flow_flux"][k][l], marker=".", color=f"C{i}", alpha=1.0/10)
+
         axes[3][j].plot(parameter_values[j], data[i, j]["q50"]["velocity_cross_flow_flux"], linestyle="dashed", color=f"C{i}")
         axes[3][j].fill_between(parameter_values[j], data[i, j]["q25"]["velocity_cross_flow_flux"], data[i, j]["q75"]["velocity_cross_flow_flux"], alpha=0.2, color=f"C{i}")
   axes[3][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
@@ -203,6 +228,10 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   for j in range(3):
     for i in range(2):
       if not (j == 2 and i > 0):
+        for k in range(len(data[i, j]["outside_iqr"]["transport_reaction_integral"])):
+          for l in range(len(data[i, j]["outside_iqr"]["transport_reaction_integral"][k])):
+            axes[4][j].scatter(parameter_values[j][k], data[i, j]["outside_iqr"]["transport_reaction_integral"][k][l], marker=".", color=f"C{i}", alpha=1.0/10)
+
         axes[4][j].plot(parameter_values[j], data[i, j]["q50"]["transport_reaction_integral"], linestyle="dashed", color=f"C{i}")
         axes[4][j].fill_between(parameter_values[j], data[i, j]["q25"]["transport_reaction_integral"], data[i, j]["q75"]["transport_reaction_integral"], alpha=0.2, color=f"C{i}")
     axes_mini[1][j].plot(parameter_values[j], data[0, j]["q50"]["transport_reaction_integral"], linestyle="dashed", color=f"C0")
@@ -212,6 +241,15 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
 
   # AXES 6: Concentration flux through different veins.
   for j in range(3):
+    for k in range(len(data[0, j]["outside_iqr"]["transport_percentage_basal_plate"])):
+      for l in range(len(data[0, j]["outside_iqr"]["transport_percentage_basal_plate"][k])):
+        axes[5][j].scatter(parameter_values[j][k], data[0, j]["outside_iqr"]["transport_percentage_basal_plate"][k][l], marker=".", color=f"C0", alpha=1.0/10)
+    for k in range(len(data[0, j]["outside_iqr"]["transport_percentage_septal_wall"])):
+      for l in range(len(data[0, j]["outside_iqr"]["transport_percentage_septal_wall"][k])):
+        axes[5][j].scatter(parameter_values[j][k], data[0, j]["outside_iqr"]["transport_percentage_septal_wall"][k][l], marker=".", color=f"C1", alpha=1.0/10)
+    for k in range(len(data[0, j]["outside_iqr"]["transport_percentage_marginal_sinus"])):
+      for l in range(len(data[0, j]["outside_iqr"]["transport_percentage_marginal_sinus"][k])):
+        axes[5][j].scatter(parameter_values[j][k], data[0, j]["outside_iqr"]["transport_percentage_marginal_sinus"][k][l], marker=".", color=f"C2", alpha=1.0/10)
     axes[5][j].plot(parameter_values[j], data[0, j]["q50"]["transport_percentage_basal_plate"], linestyle="dashed", color="C0")
     axes[5][j].plot(parameter_values[j], data[0, j]["q50"]["transport_percentage_septal_wall"], linestyle="dashed", color="C1")
     axes[5][j].plot(parameter_values[j], data[0, j]["q50"]["transport_percentage_marginal_sinus"], linestyle="dashed", color="C2")
@@ -224,12 +262,15 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   for j in range(3):
     for i in range(2):
       if not (j == 2 and i > 0):
+        for k in range(len(data[i, j]["outside_iqr"]["kinetic_energy_flux"])):
+          for l in range(len(data[i, j]["outside_iqr"]["kinetic_energy_flux"][k])):
+            axes[6][j].scatter(parameter_values[j][k], data[i, j]["data"]["kinetic_energy_flux"][k][l], marker=".", color=f"C{i}", alpha=1.0/10)
+
         axes[6][j].plot(parameter_values[j], data[i, j]["q50"]["kinetic_energy_flux"], linestyle="dashed", color=f"C{i}")
         axes[6][j].fill_between(parameter_values[j], data[i, j]["q25"]["kinetic_energy_flux"], data[i, j]["q75"]["kinetic_energy_flux"], alpha=0.2, color=f"C{i}")
-
-        # for k in range(len(data[i, j]["data"]["kinetic_energy_flux"])):
-        #   for l in range(len(data[i, j]["data"]["kinetic_energy_flux"][k])):
-        #     axes[6][j].scatter(parameter_values[j][k], data[i, j]["data"]["kinetic_energy_flux"][k][l], marker=".", color=f"C{i}", alpha=1.0/10)
+      # Just for veins.
+      if (j == 1):
+        axes[6][j].plot(parameter_values[j], 1 - parameter_values[j]**(-2), linestyle="solid", color=f"k")
   axes[6][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
   axes[6][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
 
@@ -237,12 +278,12 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   for j in range(3):
     for i in range(2):
       if not (j == 2 and i > 0):
+        for k in range(len(data[i, j]["outside_iqr"]["total_energy_flux"])):
+          for l in range(len(data[i, j]["outside_iqr"]["total_energy_flux"][k])):
+            axes[7][j].scatter(parameter_values[j][k], data[i, j]["data"]["total_energy_flux"][k][l], marker=".", color=f"C{i}", alpha=1.0/10)
+
         axes[7][j].plot(parameter_values[j], data[i, j]["q50"]["total_energy_flux"], linestyle="dashed", color=f"C{i}")
         axes[7][j].fill_between(parameter_values[j], data[i, j]["q25"]["total_energy_flux"], data[i, j]["q75"]["total_energy_flux"], alpha=0.2, color=f"C{i}")
-
-        # for k in range(len(data[i, j]["data"]["total_energy_flux"])):
-        #   for l in range(len(data[i, j]["data"]["total_energy_flux"][k])):
-        #     axes[7][j].scatter(parameter_values[j][k], data[i, j]["data"]["total_energy_flux"][k][l], marker=".", color=f"C{i}", alpha=1.0/10)
   axes[7][0].legend(handles=handles[0:2], labels=["any veins", "27 veins"])
   axes[7][1].legend(handles=handles[0:2], labels=["any arteries", "6 arteries"])
 
@@ -270,8 +311,8 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   setup_plots.style(fig, axes[3][0], None, r"$v_\text{cross}$", y_scilimits=[-3, -3] , y_bottom=0, y_top=2e-2, integer_ticks=True)
   setup_plots.style(fig, axes[4][0], None, r"$\bar{c}$", y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True)
   setup_plots.style(fig, axes[5][0], None, r"$\frac{C_\text{flux}(S)}{C_\text{flux}(\Gamma_\text{in})}$ (%)", y_scilimits=None , y_top=102, integer_ticks=True)
-  setup_plots.style(fig, axes[6][0], None, r"$E_\text{kinetic}(\Gamma_\text{in}) - E_\text{kinetic}(\Gamma_\text{out})$", y_scilimits=[1, 1], y_bottom=0, y_top=6e1, integer_ticks=True)
-  setup_plots.style(fig, axes[7][0], parameter_name[0], r"$E_\text{total}(\Gamma_\text{in}) - E_\text{total}(\Gamma_\text{out})$", y_scilimits=[2, 2], y_bottom=0, y_top=1e3, integer_ticks=True, y_labelpad=25)
+  setup_plots.style(fig, axes[6][0], None, r"$\frac{E_\text{kinetic}(\Gamma_\text{in}) - E_\text{kinetic}(\Gamma_\text{out})}{E_\text{kinetic}(\Gamma_\text{in})}$", y_scilimits=None, y_bottom=0.8, y_top=1.02, integer_ticks=True)
+  setup_plots.style(fig, axes[7][0], parameter_name[0], r"\frac{$E_\text{total}(\Gamma_\text{in}) - E_\text{total}(\Gamma_\text{out})}{$E_\text{total}(\Gamma_\text{in})}$", y_scilimits=None, y_bottom=0.8, y_top=1.02, integer_ticks=True, y_labelpad=25)
 
   setup_plots.style(fig, axes[0][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[1][1], None, None, y_scilimits=None , y_top=102, integer_ticks=True, max_major_ticks=4)
@@ -279,8 +320,8 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   setup_plots.style(fig, axes[3][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-2, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[4][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[5][1], None, None, y_scilimits=None , y_top=102, integer_ticks=True, max_major_ticks=4)
-  setup_plots.style(fig, axes[6][1], None, None, y_scilimits=[1, 1], y_bottom=0, y_top=6e1, integer_ticks=True, max_major_ticks=4)
-  setup_plots.style(fig, axes[7][1], parameter_name[1], None, y_scilimits=[2, 2], y_bottom=0, y_top=1e3, integer_ticks=True, max_major_ticks=4)
+  setup_plots.style(fig, axes[6][1], None, None, y_scilimits=None, y_bottom=0.8, y_top=1.02, integer_ticks=True, max_major_ticks=4)
+  setup_plots.style(fig, axes[7][1], parameter_name[1], None, y_scilimits=None, y_bottom=0.8, y_top=1.02, integer_ticks=True, max_major_ticks=4)
 
   setup_plots.style(fig, axes[0][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[1][2], None, None, y_scilimits=None , y_top=102, integer_ticks=True, max_major_ticks=4)
@@ -288,8 +329,8 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   setup_plots.style(fig, axes[3][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-2, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[4][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[5][2], None, None, y_scilimits=None , y_top=102, integer_ticks=True, max_major_ticks=4)
-  setup_plots.style(fig, axes[6][2], None, None, y_scilimits=[1, 1], y_bottom=0, y_top=6e1, integer_ticks=True, max_major_ticks=4)
-  setup_plots.style(fig, axes[7][2], parameter_name[2], None, y_scilimits=[2, 2], y_bottom=0, y_top=1e3, integer_ticks=True, max_major_ticks=4)
+  setup_plots.style(fig, axes[6][2], None, None, y_scilimits=None, y_bottom=0.8, y_top=1.02, integer_ticks=True, max_major_ticks=4)
+  setup_plots.style(fig, axes[7][2], parameter_name[2], None, y_scilimits=None, y_bottom=0.8, y_top=1.02, integer_ticks=True, max_major_ticks=4)
 
   setup_plots.style(fig_mini, axes_mini[0][0], None, r"$\bar{v}$", y_scilimits=[-3, -3] , y_bottom=0, y_top=1e-2, integer_ticks=True)
   setup_plots.style(fig_mini, axes_mini[1][0], parameter_name[0], r"$\bar{c}$", y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True)
