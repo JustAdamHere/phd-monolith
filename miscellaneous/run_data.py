@@ -63,7 +63,7 @@ class class_run_data:
     for i in range(2):
       ke_out += flux['ke_ms_outlet_fluxes'][i]/flux['one_ms_outlet'][i]
     self.kinetic_energy_flux = rho*U**3*(ke_in - ke_out)
-    # self.kinetic_energy_flux = rho*(ke_in - ke_out)
+    # self.kinetic_energy_flux = (ke_in - ke_out)/ke_in
 
     # Total energy flux (pressure energy + kinetic energy).
     pe_in  = 0.0
@@ -85,10 +85,8 @@ class class_run_data:
         pe_out += flux['pe_sw_outlet_fluxes'][i][2]/flux['one_sw_outlet'][i][2]
     for i in range(2):
       pe_out += flux['pe_ms_outlet_fluxes'][i]/flux['one_ms_outlet'][i]
-
-    # self.total_energy_flux = self.kinetic_energy_flux + (mu/(rho*U*L))*(pe_in - pe_out)
     self.total_energy_flux = self.kinetic_energy_flux + (mu*U/L)*U*(pe_in - pe_out)
-    # self.total_energy_flux = self.kinetic_energy_flux + (pe_in - pe_out)
+    # self.total_energy_flux = (ke_in + pe_in - ke_out - pe_out)/(ke_in + pe_in)
 
     # Velocity cross flow flux.
     self.velocity_cross_flow_flux     = flux['velocity_cross_flow_fluxes']
