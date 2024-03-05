@@ -46,47 +46,50 @@ class class_run_data:
     ke_in  = 0.0
     for i in range(self.parameters["no_placentones"]):
       if self.parameters["basal_plate_vessels"][i][1] == 1:
-        ke_in -= flux['ke_inlet_fluxes'][i]/flux['one_inlet'][i]
+        ke_in -= flux['ke_inlet_fluxes'][i]#/flux['one_inlet'][i]
     ke_out = 0.0
     for i in range(self.parameters["no_placentones"]):
       if self.parameters["basal_plate_vessels"][i][0] == 1:
-        ke_out += flux['ke_bp_outlet_fluxes'][i][0]/flux['one_bp_outlet'][i][0]
+        ke_out += flux['ke_bp_outlet_fluxes'][i][0]#/flux['one_bp_outlet'][i][0]
       if self.parameters["basal_plate_vessels"][i][2] == 1:
-        ke_out += flux['ke_bp_outlet_fluxes'][i][1]/flux['one_bp_outlet'][i][1]
+        ke_out += flux['ke_bp_outlet_fluxes'][i][1]#/flux['one_bp_outlet'][i][1]
     for i in range(self.parameters["no_placentones"]-1):
       if self.parameters["septal_veins"][i][0] == 1:
-        ke_out += flux['ke_sw_outlet_fluxes'][i][0]/flux['one_sw_outlet'][i][0]
+        ke_out += flux['ke_sw_outlet_fluxes'][i][0]#/flux['one_sw_outlet'][i][0]
       if self.parameters["septal_veins"][i][1] == 1:
-        ke_out += flux['ke_sw_outlet_fluxes'][i][1]/flux['one_sw_outlet'][i][1]
+        ke_out += flux['ke_sw_outlet_fluxes'][i][1]#/flux['one_sw_outlet'][i][1]
       if self.parameters["septal_veins"][i][2] == 1:
-        ke_out += flux['ke_sw_outlet_fluxes'][i][2]/flux['one_sw_outlet'][i][2]
+        ke_out += flux['ke_sw_outlet_fluxes'][i][2]#/flux['one_sw_outlet'][i][2]
     for i in range(2):
-      ke_out += flux['ke_ms_outlet_fluxes'][i]/flux['one_ms_outlet'][i]
+      ke_out += flux['ke_ms_outlet_fluxes'][i]#/flux['one_ms_outlet'][i]
     # self.kinetic_energy_flux = rho*U**3*(ke_in - ke_out)
     self.kinetic_energy_flux = (rho*U**3*ke_in - rho*U**3*ke_out)/(rho*U**3*ke_in)
+    # self.kinetic_energy_flux = (ke_in - ke_out)/(ke_in)
 
     # Total energy flux (pressure energy + kinetic energy).
     pe_in  = 0.0
     for i in range(self.parameters["no_placentones"]):
       if self.parameters["basal_plate_vessels"][i][1] == 1:
-        pe_in -= flux['pe_inlet_fluxes'][i]/flux['one_inlet'][i]
+        pe_in -= flux['pe_inlet_fluxes'][i]#/flux['one_inlet'][i]
     pe_out = 0.0
     for i in range(self.parameters["no_placentones"]):
       if self.parameters["basal_plate_vessels"][i][0] == 1:
-        pe_out += flux['pe_bp_outlet_fluxes'][i][0]/flux['one_bp_outlet'][i][0]
+        pe_out += flux['pe_bp_outlet_fluxes'][i][0]#/flux['one_bp_outlet'][i][0]
       if self.parameters["basal_plate_vessels"][i][2] == 1:
-        pe_out += flux['pe_bp_outlet_fluxes'][i][1]/flux['one_bp_outlet'][i][1]
+        pe_out += flux['pe_bp_outlet_fluxes'][i][1]#/flux['one_bp_outlet'][i][1]
     for i in range(self.parameters["no_placentones"]-1):
       if self.parameters["septal_veins"][i][0] == 1:
-        pe_out += flux['pe_sw_outlet_fluxes'][i][0]/flux['one_sw_outlet'][i][0]
+        pe_out += flux['pe_sw_outlet_fluxes'][i][0]#/flux['one_sw_outlet'][i][0]
       if self.parameters["septal_veins"][i][1] == 1:
-        pe_out += flux['pe_sw_outlet_fluxes'][i][1]/flux['one_sw_outlet'][i][1]
+        pe_out += flux['pe_sw_outlet_fluxes'][i][1]#/flux['one_sw_outlet'][i][1]
       if self.parameters["septal_veins"][i][2] == 1:
-        pe_out += flux['pe_sw_outlet_fluxes'][i][2]/flux['one_sw_outlet'][i][2]
+        pe_out += flux['pe_sw_outlet_fluxes'][i][2]#/flux['one_sw_outlet'][i][2]
     for i in range(2):
-      pe_out += flux['pe_ms_outlet_fluxes'][i]/flux['one_ms_outlet'][i]
+      pe_out += flux['pe_ms_outlet_fluxes'][i]#/flux['one_ms_outlet'][i]
     # self.total_energy_flux = self.kinetic_energy_flux + (mu*U/L)*U*(pe_in - pe_out)
-    self.total_energy_flux = (rho*U**3*ke_in + (mu*U/L)*U*pe_in - rho*U**3*ke_out - (mu*U/L)*U*pe_out)/(rho*U**3*ke_in + (mu*U/L)*U*pe_in)
+    # self.total_energy_flux = (rho*U**3*ke_in + (mu*U/L)*U*pe_in - rho*U**3*ke_out - (mu*U/L)*U*pe_out)/(rho*U**3*ke_in + (mu*U/L)*U*pe_in)
+    # self.total_energy_flux = (ke_in + mu/(L*U*rho)*pe_in - ke_out - mu/(L*U*rho)*pe_out)/(ke_in + mu/(L*U*rho)*pe_in)
+    self.total_energy_flux = (rho*U**3*ke_in + mu*U/L*U*pe_in - rho*U**3*ke_out - mu*U/L*U*pe_out)/(rho*U**3*ke_in + mu*U/L*U*pe_in)
 
     # Velocity cross flow flux.
     self.velocity_cross_flow_flux     = flux['velocity_cross_flow_fluxes']
