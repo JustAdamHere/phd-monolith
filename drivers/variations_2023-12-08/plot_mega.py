@@ -167,6 +167,17 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   # Done.
   print(f"\rPlotting simulations... Done.", end="\r\n")
 
+  # Print number of subsamples in each bin.
+  from tabulate import tabulate
+  rows = []
+  for j in range(3):
+    for i in range(2):
+      if not (j == 2 and i > 0):
+        no_per_bin = [len(simulation_bins[j][i][k]) for k in range(0, len(simulation_bins[j][i]))]
+        no_simulations = sum(no_per_bin)
+        rows.append([parameter_name[j], no_simulations, np.mean(no_per_bin), np.median(no_per_bin), np.std(no_per_bin), np.min(no_per_bin), np.max(no_per_bin), no_per_bin])
+  print(tabulate(rows, headers=["Name", "#", "Mean", "Median", "Std", "Minimum", "Maximum", "Number per bin"], tablefmt="rounded_outline", floatfmt=".2f"))
+
 def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name, parameter_safe_name, subfolder=None):
   import numpy as np
 
