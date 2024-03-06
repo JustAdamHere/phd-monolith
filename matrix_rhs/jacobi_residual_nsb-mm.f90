@@ -346,16 +346,6 @@ module jacobi_residual_nsb_mm
     call initialize_fe_basis_storage(mesh_fe_basis_info, control_parameter, solution_moving_mesh, &
       mesh_problem_dim, mesh_no_quad_points_volume_max, mesh_no_quad_points_face_max)
 
-    ! Not necessary as we're just using this for the quadrature points.
-    call create_aptofem_dg_penalisation(prev_mesh_data, solution_moving_mesh)
-
-    ! Integration info on the previous mesh.    
-    call face_integration_info(mesh_dim_soln_coeff, mesh_problem_dim, prev_mesh_data, solution_moving_mesh, &
-      facet_data%face_number, mesh_neighbors, mesh_loc_face_no, mesh_npinc, mesh_no_quad_points_face_max, &
-      mesh_no_quad_points, mesh_global_points_face, mesh_face_jacobian, mesh_face_normals, mesh_quad_weights_face, &
-      mesh_global_dof_numbers1, mesh_no_dofs_per_variable1, mesh_bdry_face, mesh_global_dof_numbers2, mesh_no_dofs_per_variable2, &
-      mesh_fe_basis_info)
-
     ! print *, "Before face_integration_info in element_residual_face_nsb_mm."
     ! print *, "mesh_no_pdes", mesh_no_pdes
     ! print *, "mesh_dim_soln_coeff", mesh_dim_soln_coeff
@@ -380,19 +370,6 @@ module jacobi_residual_nsb_mm
     ! print *, "mesh_global_dof_numbers2", mesh_global_dof_numbers2
     ! print *, "mesh_no_dofs_per_variable2", mesh_no_dofs_per_variable2
     ! print *, "END"
-
-    if (mesh_problem_dim /= facet_data%problem_dim) then
-      print *, "ERROR in element_residual_face_nsb_mm: mesh_problem_dim /= facet_data%problem_dim"
-      print *, "mesh_problem_dim", mesh_problem_dim
-      print *, "facet_data%problem_dim", facet_data%problem_dim
-      error stop
-    end if
-    if (mesh_no_quad_points /= facet_data%no_quad_points) then
-      print *, "ERROR in element_residual_face_nsb_mm: mesh_no_quad_points /= facet_data%no_quad_points"
-      print *, "mesh_no_quad_points", mesh_no_quad_points
-      print *, "facet_data%no_quad_points", facet_data%no_quad_points
-      error stop
-    end if
 
     associate( &
       dim_soln_coeff => facet_data%dim_soln_coeff, &
@@ -844,27 +821,6 @@ module jacobi_residual_nsb_mm
     call initialize_fe_basis_storage(mesh_fe_basis_info, control_parameter, solution_moving_mesh, &
       mesh_problem_dim, mesh_no_quad_points_volume_max, mesh_no_quad_points_face_max)
 
-    ! Not necessary as we're just using this for the quadrature points.
-    call create_aptofem_dg_penalisation(prev_mesh_data, solution_moving_mesh)
-
-    ! Integration info on the previous mesh.
-    call element_integration_info(mesh_dim_soln_coeff, mesh_problem_dim, prev_mesh_data, solution_moving_mesh, &
-      facet_data%element_number, mesh_npinc, mesh_no_quad_points_volume_max, mesh_no_quad_points, mesh_global_points_ele, &
-      mesh_jacobian, mesh_quad_weights_ele, mesh_global_dof_numbers, mesh_no_dofs_per_variable, mesh_fe_basis_info)
-
-    if (mesh_problem_dim /= facet_data%problem_dim) then
-      print *, "ERROR in jacobian_nsb_mm: mesh_problem_dim /= facet_data%problem_dim"
-      print *, "mesh_problem_dim", mesh_problem_dim
-      print *, "facet_data%problem_dim", facet_data%problem_dim
-      error stop
-    end if
-    if (mesh_no_quad_points /= facet_data%no_quad_points) then
-      print *, "ERROR in jacobian_nsb_mm: mesh_no_quad_points /= facet_data%no_quad_points"
-      print *, "mesh_no_quad_points", mesh_no_quad_points
-      print *, "facet_data%no_quad_points", facet_data%no_quad_points
-      error stop
-    end if
-
     associate( &
       dim_soln_coeff => facet_data%dim_soln_coeff, &
       no_pdes => facet_data%no_pdes, &
@@ -1049,29 +1005,6 @@ module jacobi_residual_nsb_mm
     control_parameter = 'uh_face'
     call initialize_fe_basis_storage(mesh_fe_basis_info, control_parameter, solution_moving_mesh, &
       mesh_problem_dim, mesh_no_quad_points_volume_max, mesh_no_quad_points_face_max)
-
-    ! Not necessary as we're just using this for the quadrature points.
-    call create_aptofem_dg_penalisation(prev_mesh_data, solution_moving_mesh)
-
-    ! Integration info on the previous mesh.
-    call face_integration_info(mesh_dim_soln_coeff, mesh_problem_dim, prev_mesh_data, solution_moving_mesh, &
-      facet_data%face_number, mesh_neighbors, mesh_loc_face_no, mesh_npinc, mesh_no_quad_points_face_max, &
-      mesh_no_quad_points, mesh_global_points_face, mesh_face_jacobian, mesh_face_normals, mesh_quad_weights_face, &
-      mesh_global_dof_numbers1, mesh_no_dofs_per_variable1, mesh_bdry_face, mesh_global_dof_numbers2, mesh_no_dofs_per_variable2, &
-      mesh_fe_basis_info)
-
-    if (mesh_problem_dim /= facet_data%problem_dim) then
-      print *, "ERROR jacobian_face_nsb_mm: mesh_problem_dim /= facet_data%problem_dim"
-      print *, "mesh_problem_dim", mesh_problem_dim
-      print *, "facet_data%problem_dim", facet_data%problem_dim
-      error stop
-    end if
-    if (mesh_no_quad_points /= facet_data%no_quad_points) then
-      print *, "ERROR jacobian_face_nsb_mm: mesh_no_quad_points /= facet_data%no_quad_points"
-      print *, "mesh_no_quad_points", mesh_no_quad_points
-      print *, "facet_data%no_quad_points", facet_data%no_quad_points
-      error stop
-    end if
 
     associate( &
       dim_soln_coeff => facet_data%dim_soln_coeff, &
