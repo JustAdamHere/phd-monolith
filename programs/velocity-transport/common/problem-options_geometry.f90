@@ -261,6 +261,7 @@ module problem_options_geometry
             end do
 
             ! Recalculated here to help with the boundary conditions being consistent between timesteps.
+            ! TODO: Investigate division by 2.
             artery_width_sm = sqrt((artery_sides(1, 1, 1) - artery_sides(1, 2, 1))**2 + &
                 (artery_sides(1, 1, 2) - artery_sides(1, 2, 2))**2)/2.0_db
 
@@ -310,6 +311,10 @@ module problem_options_geometry
 
             artery_sides(1, 2, 1) = vessel_locations(1, 2) + artery_width_sm/2.0_db
             artery_sides(1, 2, 2) = -artery_length
+
+            ! Recalculated here to help with the boundary conditions being consistent between timesteps.
+            artery_width_sm = sqrt((artery_sides(1, 1, 1) - artery_sides(1, 2, 1))**2 + &
+            (artery_sides(1, 1, 2) - artery_sides(1, 2, 2))**2)
 
         else
             call write_message(io_err, "Geometry not supported: " // control_file)
@@ -795,10 +800,6 @@ module problem_options_geometry
                 artery_sides(i, j, :) = artery_sides(i, j, :) + update_velocity(:)*time_step
             end do
         end do
-
-        ! TODO: investigate why you need to divide by 2...
-        artery_width_sm = sqrt((artery_sides(1, 1, 1) - artery_sides(1, 2, 1))**2 + &
-            (artery_sides(1, 1, 2) - artery_sides(1, 2, 2))**2)/2.0_db
         
         x = (artery_sides(1, 1, 1) + artery_sides(1, 2, 1))/2.0_db
         y = (artery_sides(1, 1, 2) + artery_sides(1, 2, 2))/2.0_db
@@ -885,6 +886,10 @@ module problem_options_geometry
             (cavity_sides(i, 3, 2) - cavity_sides(i, 1, 2))**2)
 
         if (trim(control_file) == 'placenta') then
+            ! TODO: investigate why you need to divide by 2...
+            artery_width_sm = sqrt((artery_sides(1, 1, 1) - artery_sides(1, 2, 1))**2 + &
+                (artery_sides(1, 1, 2) - artery_sides(1, 2, 2))**2)/2.0_db
+
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             !! PLACENTONE WIDTHS AND SIDES !!
             !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -966,7 +971,9 @@ module problem_options_geometry
                 print *, "PLACENTONE WIDTH: ", placentone_widths(4)
             end if
         else if (trim(control_file) == 'placentone') then
-            
+            ! TODO: investigate why you need to divide by 2 in placenta version...
+            artery_width_sm = sqrt((artery_sides(1, 1, 1) - artery_sides(1, 2, 1))**2 + &
+                (artery_sides(1, 1, 2) - artery_sides(1, 2, 2))**2)
         else
             call write_message(io_msg, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
             call write_message(io_msg, "!! WARNING: update_geometry not implemented for this geometry. !!")

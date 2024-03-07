@@ -90,19 +90,24 @@ module placentone_2d_bcs_velocity
     real(db) :: amplitude
     real(db) :: global_time ! TODO: check relationship between local and global t
 
+    real(db) :: centre_bc_x
+
     u = 0.0_db
 
     x = global_point(1)
     y = global_point(2)
 
     if (boundary_no == 111) then
-        r    = sqrt((x - vessel_locations(1, 2))**2 + (0.0_db - 0.0_db)**2)
-        ! u(2) = current_velocity_amplitude * calculate_poiseuille_flow(r, artery_width_sm/2)
-        u(2) = 1.0_db * calculate_poiseuille_flow(r, artery_width_sm/2)
+        centre_bc_x = (artery_sides(1, 1, 1) + artery_sides(1, 2, 1))/2.0_db
+        r = abs(x - centre_bc_x)
+
+        ! u(2) = current_velocity_amplitude * calculate_poiseuille_flow(r, artery_width_sm/2.0_db)
+        u(2) = 1.0_db * calculate_poiseuille_flow(r, artery_width_sm/2.0_db)
 
         ! if (u(2) <= -1e-5) then
         !   print *, "Error: inflow velocity negative"
         !   print *, u(2)
+        !   print *, artery_width_sm
         !   stop
         ! end if
     end if
