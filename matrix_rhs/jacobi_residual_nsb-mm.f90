@@ -199,18 +199,17 @@ module jacobi_residual_nsb_mm
       !   end do
       ! end do
 
-      ! Momentum Equations
+      ! Loop over quadrature points
 
-      do ieqn = 1,problem_dim
+      do qk = 1,no_quad_points
 
-        ! Loop over quadrature points
+        prev_uh = uh_element(prev_fe_basis_info, prev_no_pdes, qk)
 
-        do qk = 1,no_quad_points
+        ! Momentum Equations
+      
+        do ieqn = 1,problem_dim
 
           ! Loop over phi_i
-
-          ! Really inefficient way of doing this...
-          prev_uh = uh_element(prev_fe_basis_info, prev_no_pdes, qk)
 
           do i = 1,no_dofs_per_variable(ieqn)
             ! TODO: DIRK scaling factor needs investigation. I think this only appeared on one term in Paul's original
