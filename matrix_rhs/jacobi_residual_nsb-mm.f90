@@ -89,24 +89,26 @@ module jacobi_residual_nsb_mm
     integer :: prev_dim_soln_coeff_start, prev_dim_soln_coeff_end, prev_dim_soln_coeff_fe_space
 
     ! Setup basis storage.
-    prev_dim_soln_coeff = get_dim_soln_coeff(prev_solution_velocity_data)
+    ! prev_dim_soln_coeff = get_dim_soln_coeff(prev_solution_velocity_data)
     mesh_dim_soln_coeff = get_dim_soln_coeff(solution_moving_mesh)
-    prev_no_pdes        = get_no_pdes(prev_solution_velocity_data)
+    ! prev_no_pdes        = get_no_pdes(prev_solution_velocity_data)
     mesh_no_pdes        = get_no_pdes(solution_moving_mesh)
 
-    call get_mesh_info(prev_no_elements, prev_no_nodes, prev_no_faces, prev_problem_dim, prev_mesh_data)
+    ! call get_mesh_info(prev_no_elements, prev_no_nodes, prev_no_faces, prev_problem_dim, prev_mesh_data)
     call get_mesh_info(mesh_no_elements, mesh_no_nodes, mesh_no_faces, mesh_problem_dim, prev_mesh_data)
 
-    prev_npinc = facet_data%npinc
+    ! prev_npinc = facet_data%npinc
     mesh_npinc = facet_data%npinc + 1
-    call compute_max_no_quad_points(prev_no_quad_points_volume_max, prev_no_quad_points_face_max, prev_mesh_data, &
-      prev_solution_velocity_data, prev_npinc)
+    ! call compute_max_no_quad_points(prev_no_quad_points_volume_max, prev_no_quad_points_face_max, prev_mesh_data, &
+    !   prev_solution_velocity_data, prev_npinc)
     call compute_max_no_quad_points(mesh_no_quad_points_volume_max, mesh_no_quad_points_face_max, prev_mesh_data, &
       solution_moving_mesh, mesh_npinc)
 
     control_parameter = 'uh_ele'
+    ! I think the only reason we need prev_fe_basis_info is for the basis_element property, which we're not allowed to access
+    !  from fe_basis_info due to the intent().
     call initialize_fe_basis_storage(prev_fe_basis_info, control_parameter, prev_solution_velocity_data, &
-      prev_problem_dim, prev_no_quad_points_volume_max, prev_no_quad_points_face_max)
+      prev_problem_dim, facet_data%no_quad_points_volume_max, facet_data%no_quad_points_face_max)
     call initialize_fe_basis_storage(mesh_fe_basis_info, control_parameter, solution_moving_mesh, &
       mesh_problem_dim, mesh_no_quad_points_volume_max, mesh_no_quad_points_face_max)
 
