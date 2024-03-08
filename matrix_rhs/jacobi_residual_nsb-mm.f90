@@ -27,6 +27,7 @@ module jacobi_residual_nsb_mm
     use problem_options_geometry
     use basis_fns_storage_type
     use aptofem_fe_matrix_assembly
+    use base_solution_type
 
     include 'assemble_residual_element.h'
 
@@ -53,7 +54,7 @@ module jacobi_residual_nsb_mm
     integer  :: element_region_id
 
     ! Previous solution variables.
-    real(db), dimension(facet_data%no_pdes) :: prev_uh
+    real(db), dimension(facet_data%no_pdes, facet_data%no_quad_points) :: prev_uh
     real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: prev_global_points_ele
     real(db), dimension(facet_data%no_quad_points) :: prev_jacobian, prev_quad_weights_ele
     real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable)) :: prev_phi
@@ -69,7 +70,7 @@ module jacobi_residual_nsb_mm
 
     ! Moving mesh variables.
     real(db), dimension(facet_data%problem_dim) :: mesh_velocity
-    real(db), dimension(facet_data%no_pdes) :: mesh_uh
+    real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: mesh_uh
     real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: mesh_global_points_ele
     real(db), dimension(facet_data%no_quad_points) :: mesh_jacobian, mesh_quad_weights_ele
     real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable)) :: mesh_phi
@@ -80,6 +81,12 @@ module jacobi_residual_nsb_mm
     integer             :: mesh_dim_soln_coeff, mesh_no_pdes, mesh_no_elements, mesh_no_nodes, mesh_no_faces, mesh_problem_dim, &
       mesh_npinc, mesh_no_quad_points_volume_max, mesh_no_quad_points_face_max
     type(basis_storage) :: mesh_fe_basis_info
+
+    ! Extra variables on previous mesh.
+    real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: prev_gauss_points_local, prev_gauss_points_global
+    real(db), dimension(facet_data%problem_dim, facet_data%problem_dim, facet_data%no_quad_points) :: prev_jacobi_mat, &
+      prev_inv_jacobi_mat
+    integer :: prev_dim_soln_coeff_start, prev_dim_soln_coeff_end, prev_dim_soln_coeff_fe_space
 
     ! Setup basis storage.
     prev_dim_soln_coeff = get_dim_soln_coeff(prev_solution_velocity_data)
@@ -103,13 +110,7 @@ module jacobi_residual_nsb_mm
     call initialize_fe_basis_storage(mesh_fe_basis_info, control_parameter, solution_moving_mesh, &
       mesh_problem_dim, mesh_no_quad_points_volume_max, mesh_no_quad_points_face_max)
 
-    call create_aptofem_dg_penalisation(prev_mesh_data, prev_solution_velocity_data)
-    call create_aptofem_dg_penalisation(prev_mesh_data, solution_moving_mesh)
-
-    ! Integration info on the previous mesh.
-    call element_integration_info(prev_dim_soln_coeff, prev_problem_dim, prev_mesh_data, prev_solution_velocity_data, &
-      facet_data%element_number, prev_npinc, prev_no_quad_points_volume_max, prev_no_quad_points, prev_global_points_ele, &
-      prev_jacobian, prev_quad_weights_ele, prev_global_dof_numbers, prev_no_dofs_per_variable, prev_fe_basis_info)
+    ! Integration info on the previous mesh (I think this is needed for mesh_fe_basis_info).
     call element_integration_info(mesh_dim_soln_coeff, mesh_problem_dim, prev_mesh_data, solution_moving_mesh, &
       facet_data%element_number, mesh_npinc, mesh_no_quad_points_volume_max, mesh_no_quad_points, mesh_global_points_ele, &
       mesh_jacobian, mesh_quad_weights_ele, mesh_global_dof_numbers, mesh_no_dofs_per_variable, mesh_fe_basis_info)
@@ -126,6 +127,30 @@ module jacobi_residual_nsb_mm
       print *, "facet_data%no_quad_points", facet_data%no_quad_points
       error stop
     end if
+
+    call compute_uh_with_basis_fns_pts(prev_uh(:, 1:facet_data%no_quad_points), facet_data%no_pdes, facet_data%no_quad_points, &
+      facet_data%dim_soln_coeff, facet_data%no_dofs_per_variable, facet_data%global_dof_numbers, fe_basis_info%basis_element, &
+      prev_solution_velocity_data)
+    ! call compute_uh_with_basis_fns_pts(mesh_uh(:, 1:facet_data%no_quad_points), facet_data%no_pdes, facet_data%no_quad_points, &
+    !   facet_data%dim_soln_coeff, facet_data%no_dofs_per_variable, facet_data%global_dof_numbers, mesh_fe_basis_info%basis_element, &
+    !   solution_moving_mesh)
+
+    prev_no_quad_points = facet_data%no_quad_points
+    call get_element_transform_quad_pts(prev_mesh_data, facet_data%element_number, facet_data%problem_dim, &
+      prev_gauss_points_local, prev_global_points_ele, prev_quad_weights_ele, prev_no_quad_points, prev_jacobi_mat, &
+      prev_jacobian)
+
+    do i = 1, prev_solution_velocity_data%no_fem_spaces
+      prev_dim_soln_coeff_start    = soln_data%fem_spaces(i)%fem%dim_soln_coeff_start_end(1)
+      prev_dim_soln_coeff_end      = soln_data%fem_spaces(i)%fem%dim_soln_coeff_start_end(2)
+      prev_dim_soln_coeff_fe_space = soln_data%fem_spaces(i)%fem%dim_soln_coeff_fe_space
+
+      call prev_solution_velocity_data%fem_spaces(i)%fem%basis_fns_stored_quad_pts(prev_mesh_data, facet_data%element_number, &
+        facet_data%problem_dim, facet_data%no_quad_points, prev_dim_soln_coeff_fe_space, &
+        prev_gauss_points_local(:, 1:facet_data%no_quad_points), prev_gauss_points_global(:, 1:facet_data%no_quad_points), &
+        prev_no_dofs_per_variable, prev_fe_basis_info%basis_element, prev_jacobi_mat(:, :, 1:facet_data%no_quad_points), &
+        prev_jacobian(1:facet_data%no_quad_points))
+    end do
 
     associate( &
       dim_soln_coeff => facet_data%dim_soln_coeff, &
@@ -159,11 +184,8 @@ module jacobi_residual_nsb_mm
         end do
         call forcing_function_velocity(floc(:,qk),global_points_ele(:,qk),problem_dim,no_pdes,current_time,&
           element_region_id)
-        !mesh_velocity = calculate_mesh_velocity(global_points_ele(:,qk),problem_dim,current_time)
-        ! call compute_uh_glob_pt(mesh_velocity, problem_dim, element_number, prev_global_points_ele(:, qk), problem_dim, &
-        !   prev_mesh_data, solution_moving_mesh)
-        prev_uh = uh_element(mesh_fe_basis_info, prev_no_pdes, qk)
-        mesh_velocity = prev_uh(1:2)
+        mesh_velocity = uh_element(mesh_fe_basis_info, problem_dim, qk)
+        ! mesh_velocity = mesh_uh(1:problem_dim, qk)
         call convective_fluxes(interpolant_uh(:,qk),fluxes(:,:,qk),problem_dim,no_pdes,mesh_velocity)
 
       end do
@@ -178,9 +200,9 @@ module jacobi_residual_nsb_mm
       end do
 
       ! Calculate basis functions on previous mesh.
-      do i = 1, prev_dim_soln_coeff
-        prev_phi(i, 1:prev_no_quad_points, 1:prev_no_dofs_per_variable(i)) = &
-          prev_fe_basis_info%basis_element%basis_fns(i)%fem_basis_fns(1:prev_no_quad_points, 1:prev_no_dofs_per_variable(i), 1)
+      do i = 1, dim_soln_coeff
+        prev_phi(i, 1:no_quad_points, 1:no_dofs_per_variable(i)) = &
+          fe_basis_info%basis_element%basis_fns(i)%fem_basis_fns(1:no_quad_points, 1:no_dofs_per_variable(i), 1)
       end do
 
       ! ! Separately doing the previous mesh integral.
@@ -203,8 +225,6 @@ module jacobi_residual_nsb_mm
 
       do qk = 1,no_quad_points
 
-        prev_uh = uh_element(prev_fe_basis_info, prev_no_pdes, qk)
-
         ! Momentum Equations
       
         do ieqn = 1,problem_dim
@@ -217,7 +237,7 @@ module jacobi_residual_nsb_mm
             ! Note: this assumes the time coefficient takes the same value on both meshes.
             prev_time_terms = calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
               element_region_id)* &
-                dirk_scaling_factor*prev_uh(ieqn)*prev_phi(ieqn, qk, i)
+                dirk_scaling_factor*prev_uh(ieqn, qk)*prev_phi(ieqn, qk, i)
 
             time_terms = -calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
