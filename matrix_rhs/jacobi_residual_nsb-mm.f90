@@ -89,18 +89,12 @@ module jacobi_residual_nsb_mm
     integer :: prev_dim_soln_coeff_start, prev_dim_soln_coeff_end, prev_dim_soln_coeff_fe_space
 
     ! Setup basis storage.
-    ! prev_dim_soln_coeff = get_dim_soln_coeff(prev_solution_velocity_data)
     mesh_dim_soln_coeff = get_dim_soln_coeff(solution_moving_mesh)
-    ! prev_no_pdes        = get_no_pdes(prev_solution_velocity_data)
     mesh_no_pdes        = get_no_pdes(solution_moving_mesh)
 
-    ! call get_mesh_info(prev_no_elements, prev_no_nodes, prev_no_faces, prev_problem_dim, prev_mesh_data)
     call get_mesh_info(mesh_no_elements, mesh_no_nodes, mesh_no_faces, mesh_problem_dim, prev_mesh_data)
 
-    ! prev_npinc = facet_data%npinc
     mesh_npinc = facet_data%npinc + 1
-    ! call compute_max_no_quad_points(prev_no_quad_points_volume_max, prev_no_quad_points_face_max, prev_mesh_data, &
-    !   prev_solution_velocity_data, prev_npinc)
     call compute_max_no_quad_points(mesh_no_quad_points_volume_max, mesh_no_quad_points_face_max, prev_mesh_data, &
       solution_moving_mesh, mesh_npinc)
 
@@ -244,21 +238,6 @@ module jacobi_residual_nsb_mm
             time_terms = -calculate_velocity_time_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
                   dirk_scaling_factor*interpolant_uh(ieqn, qk)*phi(ieqn, qk, i)
-
-            ! prev_time_terms = 1e10*prev_jacobian(qk)
-
-            ! print *, prev_uh(ieqn)
-
-            ! DID CHANGE: prev_uh(ieqn)
-
-            ! time_terms = 0.0_db
-            ! prev_time_terms = 0.0_db
-
-            ! if (prev_time_terms > time_terms) then
-            !   print *, "+: ", prev_time_terms, time_terms
-            ! else
-            !   print *, "-: ", prev_time_terms, time_terms
-            ! end if
 
             diffusion_terms = calculate_velocity_diffusion_coefficient(global_points_ele(:, qk), problem_dim, &
                 element_region_id)* &
