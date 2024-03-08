@@ -5,6 +5,8 @@ module jacobi_residual_nsb_mm
   use velocity_bc_interface
   use previous_velocity
 
+  ! TODO: Lots of redundant local variables.
+
   implicit none
 
   contains
