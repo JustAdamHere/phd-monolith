@@ -1024,7 +1024,7 @@ module jacobi_residual_nsb_mm
 
     ! Moving mesh variables.
     real(db), dimension(facet_data%problem_dim) :: mesh_velocity
-    real(db), dimension(facet_data%problem_dim) :: mesh_uh
+    real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: mesh_uh
     real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points_face_max) :: mesh_global_points_face, mesh_face_normals
     real(db), dimension(facet_data%no_quad_points_face_max) :: mesh_face_jacobian, mesh_quad_weights_face
     real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points_face_max, maxval(facet_data%no_dofs_per_variable1)) ::&
@@ -1035,6 +1035,14 @@ module jacobi_residual_nsb_mm
     integer :: mesh_no_quad_points
     integer, dimension(2) :: mesh_neighbors, mesh_loc_face_no
 
+    ! Additional variables on previous mesh.
+    integer :: element_no1, element_no2, mesh_dim_soln_coeff_start, mesh_dim_soln_coeff_end, mesh_dim_soln_coeff_fe_space
+    real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: mesh_local_points1, mesh_local_points2, &
+      mesh_global_points
+    real(db), dimension(facet_data%problem_dim, facet_data%problem_dim, facet_data%no_quad_points) :: mesh_jacobi_mat1, &
+      mesh_inv_jacobi_mat1, mesh_jacobi_mat2
+    real(db), dimension(facet_data%no_quad_points) :: mesh_jacobian1, mesh_jacobian2
+
     character(len=aptofem_length_key_def) :: control_parameter
 
     integer             :: mesh_dim_soln_coeff, mesh_no_pdes, mesh_no_elements, mesh_no_nodes, mesh_no_faces, mesh_problem_dim, &
@@ -1042,41 +1050,53 @@ module jacobi_residual_nsb_mm
     type(basis_storage) :: mesh_fe_basis_info
 
     ! Setup basis storage (purely for quadrature points).
-    mesh_dim_soln_coeff = get_dim_soln_coeff(solution_moving_mesh)
-    mesh_no_pdes        = get_no_pdes(solution_moving_mesh)
-
-    call get_mesh_info(mesh_no_elements, mesh_no_nodes, mesh_no_faces, mesh_problem_dim, prev_mesh_data)
-
-    mesh_npinc = facet_data%npinc + 1
-    call compute_max_no_quad_points(mesh_no_quad_points_volume_max, mesh_no_quad_points_face_max, prev_mesh_data, &
-      solution_moving_mesh, mesh_npinc)
-
     control_parameter = 'uh_face'
     call initialize_fe_basis_storage(mesh_fe_basis_info, control_parameter, solution_moving_mesh, &
-      mesh_problem_dim, mesh_no_quad_points_volume_max, mesh_no_quad_points_face_max)
+      facet_data%problem_dim, facet_data%no_quad_points_volume_max, facet_data%no_quad_points_face_max)
 
-    ! Not necessary as we're just using this for the quadrature points.
-    call create_aptofem_dg_penalisation(prev_mesh_data, solution_moving_mesh)
+    ! Assuming continuity, we will mostly just work on face 1; in fact it probably could work with just face 1; I suspect problems
+    !  may arise in compute_uh_with_basis_fns_pts if we don't do anything to face 2.
+    element_no1 = facet_data%neighbours(1)
+    element_no2 = facet_data%neighbours(2)
 
-    ! Integration info on the previous mesh.
-    call face_integration_info(mesh_dim_soln_coeff, mesh_problem_dim, prev_mesh_data, solution_moving_mesh, &
-      facet_data%face_number, mesh_neighbors, mesh_loc_face_no, mesh_npinc, mesh_no_quad_points_face_max, &
-      mesh_no_quad_points, mesh_global_points_face, mesh_face_jacobian, mesh_face_normals, mesh_quad_weights_face, &
-      mesh_global_dof_numbers1, mesh_no_dofs_per_variable1, mesh_bdry_face, mesh_global_dof_numbers2, mesh_no_dofs_per_variable2, &
-      mesh_fe_basis_info)
+    ! Get the local face numbers.
+    mesh_loc_face_no = mesh_data%mesh_faces(facet_data%face_number)%loc_face_no
 
-    if (mesh_problem_dim /= facet_data%problem_dim) then
-      print *, "ERROR jacobian_face_nsb_mm: mesh_problem_dim /= facet_data%problem_dim"
-      print *, "mesh_problem_dim", mesh_problem_dim
-      print *, "facet_data%problem_dim", facet_data%problem_dim
-      error stop
-    end if
-    if (mesh_no_quad_points /= facet_data%no_quad_points) then
-      print *, "ERROR jacobian_face_nsb_mm: mesh_no_quad_points /= facet_data%no_quad_points"
-      print *, "mesh_no_quad_points", mesh_no_quad_points
-      print *, "facet_data%no_quad_points", facet_data%no_quad_points
-      error stop
-    end if
+    ! Get element DoFs for moving mesh solution.
+    mesh_dim_soln_coeff = get_dim_soln_coeff(solution_moving_mesh)
+    call get_element_dof_numbers(prev_mesh_data, solution_moving_mesh, mesh_global_dof_numbers1, mesh_no_dofs_per_variable1, &
+      element_no1, mesh_dim_soln_coeff)
+
+    ! Get face integration info.
+    mesh_no_quad_points = facet_data%no_quad_points
+    call get_face_transform_quad_pts(prev_mesh_data, element_no1, mesh_loc_face_no(1), facet_data%problem_dim, &
+      mesh_local_points1(:,1:facet_data%no_quad_points), mesh_global_points(:, 1:facet_data%no_quad_points), &
+      mesh_quad_weights_face(1:facet_data%no_quad_points), mesh_no_quad_points, mesh_face_jacobian(1:facet_data%no_quad_points), &
+      mesh_face_normals(:, 1:facet_data%no_quad_points), mesh_jacobi_mat1(:, :, 1:facet_data%no_quad_points), &
+      mesh_jacobian1(1:facet_data%no_quad_points), mesh_inv_jacobi_mat1(:, :, 1:facet_data%no_quad_points))
+
+    do i = 1, solution_moving_mesh%no_fem_spaces
+      mesh_dim_soln_coeff_start    = solution_moving_mesh%fem_spaces(i)%fem%dim_soln_coeff_start_end(1)
+      mesh_dim_soln_coeff_end      = solution_moving_mesh%fem_spaces(i)%fem%dim_soln_coeff_start_end(2)
+      mesh_dim_soln_coeff_fe_space = solution_moving_mesh%fem_spaces(i)%fem%dim_soln_coeff_fe_space
+
+      call solution_moving_mesh%fem_spaces(i)%fem%uh_basis_fns_pts(prev_mesh_data, solution_moving_mesh, &
+        element_no1, facet_data%problem_dim, facet_data%no_quad_points, mesh_dim_soln_coeff_fe_space, &
+        mesh_local_points1(:, 1:facet_data%no_quad_points), mesh_global_points(:, 1:facet_data%no_quad_points), &
+        mesh_no_dofs_per_variable1, mesh_fe_basis_info%basis_face1, mesh_jacobi_mat1(:, :, 1:facet_data%no_quad_points), &
+        mesh_jacobian1(1:facet_data%no_quad_points))
+      if (element_no2 > 0) then
+        call solution_moving_mesh%fem_spaces(i)%fem%uh_basis_fns_pts(prev_mesh_data, solution_moving_mesh, &
+          element_no2, facet_data%problem_dim, facet_data%no_quad_points, mesh_dim_soln_coeff_fe_space, &
+          mesh_local_points2(:, 1:facet_data%no_quad_points), mesh_global_points(:, 1:facet_data%no_quad_points), &
+          mesh_no_dofs_per_variable2, mesh_fe_basis_info%basis_face2, mesh_jacobi_mat2(:, :, 1:facet_data%no_quad_points), &
+          mesh_jacobian2(1:facet_data%no_quad_points))
+      end if
+    end do
+
+    call compute_uh_with_basis_fns_pts(mesh_uh(:, 1:facet_data%no_quad_points), facet_data%problem_dim, facet_data%no_quad_points, &
+      mesh_dim_soln_coeff, mesh_no_dofs_per_variable1, mesh_global_dof_numbers1, mesh_fe_basis_info%basis_face1, &
+      solution_moving_mesh)
 
     associate( &
       dim_soln_coeff => facet_data%dim_soln_coeff, &
@@ -1125,8 +1145,7 @@ module jacobi_residual_nsb_mm
           end do
 
           ! The solution is continuous, so we only need to do this on one side of the face.
-          mesh_uh = uh_face1(mesh_fe_basis_info, mesh_no_pdes, qk)
-          mesh_velocity = mesh_uh(1:2)
+          mesh_velocity = mesh_uh(1:problem_dim, qk)
 
           call anal_soln_velocity(uloc(:,qk),global_points_face(:,qk),problem_dim,no_pdes,0,current_time, &
             face_element_region_ids(1))
@@ -1243,8 +1262,7 @@ module jacobi_residual_nsb_mm
             grad_uh2(i,qk,1:problem_dim) = grad_uh_face2(fe_basis_info,problem_dim,i,qk,1)
           end do
           ! The solution is continuous, so we only need to do this on one side of the face.
-          mesh_uh = uh_face1(mesh_fe_basis_info, mesh_no_pdes, qk)
-          mesh_velocity = mesh_uh(1:2)
+          mesh_velocity = mesh_uh(1:problem_dim, qk)
           alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
             face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh1(:,qk), &
@@ -1371,8 +1389,7 @@ module jacobi_residual_nsb_mm
             grad_uh2(i,qk,1:problem_dim) = grad_uh_face2(fe_basis_info,problem_dim,i,qk,1)
           end do
           ! The solution is continuous, so we only need to do this on one side of the face.
-          mesh_uh = uh_face1(mesh_fe_basis_info, mesh_no_pdes, qk)
-          mesh_velocity = mesh_uh(1:2)
+          mesh_velocity = mesh_uh(1:problem_dim, qk)
           alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
             face_normals(:,qk),problem_dim,no_pdes,mesh_velocity)
           call jacobian_convective_fluxes(interpolant_uh1(:,qk), &
@@ -1556,8 +1573,7 @@ module jacobi_residual_nsb_mm
             uloc(1:2, qk) = uloc(1:2, qk) + mesh_velocity
           end if
           ! The solution is continuous, so we only need to do this on one side of the face.
-          mesh_uh = uh_face1(mesh_fe_basis_info, mesh_no_pdes, qk)
-          mesh_velocity = mesh_uh(1:2)
+          mesh_velocity = mesh_uh(1:problem_dim, qk)
           call compute_boundary_condition(interpolant_uh2(:,qk), &
             interpolant_uh1(:,qk),uloc(:,qk),abs(bdry_face),problem_dim,no_pdes)
             alpha(qk) = cal_alpha(interpolant_uh1(:,qk),interpolant_uh2(:,qk), &
