@@ -485,7 +485,8 @@ program velocity_transport_convergence
 
       ! Timestep and solve.
       do time_step_no = 1, no_time_steps
-        call setup_previous_velocity(mesh_data, solution_velocity)
+        call setup_previous_velocity(solution_velocity)
+        call setup_previous_mesh(mesh_data)
         call move_mesh(mesh_data, prev_mesh_data, problem_dim, solution_velocity%current_time, scheme_data_velocity%time_step, &
           aptofem_stored_keys)
         call dirk_single_time_step(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
@@ -493,6 +494,7 @@ program velocity_transport_convergence
           scheme_data_velocity%current_time, scheme_data_velocity%time_step, velocity_dofs, time_step_no, .false., &
           norm_diff_u)
         call finalise_previous_velocity()
+        call finalise_previous_mesh()
       end do
 
       ! Norms and output.
@@ -595,7 +597,8 @@ program velocity_transport_convergence
 
       ! Timestep and solve.
       do time_step_no = 1, no_time_steps
-        call setup_previous_velocity(mesh_data, solution_velocity)
+        call setup_previous_velocity(solution_velocity)
+        call setup_previous_mesh(mesh_data)
         call move_mesh(mesh_data, prev_mesh_data, problem_dim, solution_velocity%current_time, scheme_data_velocity%time_step, &
           aptofem_stored_keys)
         call dirk_single_time_step(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
@@ -603,6 +606,7 @@ program velocity_transport_convergence
           scheme_data_velocity%current_time, scheme_data_velocity%time_step, velocity_dofs, time_step_no, .false., &
           norm_diff_u)
         call finalise_previous_velocity()
+        call finalise_previous_mesh()
       end do
 
       ! Norms and output.

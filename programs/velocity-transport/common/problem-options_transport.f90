@@ -126,7 +126,7 @@ contains
 
         if (400 <= element_region_id .and. element_region_id <= 599) then
             if (trim(geometry_name) == 'placentone') then
-                translated_point = global_point
+                translated_point = translate_placentone_to_placentone_point(problem_dim, global_point, element_region_id)
             else if (trim(geometry_name) == 'placenta') then
                 translated_point = translate_placenta_to_placentone_point(problem_dim, global_point, element_region_id)
             else if (trim(geometry_name) == 'placentone-3d') then

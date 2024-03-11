@@ -31,9 +31,9 @@ CONVERGENCE_OBJECTS = $(patsubst %.f90,./.obj/%.o,$(CONVERGENCE_SOURCES))
 COMPARISON_SOURCES = $(storage) $(problem_options) $(bcs) $(velocity_assembly) velocity_comparison.f90
 COMPARISON_OBJECTS = $(patsubst %.f90,./.obj/%.o,$(COMPARISON_SOURCES))
 
-#FFLAGS = -O3 -fallow-argument-mismatch -cpp -DARPACK -DMETIS_5_64 -DMUMPS -DSPARSKIT -DOPENMP -DLAPACK -fopenmp
-FFLAGS = -Og -Wno-argument-mismatch -cpp -DARPACK -DMETIS_5_64 -DMUMPS -DSPARSKIT -DOPENMP -DLAPACK -fopenmp
-FFLAGS += -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow -fcheck=bounds,pointer
+FFLAGS = -O3 -Wno-argument-mismatch -cpp -DARPACK -DMETIS_5_64 -DMUMPS -DSPARSKIT -DOPENMP -DLAPACK -fopenmp
+# FFLAGS = -Og -Wno-argument-mismatch -cpp -DARPACK -DMETIS_5_64 -DMUMPS -DSPARSKIT -DOPENMP -DLAPACK -fopenmp
+# FFLAGS += -fbounds-check -fbacktrace -ffpe-trap=invalid,zero,overflow -fcheck=bounds,pointer -pg
 
 # $(OBJ_DIR)/%.o: ./common/%.f90 $(MOD_DIR)/%.mod 
 # 	@echo "Compiling $@... "

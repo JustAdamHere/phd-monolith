@@ -116,11 +116,14 @@ contains
 
         if (400 <= element_region_id .and. element_region_id <= 599) then
             if (trim(geometry_name) == 'placentone') then
-                translated_point = global_point
+                translated_point = translate_placentone_to_placentone_point(problem_dim, global_point, element_region_id)
+                placentone_no = 1
             else if (trim(geometry_name) == 'placenta') then
                 translated_point = translate_placenta_to_placentone_point(problem_dim, global_point, element_region_id)
+                placentone_no = mod(element_region_id, 10)
             else if (trim(geometry_name) == 'placentone-3d') then
                 translated_point = translate_placentone_3d_to_placentone_point(problem_dim, global_point, element_region_id)
+                placentone_no = 1
             else if (geometry_name(1:6) == 'square') then
                 translated_point = 0.0_db
             else
@@ -155,7 +158,6 @@ contains
                     0.0_db
             ! Cavity transitions.
             else if (510 <= element_region_id .and. element_region_id <= 527) then
-                placentone_no = mod(element_region_id, 10)
                 calculate_velocity_reaction_coefficient = velocity_reaction_coefficient* &
                     calculate_placentone_cavity_transition(translated_point, problem_dim, element_region_id, steepness, &
                         placentone_no)
