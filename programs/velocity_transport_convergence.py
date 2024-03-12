@@ -48,13 +48,21 @@ def run(simulation_no, p):
 	# OUTPUT RATIOS #
 	#################
 	from tabulate import tabulate
-	output.output(tabulate(errors.transpose(), headers=['#Timesteps', 'mesh_no', 'DoFs', 'L2_u', 'L2_p', 'L2_up', 'DG_up', 'div_u'], tablefmt='rounded_outline'), p["terminal_output"])
-	output.output(tabulate(error_ratios.transpose(), headers=['L2_u_ratio', 'L2_p_ratio', 'L2_up_ratio', 'DG_up_ratio', 'div_u_ratio'], tablefmt='rounded_outline'), p["terminal_output"])
+	if ("velocity" in p["test_type"]):
+		error_headers = ['#Timesteps', 'mesh_no', 'DoFs', 'L2_u', 'L2_p', 'L2_up', 'DG_up', 'div_u']
+		ratio_headers = ['L2_u_ratio', 'L2_p_ratio', 'L2_up_ratio', 'DG_up_ratio', 'div_u_ratio']
+	else:
+		error_headers = ['#Timesteps', 'mesh_no', 'transport_dofs', 'L2_c', 'H1_c', 'DG_c', 'H2_c']
+		ratio_headers = ['L2_c_ratio', 'H1_c_ratio', 'DG_c_ratio', 'H2_c_ratio']
+	
+	output.output(tabulate(errors.transpose(), headers=error_headers, tablefmt='rounded_outline'), p["terminal_output"])
+	output.output(tabulate(error_ratios.transpose(), headers=ratio_headers, tablefmt='rounded_outline'), p["terminal_output"])
 
 	########
 	# PLOT #
 	########
-	if (p["plot"]):
+	# Just plot velocity errors for now.
+	if (p["plot"] and "velocity" in p["test_type"]):
 		if (p["test_type"][-5:] == "space"):
 			plot_spatial  = True
 			plot_temporal = False
@@ -185,6 +193,9 @@ def aptofem_simple_simulation(simulation_no, velocity_model, geometry, verbose_o
 
 	# Get norms.
 	from miscellaneous import get_norms
-	errors, error_ratios = get_norms.get_norms(program, geometry, simulation_no)
+	if ("velocity" in test_type):
+		errors, error_ratios = get_norms.get_velocity_norms(program, geometry, simulation_no)
+	else:
+		errors, error_ratios = get_norms.get_transport_norms(program, geometry, simulation_no)
 	
 	return simulation_no, errors, error_ratios

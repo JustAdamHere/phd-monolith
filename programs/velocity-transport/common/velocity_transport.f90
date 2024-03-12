@@ -24,6 +24,7 @@ program velocity_transport
 
     use matrix_rhs_transport
     use matrix_rhs_transport_ss
+    use matrix_rhs_transport_mm
     use matrix_rhs_s_b_ss
     use jacobi_residual_ns_b_ss
     use jacobi_residual_ns_nsb_ss
@@ -522,10 +523,17 @@ program velocity_transport
     !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if (compute_transport .and. no_time_steps > 0) then
         ! Transport routines.
-        call store_subroutine_names(fe_solver_routines_transport, 'assemble_matrix_rhs_element', &
-            stiffness_matrix_load_vector_transport, 1)
-        call store_subroutine_names(fe_solver_routines_transport, 'assemble_matrix_rhs_face',    &
-            stiffness_matrix_load_vector_face_transport, 1)
+        if (moving_mesh) then
+            call store_subroutine_names(fe_solver_routines_transport, 'assemble_matrix_rhs_element', &
+                stiffness_matrix_load_vector_transport_mm, 1)
+            call store_subroutine_names(fe_solver_routines_transport, 'assemble_matrix_rhs_face',    &
+                stiffness_matrix_load_vector_face_transport_mm, 1)
+        else
+            call store_subroutine_names(fe_solver_routines_transport, 'assemble_matrix_rhs_element', &
+                stiffness_matrix_load_vector_transport, 1)
+            call store_subroutine_names(fe_solver_routines_transport, 'assemble_matrix_rhs_face',    &
+                stiffness_matrix_load_vector_face_transport, 1)
+        end if
 
         ! Storage for transport timestepping.
         scheme_data_transport%time_step    = time_step
