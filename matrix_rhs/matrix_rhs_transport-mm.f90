@@ -113,8 +113,7 @@ module matrix_rhs_transport_mm
                     do j = 1, no_dofs_per_variable(1)
                         time_terms       = phi(1, q, i)*phi(1, q, j)/time_step
                         diffusion_terms  = dot_product(phi_1(1, q, :, i), phi_1(1, q, :, j))
-                        convection_terms = -dot_product(u_darcy_velocity, phi_1(1, q, :, i))*phi(1, q, j) &
-                                                -(trace_u_darcy_velocity_1)*phi(1, q, i)*phi(1, q, j)
+                        convection_terms = -dot_product(u_darcy_velocity, phi_1(1, q, :, i))*phi(1, q, j)
                         reaction_terms   = phi(1, q, j)*phi(1, q, i)
 
                         element_matrix(1, 1, i, j) = element_matrix(1, 1, i, j) + integral_weighting(q)*( &
@@ -125,7 +124,8 @@ module matrix_rhs_transport_mm
                             convection_terms*calculate_transport_convection_coefficient(global_points(:, q), problem_dim, &
                                 element_region_id) + &
                             reaction_terms  *calculate_transport_reaction_coefficient(global_points(:, q), problem_dim, &
-                                element_region_id))
+                                element_region_id) &
+                        )
 
                     end do
                 end do
@@ -185,7 +185,7 @@ module matrix_rhs_transport_mm
         integer                                        :: qk, i, j
         real(db)                                       :: full_dispenal, full_dispenal_old
         real(db)                                       :: diffusion_terms, convection_terms
-        real(db), dimension(facet_data%no_pdes)        :: f, u, un
+        real(db), dimension(facet_data%no_pdes)        :: f, c, un
         real(db), dimension(facet_data%dim_soln_coeff) :: dispenal_new
         real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, facet_data%problem_dim, &
             maxval(facet_data%no_dofs_per_variable1))  :: grad_phi_p
@@ -263,16 +263,16 @@ module matrix_rhs_transport_mm
                         deriv_flux_plus  = 0.5_db*(a_dot_n_p + abs(a_dot_n_p))
                         deriv_flux_minus = 0.5_db*(a_dot_n_p - abs(a_dot_n_p))
 
-                        call anal_soln_transport(u, global_points_face(:, qk), problem_dim, no_pdes, bdry_face, current_time)
+                        call anal_soln_transport(c, global_points_face(:, qk), problem_dim, no_pdes, bdry_face, current_time)
 
                         do i = 1, no_dofs_per_variable1(1)
                             diffusion_terms = &
-                                -dot_product(grad_phi_p(1, qk, :, i), face_normals(:, qk)) + full_dispenal*phi_p(1, qk, i)
+                                -dot_product(grad_phi_p(1, qk, :, i), face_normals(:, qk))*c(1) + full_dispenal*phi_p(1, qk, i)*c(1)
 
                             convection_terms = &
-                                -deriv_flux_minus*phi_p(1, qk, i)
+                                -deriv_flux_minus*c(1)*phi_p(1, qk, i)
 
-                            face_rhs(1, i) = face_rhs(1, i) + integral_weighting(qk)*u(1)* &
+                            face_rhs(1, i) = face_rhs(1, i) + integral_weighting(qk)* &
                             ( &
                                 diffusion_terms *calculate_transport_diffusion_coefficient(global_points_face(:, qk), &
                                     problem_dim, face_element_region_ids(1)) + &
@@ -287,7 +287,7 @@ module matrix_rhs_transport_mm
                                     +full_dispenal*phi_p(1, qk, j)*phi_p(1, qk, i)
 
                                 convection_terms = &
-                                    deriv_flux_plus*phi_p(1, qk, i)*phi_p(1, qk, j)
+                                    deriv_flux_plus*phi_p(1, qk, j)*phi_p(1, qk, i)
 
                                 face_matrix_pp(1, 1, i, j) = face_matrix_pp(1, 1, i, j) + integral_weighting(qk) * &
                                 ( &
@@ -318,7 +318,7 @@ module matrix_rhs_transport_mm
 
                             do j = 1, no_dofs_per_variable1(1)
                                 convection_terms = &
-                                    deriv_flux_plus*phi_p(1, qk, i)*phi_p(1, qk, j)
+                                    deriv_flux_plus*phi_p(1, qk, j)*phi_p(1, qk, i)
 
                                 face_matrix_pp(1, 1, i, j) = face_matrix_pp(1, 1, i, j) + integral_weighting(qk) * &
                                 ( &
@@ -338,8 +338,8 @@ module matrix_rhs_transport_mm
 
                     a_dot_n_p        = dot_product(u_darcy_velocity_p, face_normals(:, qk))
                     a_dot_n_m        = dot_product(u_darcy_velocity_m, face_normals(:, qk))
-                    deriv_flux_plus  = 0.5_db*(a_dot_n_p + abs(a_dot_n_p))
-                    deriv_flux_minus = 0.5_db*(a_dot_n_m - abs(a_dot_n_m))
+                    deriv_flux_plus  = 0.5_db*(a_dot_n_p + abs(a_dot_n_p+a_dot_n_m))
+                    deriv_flux_minus = 0.5_db*(a_dot_n_m - abs(a_dot_n_p+a_dot_n_m))
 
                     do i = 1, no_dofs_per_variable1(1)
                         do j = 1, no_dofs_per_variable1(1)
