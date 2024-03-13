@@ -41,4 +41,4 @@ def get_transport_norms(program, geometry, run_no):
   DG_c_ratio  = DG_c [:-1]/DG_c [1:]
   H2_c_ratio  = H2_c [:-1]/H2_c [1:]
 
-  return np.array([no_timesteps, mesh_no, transport_dofs, L2_c, H1_c, DG_c, H2_c]), np.array([L2_c_ratio, H1_c_ratio, DG_c_ratio, H2_c_ratio])
+  return np.array([no_timesteps, mesh_no, velocity_dofs, transport_dofs, L2_c, H1_c, DG_c, H2_c]), np.array([L2_c_ratio, H1_c_ratio, DG_c_ratio, H2_c_ratio])

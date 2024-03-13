@@ -701,7 +701,7 @@ program velocity_transport_convergence
           solution_transport)
         call write_fe_data('output_mesh_solution_velocity_2D',  aptofem_stored_keys, mesh_no, mesh_data, solution_velocity)
         call write_fe_data('output_mesh_solution_transport_2D', aptofem_stored_keys, mesh_no, mesh_data, solution_transport)
-        write(23111997, tsv_format) 0, mesh_no, velocity_dofs, errors(1), errors(2), errors(3), errors(4)
+        write(23111997, tsv_format) 0, mesh_no, velocity_dofs, transport_dofs, errors(1), errors(2), errors(3), errors(4)
   
         ! Clean up solver storage.
         call linear_fe_solver(solution_velocity,  mesh_data, fe_solver_routines_velocity,  'solver_velocity', &
@@ -791,7 +791,7 @@ program velocity_transport_convergence
       call newton_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', aptofem_stored_keys, &
         sp_matrix_rhs_data_velocity, scheme_data_velocity, ifail)
       call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', aptofem_stored_keys, &
-        sp_matrix_rhs_data_velocity,  5, scheme_data_velocity)
+        sp_matrix_rhs_data_velocity, 5, scheme_data_velocity)
 
       ! Setup and solve steady-state transport problem.
       call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
@@ -869,7 +869,7 @@ program velocity_transport_convergence
         solution_transport)
       call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, mesh_no, mesh_data, solution_velocity)
       call write_fe_data('output_mesh_solution_transport_2D', aptofem_stored_keys, mesh_no, mesh_data, solution_transport)
-      write(23111997, tsv_format) 0, mesh_no, velocity_dofs, errors(1), errors(2), errors(3), errors(4)
+      write(23111997, tsv_format) no_time_steps, mesh_no, velocity_dofs, transport_dofs, errors(1), errors(2), errors(3), errors(4)
 
       ! Clean up solver storage.
       call linear_fe_solver(solution_velocity,  mesh_data, fe_solver_routines_velocity,  'solver_velocity', &
@@ -904,8 +904,156 @@ program velocity_transport_convergence
   !! TRANSPORT TIME-DEPENDENT TEMPORAL CONVERGENCE !!
   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   else if (trim(test_type) == 'transport_time') then
-    call write_message(io_err, 'Error: unknown test_type.')
-    error stop
+    ! Setup mesh.
+    call create_mesh(mesh_data, get_boundary_no_velocity, 'mesh_gen', aptofem_stored_keys)
+
+    ! Setup velocity solution.
+    call create_fe_solution(solution_velocity, mesh_data, 'fe_solution_velocity', aptofem_stored_keys, dirichlet_bc_velocity)
+    call create_fe_solution(solution_transport, mesh_data, 'fe_solution_transport', aptofem_stored_keys, anal_soln_transport, &
+        get_boundary_no_transport)
+
+    ! Setup error outputting.
+    errors_format  = '(g15.5)'
+    errors_name(1) = '||c-c_h||_L_2'
+    errors_name(2) = '|c-c_h|_H^1'
+    errors_name(3) = '||c-c_h||_DG'
+    errors_name(4) = '|c-c_h|_H^2'
+
+    write(23111997, tsv_format) 'no_timesteps', 'mesh_no', 'velocity_dofs', 'transport_dofs', 'L2_c', 'H1_c', 'DG_c', 'H2_c'
+
+    ! Loop over meshes.
+    do mesh_no = 1, no_meshes
+      ! Reset timestepping.
+      solution_velocity%current_time     = 0.0_db
+      solution_transport%current_time    = 0.0_db
+      scheme_data_velocity%current_time  = 0.0_db
+      scheme_data_transport%current_time = 0.0_db
+      scheme_data_velocity%time_step     = final_local_time/real(no_time_steps, db)
+      scheme_data_transport%time_step    = final_local_time/real(no_time_steps, db)
+      call set_current_time(solution_velocity,  0.0_db)
+      call set_current_time(solution_transport, 0.0_db)
+
+      ! Store steady-state assembly for initial condition.
+      if (assembly_name == 'nsb') then
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element',       jacobian_nsb_ss, 1)
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', jacobian_face_nsb_ss, 1)
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element',         element_residual_nsb_ss, 1)
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face',   element_residual_face_nsb_ss,&
+          1)
+      else
+        call write_message(io_err, 'Error: not implemented for other assemblies other than nsb.')
+        error stop
+      end if
+      call store_subroutine_names(fe_solver_routines_transport, 'assemble_matrix_rhs_element', &
+        stiffness_matrix_load_vector_transport_ss, 1)
+      call store_subroutine_names(fe_solver_routines_transport, 'assemble_matrix_rhs_face',    &
+        stiffness_matrix_load_vector_face_transport_ss, 1)
+
+      ! Setup and solve steady-state velocity problem.
+      call set_up_newton_solver_parameters('solver_velocity', aptofem_stored_keys, scheme_data_velocity)
+      call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', aptofem_stored_keys, &
+        sp_matrix_rhs_data_velocity, 1, scheme_data_velocity)
+      call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', aptofem_stored_keys, &
+        sp_matrix_rhs_data_velocity, 2, scheme_data_velocity)
+      call newton_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', aptofem_stored_keys, &
+        sp_matrix_rhs_data_velocity, scheme_data_velocity, ifail)
+      call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', aptofem_stored_keys, &
+        sp_matrix_rhs_data_velocity, 5, scheme_data_velocity)
+
+      ! Setup and solve steady-state transport problem.
+      call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
+        aptofem_stored_keys, sp_matrix_rhs_data_transport, 1, scheme_data_transport)
+      call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
+        aptofem_stored_keys, sp_matrix_rhs_data_transport, 2, scheme_data_transport)
+      call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
+        aptofem_stored_keys, sp_matrix_rhs_data_transport, 3, scheme_data_transport)
+      call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
+        aptofem_stored_keys, sp_matrix_rhs_data_transport, 4, scheme_data_transport)
+      call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
+        aptofem_stored_keys, sp_matrix_rhs_data_transport, 5, scheme_data_transport)
+
+      ! Store appropriate time-dependent assembly routines.
+      if (assembly_name == 'nsb') then
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_element',       jacobian_nsb, 1)
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_jac_matrix_int_bdry_face', jacobian_face_nsb, 1)
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_element',         element_residual_nsb, 1)
+        call store_subroutine_names(fe_solver_routines_velocity, 'assemble_residual_int_bdry_face',   element_residual_face_nsb, 1)
+      else
+        call write_message(io_err, 'Error: not implemented for other assemblies other than nsb.')
+        error stop
+      end if
+      call store_subroutine_names(fe_solver_routines_transport, 'assemble_matrix_rhs_element', &
+        stiffness_matrix_load_vector_transport, 1)
+      call store_subroutine_names(fe_solver_routines_transport, 'assemble_matrix_rhs_face',    &
+        stiffness_matrix_load_vector_face_transport, 1)
+
+      ! Setup DIRK timestepping.
+      call set_up_dirk_timestepping('solver_velocity', aptofem_stored_keys, dirk_scheme_velocity)
+
+      ! Setup velocity for this mesh.
+      call set_up_newton_solver_parameters('solver_velocity', aptofem_stored_keys, scheme_data_velocity)
+      call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', aptofem_stored_keys, &
+        sp_matrix_rhs_data_velocity, 1, scheme_data_velocity)
+      call linear_fe_solver(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', aptofem_stored_keys, &
+        sp_matrix_rhs_data_velocity, 2, scheme_data_velocity)
+
+      ! Setup transport for this mesh.
+      call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
+        aptofem_stored_keys, sp_matrix_rhs_data_transport, 1, scheme_data_transport)
+      call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
+        aptofem_stored_keys, sp_matrix_rhs_data_transport, 2, scheme_data_transport)
+
+      ! Get DoFs.
+      velocity_dofs  = get_no_dofs(solution_velocity)
+      transport_dofs = get_no_dofs(solution_transport)
+
+      ! Setup storage for previous transport solution vector.
+      allocate(scheme_data_transport%temp_real_array(1, transport_dofs))
+      scheme_data_transport%temp_real_array  = 0.0_db
+      scheme_data_transport%dim_real_array_1 = 1
+      scheme_data_transport%dim_real_array_2 = transport_dofs
+
+      ! Timestep and solve.
+      do time_step_no = 1, no_time_steps
+        scheme_data_transport%current_time = scheme_data_transport%current_time + scheme_data_transport%time_step
+        call get_solution_vector(scheme_data_transport%temp_real_array(1, :), transport_dofs, solution_transport)
+        call set_current_time(solution_transport, scheme_data_transport%current_time)
+        call project_dirichlet_boundary_values(solution_transport, mesh_data)
+
+        call dirk_single_time_step(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
+          aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, dirk_scheme_velocity, &
+          scheme_data_velocity%current_time, scheme_data_velocity%time_step, velocity_dofs, time_step_no, .false., &
+          norm_diff_u)
+        call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
+          aptofem_stored_keys, sp_matrix_rhs_data_transport, 3, scheme_data_transport)
+        call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
+          aptofem_stored_keys, sp_matrix_rhs_data_transport, 4, scheme_data_transport)
+      end do
+
+      ! Norms and output.
+      call error_norms_transport(errors, mesh_data, solution_transport)
+      call write_data   ('output_data', aptofem_stored_keys, errors, 4, errors_name, errors_format, mesh_data, &
+        solution_transport)
+      call write_fe_data('output_mesh_solution_velocity_2D', aptofem_stored_keys, mesh_no, mesh_data, solution_velocity)
+      call write_fe_data('output_mesh_solution_transport_2D', aptofem_stored_keys, mesh_no, mesh_data, solution_transport)
+      write(23111997, tsv_format) no_time_steps, mesh_no, velocity_dofs, transport_dofs, errors(1), errors(2), errors(3), errors(4)
+
+      ! Clean up solver storage.
+      call linear_fe_solver(solution_velocity,  mesh_data, fe_solver_routines_velocity,  'solver_velocity', &
+        aptofem_stored_keys, sp_matrix_rhs_data_velocity,  5, scheme_data_velocity)
+      call linear_fe_solver(solution_transport, mesh_data, fe_solver_routines_transport, 'solver_transport', &
+        aptofem_stored_keys, sp_matrix_rhs_data_transport, 5, scheme_data_transport)
+      deallocate(scheme_data_transport%temp_real_array)
+
+      ! Refine the timestep.
+      if (mesh_no < no_meshes) then
+        no_time_steps = 2*no_time_steps
+      end if
+    end do
+
+    call delete_solution(solution_transport)
+    call delete_solution(solution_velocity)
+    call delete_mesh(mesh_data)
 
   else
     call write_message(io_err, 'Error: unknown test_type.')
