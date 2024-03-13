@@ -177,7 +177,7 @@ def run(simulation_no, p):
 	#################
 	if (p["compute_error_norms"]):
 		from miscellaneous import get_norms
-		errors, error_ratios = get_norms.get_norms(program, p["geometry"], aptofem_run_no)
+		errors, error_ratios = get_norms.get_velocity_norms(program, p["geometry"], aptofem_run_no)
 
 		from tabulate import tabulate
 		output.output(tabulate(errors.transpose(), headers=['#Timesteps', 'mesh_no', 'DoFs', 'L2_u', 'L2_p', 'L2_up', 'DG_up', 'div_u'], tablefmt='rounded_outline'), p["terminal_output"])
