@@ -2,7 +2,9 @@ module matrix_rhs_transport_mm
     use bcs_transport
     use problem_options
     use problem_options_transport
+    use problem_options_geometry
     use solution_storage_velocity
+    use previous_timestep
 
     contains
 
@@ -38,7 +40,7 @@ module matrix_rhs_transport_mm
         !!!!!!!!!!!!!!!
         integer  :: i, j
         integer  :: q
-        real(db) :: diffusion_terms, convection_terms, reaction_terms, time_terms, forcing_terms
+        real(db) :: diffusion_terms, convection_terms, reaction_terms, time_terms, forcing_terms, prev_time_terms
 
         real(db), dimension(facet_data%no_pdes)      :: f
         real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, &
@@ -47,12 +49,104 @@ module matrix_rhs_transport_mm
             maxval(facet_data%no_dofs_per_variable)) :: phi_1
 
         real(db)                                                           :: time_step, current_time
-        real(db), dimension(facet_data%no_pdes, facet_data%no_quad_points) :: uh_previous_time_step
+        real(db), dimension(facet_data%no_pdes, facet_data%no_quad_points) :: prev_ch
 
         real(db), dimension(facet_data%problem_dim)                         :: u_darcy_velocity
         real(db), dimension(facet_data%problem_dim, facet_data%problem_dim) :: u_darcy_velocity_1
 
-        real(db) :: trace_u_darcy_velocity_1
+        ! Previous solution variables.
+        real(db), dimension(facet_data%no_pdes, facet_data%no_quad_points) :: prev_uh
+        real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: prev_global_points_ele
+        real(db), dimension(facet_data%no_quad_points) :: prev_jacobian, prev_quad_weights_ele
+        real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable)) :: &
+            prev_phi
+        integer, dimension(facet_data%dim_soln_coeff, maxval(facet_data%no_dofs_per_variable)) :: prev_global_dof_numbers
+        integer, dimension(facet_data%dim_soln_coeff) :: prev_no_dofs_per_variable
+        integer :: prev_no_quad_points
+
+        character(len=aptofem_length_key_def) :: control_parameter
+
+        integer             :: prev_dim_soln_coeff, prev_no_pdes, prev_no_elements, prev_no_nodes, prev_no_faces, prev_problem_dim,&
+            prev_npinc, prev_no_quad_points_volume_max, prev_no_quad_points_face_max
+        type(basis_storage) :: prev_fe_basis_info
+
+        ! Moving mesh variables.
+        real(db), dimension(facet_data%problem_dim) :: mesh_velocity
+        real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: mesh_uh
+        real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: mesh_global_points_ele
+        real(db), dimension(facet_data%no_quad_points) :: mesh_jacobian, mesh_quad_weights_ele
+        real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable)) :: &
+            mesh_phi
+        integer, dimension(facet_data%dim_soln_coeff, maxval(facet_data%no_dofs_per_variable)) :: mesh_global_dof_numbers
+        integer, dimension(facet_data%dim_soln_coeff) :: mesh_no_dofs_per_variable
+        integer :: mesh_no_quad_points
+
+        integer             :: mesh_dim_soln_coeff, mesh_no_pdes, mesh_no_elements, mesh_no_nodes, mesh_no_faces, mesh_problem_dim,&
+            mesh_npinc, mesh_no_quad_points_volume_max, mesh_no_quad_points_face_max
+        type(basis_storage) :: mesh_fe_basis_info
+
+        ! Extra variables on previous mesh.
+        real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: &
+        prev_gauss_points_local, prev_gauss_points_global, mesh_gauss_points_local, mesh_gauss_points_global
+        real(db), dimension(facet_data%problem_dim, facet_data%problem_dim, facet_data%no_quad_points) :: &
+        prev_jacobi_mat, prev_inv_jacobi_mat, mesh_jacobi_mat, mesh_inv_jacobi_mat
+        integer :: prev_dim_soln_coeff_start, prev_dim_soln_coeff_end, prev_dim_soln_coeff_fe_space, mesh_dim_soln_coeff_start, &
+        mesh_dim_soln_coeff_end, mesh_dim_soln_coeff_fe_space
+
+        ! Setup basis storage.
+        control_parameter = 'uh_ele'
+        ! I think the only reason we need prev_fe_basis_info is for the basis_element property, which we're not allowed to access
+        !  from fe_basis_info due to the intent().
+        call initialize_fe_basis_storage(prev_fe_basis_info, control_parameter, prev_solution_transport_data, &
+            facet_data%problem_dim, facet_data%no_quad_points_volume_max, facet_data%no_quad_points_face_max)
+        call initialize_fe_basis_storage(mesh_fe_basis_info, control_parameter, solution_moving_mesh, &
+            facet_data%problem_dim, facet_data%no_quad_points_volume_max, facet_data%no_quad_points_face_max)
+
+        ! Get element DoFs for moving mesh solution.
+        mesh_dim_soln_coeff = get_dim_soln_coeff(solution_moving_mesh)
+        call get_element_dof_numbers(prev_mesh_data, solution_moving_mesh, mesh_global_dof_numbers, mesh_no_dofs_per_variable, &
+        facet_data%element_number, mesh_dim_soln_coeff)
+
+        ! Get element info (definitely required for prev_uh, unsure about mesh_uh).
+        prev_no_quad_points = facet_data%no_quad_points
+        mesh_no_quad_points = facet_data%no_quad_points
+        call get_element_transform_quad_pts(prev_mesh_data, facet_data%element_number, facet_data%problem_dim, &
+        prev_gauss_points_local, prev_global_points_ele, prev_quad_weights_ele, prev_no_quad_points, prev_jacobi_mat, &
+        prev_jacobian)
+        call get_element_transform_quad_pts(prev_mesh_data, facet_data%element_number, facet_data%problem_dim, &
+        mesh_gauss_points_local, mesh_global_points_ele, mesh_quad_weights_ele, mesh_no_quad_points, mesh_jacobi_mat, &
+        mesh_jacobian)
+
+        do i = 1, prev_solution_transport_data%no_fem_spaces
+        prev_dim_soln_coeff_start    = prev_solution_transport_data%fem_spaces(i)%fem%dim_soln_coeff_start_end(1)
+        prev_dim_soln_coeff_end      = prev_solution_transport_data%fem_spaces(i)%fem%dim_soln_coeff_start_end(2)
+        prev_dim_soln_coeff_fe_space = prev_solution_transport_data%fem_spaces(i)%fem%dim_soln_coeff_fe_space
+
+        call prev_solution_transport_data%fem_spaces(i)%fem%basis_fns_stored_quad_pts(prev_mesh_data, facet_data%element_number, &
+            facet_data%problem_dim, facet_data%no_quad_points, prev_dim_soln_coeff_fe_space, &
+            prev_gauss_points_local(:, 1:facet_data%no_quad_points), prev_gauss_points_global(:, 1:facet_data%no_quad_points), &
+            prev_no_dofs_per_variable, prev_fe_basis_info%basis_element, prev_jacobi_mat(:, :, 1:facet_data%no_quad_points), &
+            prev_jacobian(1:facet_data%no_quad_points))
+        end do
+
+        do i = 1, solution_moving_mesh%no_fem_spaces
+        mesh_dim_soln_coeff_start    = solution_moving_mesh%fem_spaces(i)%fem%dim_soln_coeff_start_end(1)
+        mesh_dim_soln_coeff_end      = solution_moving_mesh%fem_spaces(i)%fem%dim_soln_coeff_start_end(2)
+        mesh_dim_soln_coeff_fe_space = solution_moving_mesh%fem_spaces(i)%fem%dim_soln_coeff_fe_space
+
+        call solution_moving_mesh%fem_spaces(i)%fem%basis_fns_stored_quad_pts(prev_mesh_data, facet_data%element_number, &
+            facet_data%problem_dim, facet_data%no_quad_points, mesh_dim_soln_coeff_fe_space, &
+            mesh_gauss_points_local(:, 1:facet_data%no_quad_points), mesh_global_points_ele(:, 1:facet_data%no_quad_points), &
+            mesh_no_dofs_per_variable, mesh_fe_basis_info%basis_element, mesh_jacobi_mat(:, :, 1:facet_data%no_quad_points), &
+            mesh_jacobian(1:facet_data%no_quad_points))
+        end do
+
+        call compute_uh_with_basis_fns_pts(prev_ch(:, 1:facet_data%no_quad_points), facet_data%no_pdes, facet_data%no_quad_points, &
+            facet_data%dim_soln_coeff, facet_data%no_dofs_per_variable, facet_data%global_dof_numbers, fe_basis_info%basis_element,&
+            prev_solution_transport_data)
+        call compute_uh_with_basis_fns_pts(mesh_uh(:, 1:facet_data%no_quad_points), facet_data%problem_dim, &
+            facet_data%no_quad_points, mesh_dim_soln_coeff, mesh_no_dofs_per_variable, mesh_global_dof_numbers, &
+            mesh_fe_basis_info%basis_element, solution_moving_mesh)
 
         associate(&
             dim_soln_coeff       => facet_data%dim_soln_coeff, &
@@ -67,19 +161,11 @@ module matrix_rhs_transport_mm
             no_dofs_per_variable => facet_data%no_dofs_per_variable, &
             scheme_user_data     => facet_data%scheme_user_data &
         )
-            select type (scheme_user_data)
-            type is (default_user_data)
-                time_step    = scheme_user_data%time_step
-                current_time = scheme_user_data%current_time
-
-                call compute_uh_with_basis_fns_pts_from_array(uh_previous_time_step, no_pdes, no_quad_points, dim_soln_coeff, &
-                    no_dofs_per_variable, global_dof_numbers, fe_basis_info%basis_element, soln_data, &
-                    scheme_user_data%dim_real_array_2, scheme_user_data%temp_real_array(1, :))
-            end select
 
             element_matrix = 0.0_db
             element_rhs    = 0.0_db
 
+            ! Calculate basis functions on current mesh.
             do i = 1, dim_soln_coeff
                 phi  (i, 1:no_quad_points,                1:no_dofs_per_variable(i)) &
                     = fe_basis_info%basis_element%basis_fns(i) &
@@ -89,26 +175,29 @@ module matrix_rhs_transport_mm
                     %grad_data(1:no_quad_points, 1:problem_dim, 1:no_dofs_per_variable(i), 1)
             end do
 
+            ! Calculate basis functions on previous mesh.
+            do i = 1, dim_soln_coeff
+                prev_phi(i, 1:no_quad_points, 1:no_dofs_per_variable(i)) = &
+                    fe_basis_info%basis_element%basis_fns(i)%fem_basis_fns(1:no_quad_points, 1:no_dofs_per_variable(i), 1)
+            end do
+
             do q = 1, no_quad_points
                 call calculate_convective_velocity_0_1(u_darcy_velocity, u_darcy_velocity_1, global_points(:, q), problem_dim, &
                     element_no, mesh_data)
 
-                trace_u_darcy_velocity_1 = 0.0_db
-                do i = 1, problem_dim
-                    trace_u_darcy_velocity_1 = trace_u_darcy_velocity_1 + u_darcy_velocity_1(i, i)
-                end do
-
                 call forcing_function_transport(f, global_points(:, q), problem_dim, no_pdes, current_time)
 
                 do i = 1, no_dofs_per_variable(1)
-                    time_terms    = phi(1, q, i)*uh_previous_time_step(1, q)/time_step
-                    forcing_terms = phi(1, q, i)*f(1)
+                    prev_time_terms = prev_phi(1, q, i)*prev_ch(1, q)/time_step
+                    forcing_terms   = phi(1, q, i)*f(1)
 
-                    element_rhs(1, i) = element_rhs(1, i) + integral_weighting(q)*( &
-                        time_terms   *calculate_transport_time_coefficient(global_points(:, q), problem_dim, element_region_id) + &
-                        forcing_terms*calculate_transport_forcing_coefficient(global_points(:, q), problem_dim, &
-                            element_region_id) &
-                    )
+                    element_rhs(1, i) = element_rhs(1, i) + &
+                        integral_weighting(q)* &
+                            forcing_terms*calculate_transport_forcing_coefficient(global_points(:, q), problem_dim, &
+                                element_region_id) &
+                        + prev_jacobian(q)*prev_quad_weights_ele(q)* &
+                            prev_time_terms*calculate_transport_time_coefficient(prev_gauss_points_global(:, q), problem_dim, &
+                                element_region_id)
 
                     do j = 1, no_dofs_per_variable(1)
                         time_terms       = phi(1, q, i)*phi(1, q, j)/time_step
