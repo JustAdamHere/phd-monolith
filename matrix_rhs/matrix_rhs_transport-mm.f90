@@ -5,6 +5,11 @@ module matrix_rhs_transport_mm
     use problem_options_geometry
     use solution_storage_velocity
     use previous_timestep
+    use basis_fns_storage_type
+    use aptofem_fe_matrix_assembly
+    use base_solution_type
+
+    implicit none
 
     contains
 
@@ -48,14 +53,13 @@ module matrix_rhs_transport_mm
         real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, facet_data%problem_dim, &
             maxval(facet_data%no_dofs_per_variable)) :: phi_1
 
-        real(db)                                                           :: time_step, current_time
-        real(db), dimension(facet_data%no_pdes, facet_data%no_quad_points) :: prev_ch
+        real(db) :: time_step, current_time
 
         real(db), dimension(facet_data%problem_dim)                         :: u_darcy_velocity
         real(db), dimension(facet_data%problem_dim, facet_data%problem_dim) :: u_darcy_velocity_1
 
         ! Previous solution variables.
-        real(db), dimension(facet_data%no_pdes, facet_data%no_quad_points) :: prev_uh
+        real(db), dimension(facet_data%no_pdes, facet_data%no_quad_points) :: prev_ch
         real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: prev_global_points_ele
         real(db), dimension(facet_data%no_quad_points) :: prev_jacobian, prev_quad_weights_ele
         real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable)) :: &
@@ -75,10 +79,11 @@ module matrix_rhs_transport_mm
         real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: mesh_uh
         real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: mesh_global_points_ele
         real(db), dimension(facet_data%no_quad_points) :: mesh_jacobian, mesh_quad_weights_ele
-        real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, maxval(facet_data%no_dofs_per_variable)) :: &
-            mesh_phi
-        integer, dimension(facet_data%dim_soln_coeff, maxval(facet_data%no_dofs_per_variable)) :: mesh_global_dof_numbers
-        integer, dimension(facet_data%dim_soln_coeff) :: mesh_no_dofs_per_variable
+        real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points, &
+            facet_data%problem_dim*maxval(facet_data%no_dofs_per_variable)) :: mesh_phi
+        integer, dimension(facet_data%problem_dim, facet_data%problem_dim*maxval(facet_data%no_dofs_per_variable)) :: &
+            mesh_global_dof_numbers
+        integer, dimension(facet_data%problem_dim) :: mesh_no_dofs_per_variable
         integer :: mesh_no_quad_points
 
         integer             :: mesh_dim_soln_coeff, mesh_no_pdes, mesh_no_elements, mesh_no_nodes, mesh_no_faces, mesh_problem_dim,&
@@ -105,7 +110,7 @@ module matrix_rhs_transport_mm
         ! Get element DoFs for moving mesh solution.
         mesh_dim_soln_coeff = get_dim_soln_coeff(solution_moving_mesh)
         call get_element_dof_numbers(prev_mesh_data, solution_moving_mesh, mesh_global_dof_numbers, mesh_no_dofs_per_variable, &
-        facet_data%element_number, mesh_dim_soln_coeff)
+            facet_data%element_number, mesh_dim_soln_coeff)
 
         ! Get element info (definitely required for prev_uh, unsure about mesh_uh).
         prev_no_quad_points = facet_data%no_quad_points
@@ -161,6 +166,11 @@ module matrix_rhs_transport_mm
             no_dofs_per_variable => facet_data%no_dofs_per_variable, &
             scheme_user_data     => facet_data%scheme_user_data &
         )
+            select type (scheme_user_data)
+            type is (default_user_data)
+                time_step    = scheme_user_data%time_step
+                current_time = scheme_user_data%current_time
+            end select
 
             element_matrix = 0.0_db
             element_rhs    = 0.0_db
@@ -182,6 +192,8 @@ module matrix_rhs_transport_mm
             end do
 
             do q = 1, no_quad_points
+                mesh_velocity = mesh_uh(1:problem_dim, q)
+
                 call calculate_convective_velocity_0_1(u_darcy_velocity, u_darcy_velocity_1, global_points(:, q), problem_dim, &
                     element_no, mesh_data)
 
@@ -194,15 +206,15 @@ module matrix_rhs_transport_mm
                     element_rhs(1, i) = element_rhs(1, i) + &
                         integral_weighting(q)* &
                             forcing_terms*calculate_transport_forcing_coefficient(global_points(:, q), problem_dim, &
-                                element_region_id) &
-                        + prev_jacobian(q)*prev_quad_weights_ele(q)* &
+                                element_region_id) + &
+                        prev_jacobian(q)*prev_quad_weights_ele(q)* &
                             prev_time_terms*calculate_transport_time_coefficient(prev_gauss_points_global(:, q), problem_dim, &
                                 element_region_id)
 
                     do j = 1, no_dofs_per_variable(1)
                         time_terms       = phi(1, q, i)*phi(1, q, j)/time_step
                         diffusion_terms  = dot_product(phi_1(1, q, :, i), phi_1(1, q, :, j))
-                        convection_terms = -dot_product(u_darcy_velocity, phi_1(1, q, :, i))*phi(1, q, j)
+                        convection_terms = -dot_product(u_darcy_velocity-mesh_velocity, phi_1(1, q, :, i))*phi(1, q, j)
                         reaction_terms   = phi(1, q, j)*phi(1, q, i)
 
                         element_matrix(1, 1, i, j) = element_matrix(1, 1, i, j) + integral_weighting(q)*( &
@@ -221,6 +233,9 @@ module matrix_rhs_transport_mm
             end do
 
         end associate
+
+        call delete_fe_basis_storage(prev_fe_basis_info)
+        call delete_fe_basis_storage(mesh_fe_basis_info)
 
     end subroutine
 
