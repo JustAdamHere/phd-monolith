@@ -309,6 +309,83 @@ module matrix_rhs_transport_mm
         real(db), dimension(facet_data%problem_dim)   :: u_darcy_velocity_p
         real(db), dimension(facet_data%problem_dim)   :: u_darcy_velocity_m
 
+        ! Moving mesh variables.
+        real(db), dimension(facet_data%problem_dim) :: mesh_velocity
+        real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: mesh_uh
+        real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points_face_max) :: mesh_global_points_face, &
+            mesh_face_normals
+        real(db), dimension(facet_data%no_quad_points_face_max) :: mesh_face_jacobian, mesh_quad_weights_face
+        real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points_face_max, &
+            facet_data%problem_dim*maxval(facet_data%no_dofs_per_variable)) :: mesh_phi
+        integer, dimension(facet_data%problem_dim, facet_data%problem_dim*maxval(facet_data%no_dofs_per_variable1)) :: &
+            mesh_global_dof_numbers1, mesh_global_dof_numbers2
+        integer, dimension(facet_data%problem_dim) :: mesh_no_dofs_per_variable1, mesh_no_dofs_per_variable2
+        integer :: mesh_no_quad_points
+        integer, dimension(2) :: mesh_neighbors, mesh_loc_face_no
+
+        ! Additional variables on previous mesh.
+        integer :: element_no1, element_no2, mesh_dim_soln_coeff_start, mesh_dim_soln_coeff_end, mesh_dim_soln_coeff_fe_space
+        real(db), dimension(facet_data%problem_dim, facet_data%no_quad_points) :: mesh_local_points1, mesh_local_points2, &
+        mesh_global_points
+        real(db), dimension(facet_data%problem_dim, facet_data%problem_dim, facet_data%no_quad_points) :: mesh_jacobi_mat1, &
+        mesh_inv_jacobi_mat1, mesh_jacobi_mat2
+        real(db), dimension(facet_data%no_quad_points) :: mesh_jacobian1, mesh_jacobian2
+
+        character(len=aptofem_length_key_def) :: control_parameter
+
+        integer             :: mesh_dim_soln_coeff, mesh_no_pdes, mesh_no_elements, mesh_no_nodes, mesh_no_faces, mesh_problem_dim,&
+        mesh_npinc, mesh_no_quad_points_volume_max, mesh_no_quad_points_face_max, mesh_bdry_face
+        type(basis_storage) :: mesh_fe_basis_info
+
+        ! Setup basis storage (purely for quadrature points).
+        control_parameter = 'uh_face'
+        call initialize_fe_basis_storage(mesh_fe_basis_info, control_parameter, solution_moving_mesh, &
+        facet_data%problem_dim, facet_data%no_quad_points_volume_max, facet_data%no_quad_points_face_max)
+
+        ! Assuming continuity, we will mostly just work on face 1; in fact it probably could work with just face 1; I 
+        !  suspect problems may arise in compute_uh_with_basis_fns_pts if we don't do anything to face 2.
+        element_no1 = facet_data%neighbours(1)
+        element_no2 = facet_data%neighbours(2)
+
+        ! Get the local face numbers.
+        mesh_loc_face_no = mesh_data%mesh_faces(facet_data%face_number)%loc_face_no
+
+        ! Get element DoFs for moving mesh solution.
+        mesh_dim_soln_coeff = get_dim_soln_coeff(solution_moving_mesh)
+        call get_element_dof_numbers(prev_mesh_data, solution_moving_mesh, mesh_global_dof_numbers1, mesh_no_dofs_per_variable1, &
+        element_no1, mesh_dim_soln_coeff)
+
+        ! Get face integration info.
+        mesh_no_quad_points = facet_data%no_quad_points
+        call get_face_transform_quad_pts(prev_mesh_data, element_no1, mesh_loc_face_no(1), facet_data%problem_dim, &
+        mesh_local_points1(:,1:facet_data%no_quad_points), mesh_global_points(:, 1:facet_data%no_quad_points), &
+        mesh_quad_weights_face(1:facet_data%no_quad_points), mesh_no_quad_points, mesh_face_jacobian(1:facet_data%no_quad_points), &
+        mesh_face_normals(:, 1:facet_data%no_quad_points), mesh_jacobi_mat1(:, :, 1:facet_data%no_quad_points), &
+        mesh_jacobian1(1:facet_data%no_quad_points), mesh_inv_jacobi_mat1(:, :, 1:facet_data%no_quad_points))
+
+        do i = 1, solution_moving_mesh%no_fem_spaces
+        mesh_dim_soln_coeff_start    = solution_moving_mesh%fem_spaces(i)%fem%dim_soln_coeff_start_end(1)
+        mesh_dim_soln_coeff_end      = solution_moving_mesh%fem_spaces(i)%fem%dim_soln_coeff_start_end(2)
+        mesh_dim_soln_coeff_fe_space = solution_moving_mesh%fem_spaces(i)%fem%dim_soln_coeff_fe_space
+
+        call solution_moving_mesh%fem_spaces(i)%fem%uh_basis_fns_pts(prev_mesh_data, solution_moving_mesh, &
+            element_no1, facet_data%problem_dim, facet_data%no_quad_points, mesh_dim_soln_coeff_fe_space, &
+            mesh_local_points1(:, 1:facet_data%no_quad_points), mesh_global_points(:, 1:facet_data%no_quad_points), &
+            mesh_no_dofs_per_variable1, mesh_fe_basis_info%basis_face1, mesh_jacobi_mat1(:, :, 1:facet_data%no_quad_points), &
+            mesh_jacobian1(1:facet_data%no_quad_points))
+        if (element_no2 > 0) then
+            call solution_moving_mesh%fem_spaces(i)%fem%uh_basis_fns_pts(prev_mesh_data, solution_moving_mesh, &
+            element_no2, facet_data%problem_dim, facet_data%no_quad_points, mesh_dim_soln_coeff_fe_space, &
+            mesh_local_points2(:, 1:facet_data%no_quad_points), mesh_global_points(:, 1:facet_data%no_quad_points), &
+            mesh_no_dofs_per_variable2, mesh_fe_basis_info%basis_face2, mesh_jacobi_mat2(:, :, 1:facet_data%no_quad_points), &
+            mesh_jacobian2(1:facet_data%no_quad_points))
+        end if
+        end do
+
+        call compute_uh_with_basis_fns_pts(mesh_uh(:, 1:facet_data%no_quad_points), facet_data%problem_dim, &
+            facet_data%no_quad_points, mesh_dim_soln_coeff, mesh_no_dofs_per_variable1, mesh_global_dof_numbers1, &
+            mesh_fe_basis_info%basis_face1, solution_moving_mesh)
+
         associate( &
             dim_soln_coeff            => facet_data%dim_soln_coeff, &
             no_pdes                   => facet_data%no_pdes, &
@@ -360,10 +437,13 @@ module matrix_rhs_transport_mm
             if (bdry_face > 0) then
                 if (100 <= bdry_face .and. bdry_face <= 199) then
                     do qk = 1, no_quad_points
+                        ! The solution is continuous, so we only need to do this on one side of the face.
+                        mesh_velocity = mesh_uh(1:problem_dim, qk)
+
                         call calculate_convective_velocity(u_darcy_velocity_p, global_points_face(:, qk), problem_dim, &
                             neighbour_elements(1), mesh_data)
 
-                        a_dot_n_p        = dot_product(u_darcy_velocity_p, face_normals(:, qk))
+                        a_dot_n_p        = dot_product(u_darcy_velocity_p - mesh_velocity, face_normals(:, qk))
                         deriv_flux_plus  = 0.5_db*(a_dot_n_p + abs(a_dot_n_p))
                         deriv_flux_minus = 0.5_db*(a_dot_n_p - abs(a_dot_n_p))
 
@@ -405,10 +485,13 @@ module matrix_rhs_transport_mm
                     end do
                 else if (200 <= bdry_face .and. bdry_face <= 299) then
                     do qk = 1, no_quad_points
+                        ! The solution is continuous, so we only need to do this on one side of the face.
+                        mesh_velocity = mesh_uh(1:problem_dim, qk)
+
                         call calculate_convective_velocity(u_darcy_velocity_p, global_points_face(:, qk), problem_dim, &
                             neighbour_elements(1), mesh_data)
 
-                        a_dot_n_p        = dot_product(u_darcy_velocity_p, face_normals(:, qk))
+                        a_dot_n_p        = dot_product(u_darcy_velocity_p - mesh_velocity, face_normals(:, qk))
                         deriv_flux_plus  = 0.5_db*(a_dot_n_p + abs(a_dot_n_p))
                         deriv_flux_minus = 0.5_db*(a_dot_n_p - abs(a_dot_n_p))
 
@@ -435,13 +518,16 @@ module matrix_rhs_transport_mm
                 end if
             else
                 do qk = 1, no_quad_points
+                    ! The solution is continuous, so we only need to do this on one side of the face.
+                    mesh_velocity = mesh_uh(1:problem_dim, qk)
+
                     call calculate_convective_velocity(u_darcy_velocity_p, global_points_face(:, qk), problem_dim, &
                         neighbour_elements(1), mesh_data)
                     call calculate_convective_velocity(u_darcy_velocity_m, global_points_face(:, qk), problem_dim, &
                         neighbour_elements(2), mesh_data)
 
-                    a_dot_n_p        = dot_product(u_darcy_velocity_p, face_normals(:, qk))
-                    a_dot_n_m        = dot_product(u_darcy_velocity_m, face_normals(:, qk))
+                    a_dot_n_p        = dot_product(u_darcy_velocity_p - mesh_velocity, face_normals(:, qk))
+                    a_dot_n_m        = dot_product(u_darcy_velocity_m - mesh_velocity, face_normals(:, qk))
                     deriv_flux_plus  = 0.5_db*(a_dot_n_p + abs(a_dot_n_p+a_dot_n_m))
                     deriv_flux_minus = 0.5_db*(a_dot_n_m - abs(a_dot_n_p+a_dot_n_m))
 
