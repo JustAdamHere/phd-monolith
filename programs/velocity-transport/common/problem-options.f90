@@ -8,7 +8,8 @@ module problem_options
     integer           :: no_uniform_refinements_cavity, no_uniform_refinements_everywhere, no_uniform_refinements_inlet, &
         no_time_steps, output_frequency, no_placentones
     logical           :: velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, &
-        compute_permeability, compute_uptake, compute_error_norms, moving_mesh, compute_ss_flag, solid_wall_mesh_velocity
+        compute_permeability, compute_uptake, compute_error_norms, moving_mesh, compute_ss_flag, solid_wall_mesh_velocity, &
+        normalise_inlet_velocity
     character(len=50) :: geometry_name, assembly_name, linear_solver, mesh_velocity_type
 
     real(db), dimension(:, :), allocatable :: vessel_locations
@@ -75,6 +76,8 @@ module problem_options
         call get_aptofem_key_definition('mesh_velocity_type',                mesh_velocity_type,                section_name, &
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('solid_wall_mesh_velocity',          solid_wall_mesh_velocity,          section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('normalise_inlet_velocity',          normalise_inlet_velocity,          section_name, &
             aptofem_stored_keys, ierr)
 
         if (.not. compute_velocity .and. compute_transport) then

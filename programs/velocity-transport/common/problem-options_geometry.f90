@@ -8,7 +8,7 @@ module problem_options_geometry
     real(db)                               :: placentone_width, wall_width, placenta_width, placenta_height, &
         artery_length, ms_pipe_width, x_centre, y_centre, boundary_radius, inflation_ratio
     real(db), dimension(:), allocatable    :: placentone_widths, cumulative_placentone_widths, central_cavity_ratios, wall_angles, &
-        wall_heights, placenta_bottom, placenta_top, move_mesh_centre
+        wall_heights, placenta_bottom, placenta_top, move_mesh_centre, w_n_artery_flux
     real(db), dimension(:, :, :), allocatable :: vessel_tops, cavity_tops, cavity_sides, placentone_sides, wall_tops, artery_sides
     real(db), dimension(:, :), allocatable    :: vessel_angles, left_marginal_sinus_tops, right_marginal_sinus_tops
     !real(db), dimension(:), allocatable       :: central_cavity_widths, central_cavity_heights
@@ -387,26 +387,29 @@ module problem_options_geometry
         end if
 
         if (processor_no == 0) then
-            if (trim(control_file) == "placenta") then
-                i = 4
-            else
-                i = 1
-            end if
+            ! if (trim(control_file) == "placenta") then
+            !     i = 4
+            ! else
+            !     i = 1
+            ! end if
 
-            print *, "INITIALISING..."
-            print *, "CAVITY HEIGHT: ", central_cavity_heights(i)
-            print *, "CAVITY WIDTH:  ", central_cavity_widths(i)
-            print *, "CAVITY RATIO: ", central_cavity_ratios(i)
-            print *, "CAVITY TRANSITION: ", central_cavity_transition
-            print *, "CAVITY TOP: ", cavity_tops(i, 2, :)
-            print *, "VESSEL TOP: ", vessel_tops(i, 2, :)
-            print *, "ARTERY WIDTH SM: ", artery_width_sm
-            print *, "ARTERY LENGTH: ", artery_length
-            print *, "BOUNDARY RADIUS: ", boundary_radius
-            print *, "X_CENTRE: ", x_centre
-            print *, "Y_CENTRE: ", y_centre
-            print *, "PLACENTONE WIDTH: ", placentone_widths(i)
+            ! print *, "INITIALISING..."
+            ! print *, "CAVITY HEIGHT: ", central_cavity_heights(i)
+            ! print *, "CAVITY WIDTH:  ", central_cavity_widths(i)
+            ! print *, "CAVITY RATIO: ", central_cavity_ratios(i)
+            ! print *, "CAVITY TRANSITION: ", central_cavity_transition
+            ! print *, "CAVITY TOP: ", cavity_tops(i, 2, :)
+            ! print *, "VESSEL TOP: ", vessel_tops(i, 2, :)
+            ! print *, "ARTERY WIDTH SM: ", artery_width_sm
+            ! print *, "ARTERY LENGTH: ", artery_length
+            ! print *, "BOUNDARY RADIUS: ", boundary_radius
+            ! print *, "X_CENTRE: ", x_centre
+            ! print *, "Y_CENTRE: ", y_centre
+            ! print *, "PLACENTONE WIDTH: ", placentone_widths(i)
         end if
+
+        allocate(w_n_artery_flux(no_placentones))
+        w_n_artery_flux = 0.0_db
 
         call create_fe_solution(solution_moving_mesh, mesh_data, 'fe_projection_moving_mesh', aptofem_stored_keys, &
             anal_soln_moving_mesh, get_boundary_no_moving_mesh)
@@ -427,7 +430,7 @@ module problem_options_geometry
                 placenta_bottom, placenta_top, wall_tops, left_marginal_sinus_tops, right_marginal_sinus_tops)
         end if
         deallocate(vessel_tops, vessel_angles, cavity_tops, cavity_sides, central_cavity_ratios, move_mesh_centre, &
-            placentone_sides, placentone_widths, cumulative_placentone_widths, artery_sides)
+            placentone_sides, placentone_widths, cumulative_placentone_widths, artery_sides, w_n_artery_flux)
 
         call delete_solution(solution_moving_mesh)
     end subroutine
@@ -956,19 +959,19 @@ module problem_options_geometry
             end do
 
             if (processor_no == 0) then
-                print *, "UPDATING..."
-                print *, "CAVITY HEIGHT: ", central_cavity_heights(4)
-                print *, "CAVITY WIDTH:  ", central_cavity_widths(4)
-                print *, "CAVITY RATIO: ", central_cavity_ratios(4)
-                print *, "CAVITY TRANSITION: ", central_cavity_transition
-                print *, "CAVITY TOP: ", cavity_tops(4, 2, :)
-                print *, "VESSEL TOP: ", vessel_tops(4, 2, :)
-                print *, "ARTERY WIDTH SM: ", artery_width_sm
-                print *, "ARTERY LENGTH: ", artery_length
-                print *, "BOUNDARY RADIUS: ", boundary_radius
-                print *, "X_CENTRE: ", x_centre
-                print *, "Y_CENTRE: ", y_centre
-                print *, "PLACENTONE WIDTH: ", placentone_widths(4)
+                ! print *, "UPDATING..."
+                ! print *, "CAVITY HEIGHT: ", central_cavity_heights(4)
+                ! print *, "CAVITY WIDTH:  ", central_cavity_widths(4)
+                ! print *, "CAVITY RATIO: ", central_cavity_ratios(4)
+                ! print *, "CAVITY TRANSITION: ", central_cavity_transition
+                ! print *, "CAVITY TOP: ", cavity_tops(4, 2, :)
+                ! print *, "VESSEL TOP: ", vessel_tops(4, 2, :)
+                ! print *, "ARTERY WIDTH SM: ", artery_width_sm
+                ! print *, "ARTERY LENGTH: ", artery_length
+                ! print *, "BOUNDARY RADIUS: ", boundary_radius
+                ! print *, "X_CENTRE: ", x_centre
+                ! print *, "Y_CENTRE: ", y_centre
+                ! print *, "PLACENTONE WIDTH: ", placentone_widths(4)
             end if
         else if (trim(control_file) == 'placentone') then
             ! TODO: investigate why you need to divide by 2 in placenta version...
@@ -979,6 +982,14 @@ module problem_options_geometry
             call write_message(io_msg, "!! WARNING: update_geometry not implemented for this geometry. !!")
             call write_message(io_msg, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         end if
+
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        !! W DOT N ARTERY INLET FLUX !!
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        do i = 1, no_placentones
+            ! TODO: actually calculate the value of w dot n.
+            w_n_artery_flux(i) = 0.0_db
+        end do
 
         !!!!!!!!!!!!!!!!!!!!!!!
         !! PLACENTONE WIDTHS !!

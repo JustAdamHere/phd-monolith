@@ -101,8 +101,14 @@ module placentone_2d_bcs_velocity
         centre_bc_x = (artery_sides(1, 1, 1) + artery_sides(1, 2, 1))/2.0_db
         r = abs(x - centre_bc_x)
 
+        if (normalise_inlet_velocity) then
+          amplitude = 0.0125_db/artery_width_sm - 1.5_db/artery_width_sm*w_n_artery_flux(1)
+        else
+          amplitude = 1.0_db
+        end if
+
         ! u(2) = current_velocity_amplitude * calculate_poiseuille_flow(r, artery_width_sm/2.0_db)
-        u(2) = 1.0_db * calculate_poiseuille_flow(r, artery_width_sm/2.0_db)
+        u(2) = amplitude * calculate_poiseuille_flow(r, artery_width_sm/2.0_db)
 
         ! if (u(2) <= -1e-5) then
         !   print *, "Error: inflow velocity negative"
