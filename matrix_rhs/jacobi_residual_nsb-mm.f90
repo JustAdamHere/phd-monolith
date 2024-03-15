@@ -3,7 +3,7 @@ module jacobi_residual_nsb_mm
   use placentone_2d_bcs_velocity
   use placentone_3d_bcs_velocity
   use velocity_bc_interface
-  use previous_velocity
+  use previous_timestep
 
   ! TODO: Lots of redundant local variables.
 
