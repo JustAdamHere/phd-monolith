@@ -98,6 +98,7 @@ solid_wall_mesh_velocity .false.
 no_reynold_ramp_steps 1
 reynold_ramp_start_ratio 0.1
 reynold_ramp_step_base 2.0
+normalise_inlet_velocity .false.
 
 no_placentones 6
 

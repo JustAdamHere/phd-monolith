@@ -18,7 +18,7 @@ program velocity_transport
     use integrate_slow_velocity
     use integrate_fast_velocity
     use projections
-    use previous_velocity
+    use previous_timestep
     use flux_output
     use error_norms
 
@@ -742,9 +742,12 @@ program velocity_transport
         if (compute_transport) then
             scheme_data_transport%current_time = current_time
 
-            call get_solution_vector              (scheme_data_transport%temp_real_array(1, :), no_dofs_transport, &
-                solution_transport)
-            call set_current_time                 (solution_transport, current_time)
+            if (moving_mesh) then
+                call setup_previous_transport(solution_transport)
+            else
+                call get_solution_vector(scheme_data_transport%temp_real_array(1, :), no_dofs_transport, solution_transport)
+            end if
+            call set_current_time(solution_transport, current_time)
             call project_dirichlet_boundary_values(solution_transport, mesh_data)
         end if
 
@@ -959,6 +962,16 @@ program velocity_transport
                 errors(5)
         end if
 
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        ! SAVE THE INTEGRAL OVER THE DOMAIN !
+        !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if (compute_velocity) then ! <- velocity required because we need the basis.
+            one_ivs        = calculate_integral_one(mesh_data, solution_velocity, .true.)
+            one_everywhere = calculate_integral_one(mesh_data, solution_velocity, .false.)
+
+            write(23111995, tsvFormat) time_step_no, one_ivs, one_everywhere
+        end if
+
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         ! SAVE INTEGRAL VELOCITY MAGNITUDE !
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -998,6 +1011,9 @@ program velocity_transport
         ! CLEANUP PREVIOUS VELOCITY MESH AND SOLUTION !
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if (moving_mesh) then
+            if (compute_transport) then
+                call finalise_previous_transport()
+            end if
             if (compute_velocity) then
                 call finalise_previous_velocity()
             end if
