@@ -16,8 +16,8 @@ parameters["pipe_transition"]           = 0.03
 parameters["vessel_fillet_radius"]      = 0.01
 parameters["artery_width"]              = 0.06
 parameters["artery_width_sm"]           = 0.0125
-parameters["no_placentones"]            = 1
-parameters["geometry"]                  = "placentone"
+parameters["no_placentones"]            = 6
+parameters["geometry"]                  = "placenta"
 
 # Problem parameters.
 parameters["scaling_L"]   = 0.04     # m
@@ -30,9 +30,10 @@ parameters["scaling_R"]   = 1.667e-2 # m^2/s
 
 # Moving mesh.
 parameters["moving_mesh"]   = True
-parameters["no_time_steps"] = 80
-parameters["final_time"]    = 1.0
+parameters["final_time"]    = 60*16*2/0.1143 # 2*16 minutes, divided by scaling (i.e. L/U)
+parameters["no_time_steps"] = 100 # dt = 167.97
 parameters["mesh_velocity_type"] = "oscillating_sine"
+parameters["mesh_velocity_scaling"] = -1.9755859375e-05/parameters["scaling_U"] # Nondimensional 
 parameters["solid_wall_mesh_velocity"] = True
 parameters["normalise_inlet_velocity"] = True
 
