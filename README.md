@@ -6,7 +6,7 @@ Essentially, there is a friendly Python wrapper that interfaces with Fortran Apt
 
 ## Features
 
-- A simple Python wrapper for AptoFEM
+- A simple Python wrapper for AptoFEM on square or placental geometries
 - Approximates the Navier-Stokes-Darcy and a reaction-advection-diffusion equation using a symmetric interior penalty discontinuous Galerkin finite element method
 - Easy to use driver files, especially when running 1000s of simulations
 - Calculates numerical MRI signals
