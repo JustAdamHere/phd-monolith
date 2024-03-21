@@ -71,6 +71,7 @@ def get_default_run_parameters():
 		'terminal_output'                    : True ,
 		'transport_ic_from_ss'               : True ,
 		'transport_oscillation_tolerance'    : 0.1 ,
+		'vein_width'                         : 0.0375 ,
 		'velocity_ic_from_ss'                : True ,
 		'velocity_model'                     : 'nsb' ,
 		'velocity_oscillation_tolerance'     : 0.01 ,
@@ -131,7 +132,7 @@ def run(simulation_no, p):
 			if p["geometry"].startswith("square"):
 				generate_mesh.generate_simple_mesh(simulation_no, p["geometry"], p["mesh_resolution"])
 			else:
-				generate_mesh.generate_mesh(simulation_no, p["geometry"], p["mesh_resolution"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["artery_length"], p["verbose_output"], p["basal_plate_vessels"], p["septal_veins"], p["marginal_sinus"], p["wall_height_ratio"], p["artery_width"], p["artery_width_sm"], p["no_placentones"], p["vessel_fillet_radius"], p["basal_plate_vessel_positions"], p["septal_wall_vein_positions"], p["equal_wall_heights"], p["generate_outline_mesh"])
+				generate_mesh.generate_mesh(simulation_no, p["geometry"], p["mesh_resolution"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["artery_length"], p["verbose_output"], p["basal_plate_vessels"], p["septal_veins"], p["marginal_sinus"], p["wall_height_ratio"], p["artery_width"], p["artery_width_sm"], p["vein_width"], p["no_placentones"], p["vessel_fillet_radius"], p["basal_plate_vessel_positions"], p["septal_wall_vein_positions"], p["equal_wall_heights"], p["generate_outline_mesh"])
 			output_timer.time(simulation_no, "mesh generation", p["terminal_output"])
 
 		##################
