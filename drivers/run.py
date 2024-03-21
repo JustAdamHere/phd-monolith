@@ -40,7 +40,7 @@ parameters["verbose_output"]  = True
 parameters["plot"]            = True
 
 # Mesh resolution.
-parameters["mesh_resolution"] = 0.1
+parameters["mesh_resolution"] = 0.005
 
 # Simulation.
 parameters["compute_error_norms"        ] = True
