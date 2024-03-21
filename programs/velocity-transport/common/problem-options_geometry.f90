@@ -713,13 +713,15 @@ module problem_options_geometry
         real(db), intent(in)                         :: mesh_time
         real(db), dimension(problem_dim)             :: calculate_mesh_velocity_oscillating_sine
         
-        real(db) :: x, y
+        real(db) :: x, y, t
 
         x = coord(1) - move_mesh_centre(1)
         y = coord(2) - move_mesh_centre(2)
+
+        t = mesh_time/final_local_time
         
-        calculate_mesh_velocity_oscillating_sine(1) = 0.05_db*x*sin(2.0_db*pi*mesh_time)
-        calculate_mesh_velocity_oscillating_sine(2) = 0.05_db*y*sin(2.0_db*pi*mesh_time)
+        calculate_mesh_velocity_oscillating_sine(1) = mesh_velocity_scaling*x*sin(2.0_db*pi*t)
+        calculate_mesh_velocity_oscillating_sine(2) = mesh_velocity_scaling*y*sin(2.0_db*pi*t)
         
     end function
 

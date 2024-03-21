@@ -4,7 +4,7 @@ module problem_options
     save
 
     real(db)          :: interior_penalty_parameter, final_local_time, central_cavity_transition, pipe_transition, artery_width_sm,&
-        wall_height_ratio
+        wall_height_ratio, mesh_velocity_scaling
     integer           :: no_uniform_refinements_cavity, no_uniform_refinements_everywhere, no_uniform_refinements_inlet, &
         no_time_steps, output_frequency, no_placentones
     logical           :: velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, &
@@ -72,6 +72,8 @@ module problem_options
         call get_aptofem_key_definition('wall_height_ratio',                 wall_height_ratio,                 section_name, &
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('linear_solver',                     linear_solver,                     'solver_velocity', &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('mesh_velocity_scaling',             mesh_velocity_scaling,             section_name, &
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('mesh_velocity_type',                mesh_velocity_type,                section_name, &
             aptofem_stored_keys, ierr)

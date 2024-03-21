@@ -32,6 +32,7 @@ def get_default_run_parameters():
 		'log_cavity_transition'              : False ,
 		'marginal_sinus'                     : [1 , 1],
 		'mesh_resolution'                    : 0.1 ,
+		'mesh_velocity_scaling'              : 1.0 ,
 		'mesh_velocity_type'                 : 'zero' ,
 		'moving_mesh'                        : False ,
 		'mri_u1'                             : 0.0,
@@ -138,7 +139,7 @@ def run(simulation_no, p):
 		##################
 		if (p["run_set_aptofem_parameters"]):
 			output_timer.time(simulation_no, "AptoFEM set parameters", p["terminal_output"], clear_existing=True)
-			set_aptofem_parameters(simulation_no, p["velocity_model"], p["geometry"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["pipe_transition"], p["artery_length"], p["artery_width_sm"], p["log_cavity_transition"], p["scaling_L"], p["scaling_U"], p["scaling_mu"], p["scaling_rho"], p["scaling_k"], p["scaling_D"], p["scaling_R"], p["velocity_space"], velocity_ss, p["velocity_ic_from_ss"], p["transport_ic_from_ss"], p["compute_velocity"], p["compute_transport"], p["compute_permeability"], p["compute_uptake"], p["large_boundary_v_penalisation"], p["moving_mesh"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_time_steps"], p["final_time"], p["no_placentones"], p["no_threads"], p["run_type"], p["no_reynold_ramp_steps"], p["reynold_ramp_start_ratio"], p["reynold_ramp_step_base"], p["linear_solver"], p["wall_height_ratio"], p["basal_plate_vessel_positions"], p["rerun_with_reynold_steps"], p["mesh_velocity_type"], p["newton_itns_max"], p["newton_tolerance"], p["compute_error_norms"], p["zero_velocity_reaction_coefficient"], p["solid_wall_mesh_velocity"], p["normalise_inlet_velocity"])
+			set_aptofem_parameters(simulation_no, p["velocity_model"], p["geometry"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["pipe_transition"], p["artery_length"], p["artery_width_sm"], p["log_cavity_transition"], p["scaling_L"], p["scaling_U"], p["scaling_mu"], p["scaling_rho"], p["scaling_k"], p["scaling_D"], p["scaling_R"], p["velocity_space"], velocity_ss, p["velocity_ic_from_ss"], p["transport_ic_from_ss"], p["compute_velocity"], p["compute_transport"], p["compute_permeability"], p["compute_uptake"], p["large_boundary_v_penalisation"], p["moving_mesh"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_time_steps"], p["final_time"], p["no_placentones"], p["no_threads"], p["run_type"], p["no_reynold_ramp_steps"], p["reynold_ramp_start_ratio"], p["reynold_ramp_step_base"], p["linear_solver"], p["wall_height_ratio"], p["basal_plate_vessel_positions"], p["rerun_with_reynold_steps"], p["mesh_velocity_type"], p["newton_itns_max"], p["newton_tolerance"], p["compute_error_norms"], p["zero_velocity_reaction_coefficient"], p["solid_wall_mesh_velocity"], p["normalise_inlet_velocity"], p["mesh_velocity_scaling"])
 			output_timer.time(simulation_no, "AptoFEM set parameters", p["terminal_output"])
 
 		if (p["run_aptofem_simulation"]):
@@ -315,7 +316,7 @@ def aptofem_simulation(simulation_no, velocity_model, geometry, terminal_output,
 # def convergence():
 # 	return run_no, velocity_dofs, transport_dofs, newton_residual, newton_iteration
 
-def set_aptofem_parameters(simulation_no, velocity_model, geometry, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, artery_width_sm, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, compute_permeability, compute_uptake, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver, wall_height_ratio, basal_plate_vessel_positions, rerun_with_reynold_steps, mesh_velocity_type, newton_itns_max, newton_tolerance, compute_error_norms, zero_velocity_reaction_coefficient, solid_wall_mesh_velocity, normalise_inlet_velocity):
+def set_aptofem_parameters(simulation_no, velocity_model, geometry, central_cavity_width, central_cavity_height, central_cavity_transition, pipe_transition, artery_length, artery_width_sm, log_cavity_transition, scaling_L, scaling_U, scaling_mu, scaling_rho, scaling_k, scaling_D, scaling_R, velocity_space, velocity_ss, velocity_ic_from_ss, transport_ic_from_ss, compute_velocity, compute_transport, compute_permeability, compute_uptake, large_boundary_v_penalisation, moving_mesh, terminal_output, verbose_output, error_on_fail, no_time_steps, final_time, no_placentones, no_threads, run_type, no_reynold_ramp_steps, reynold_ramp_start_ratio, reynold_ramp_step_base, linear_solver, wall_height_ratio, basal_plate_vessel_positions, rerun_with_reynold_steps, mesh_velocity_type, newton_itns_max, newton_tolerance, compute_error_norms, zero_velocity_reaction_coefficient, solid_wall_mesh_velocity, normalise_inlet_velocity, mesh_velocity_scaling):
 	# Programatically create coefficients. ##
 	#  Re
 	velocity_time_coefficient = scaling_rho*scaling_U*scaling_L/scaling_mu
@@ -437,25 +438,26 @@ def set_aptofem_parameters(simulation_no, velocity_model, geometry, central_cavi
 	set_parameter.set_parameter("velocity-transport", 93, f"compute_error_norms .{str(compute_error_norms).lower()}.")
 	set_parameter.set_parameter("velocity-transport", 94, f"large_boundary_v_penalisation .{str(large_boundary_v_penalisation).lower()}.")
 	set_parameter.set_parameter("velocity-transport", 95, f"moving_mesh .{str(moving_mesh).lower()}.")
-	set_parameter.set_parameter("velocity-transport", 96, f"mesh_velocity_type {mesh_velocity_type}")
-	set_parameter.set_parameter("velocity-transport", 97, f"solid_wall_mesh_velocity .{str(solid_wall_mesh_velocity).lower()}.")
+	set_parameter.set_parameter("velocity-transport", 96, f"mesh_velocity_scaling {mesh_velocity_scaling}")
+	set_parameter.set_parameter("velocity-transport", 97, f"mesh_velocity_type {mesh_velocity_type}")
+	set_parameter.set_parameter("velocity-transport", 98, f"solid_wall_mesh_velocity .{str(solid_wall_mesh_velocity).lower()}.")
 
 	# Re ramping.
-	set_parameter.set_parameter("velocity-transport", 98, f"no_reynold_ramp_steps {no_reynold_ramp_steps}")
-	set_parameter.set_parameter("velocity-transport", 99, f"reynold_ramp_start_ratio {reynold_ramp_start_ratio}")
-	set_parameter.set_parameter("velocity-transport", 100, f"reynold_ramp_step_base {reynold_ramp_step_base}")
-	set_parameter.set_parameter("velocity-transport", 101, f"normalise_inlet_velocity .{str(normalise_inlet_velocity).lower()}.")
+	set_parameter.set_parameter("velocity-transport", 99, f"no_reynold_ramp_steps {no_reynold_ramp_steps}")
+	set_parameter.set_parameter("velocity-transport", 100, f"reynold_ramp_start_ratio {reynold_ramp_start_ratio}")
+	set_parameter.set_parameter("velocity-transport", 101, f"reynold_ramp_step_base {reynold_ramp_step_base}")
+	set_parameter.set_parameter("velocity-transport", 102, f"normalise_inlet_velocity .{str(normalise_inlet_velocity).lower()}.")
 
 	# Number of placentones (only relevant for placenta mesh).
-	set_parameter.set_parameter("velocity-transport", 103, f"no_placentones {no_placentones}")
+	set_parameter.set_parameter("velocity-transport", 104, f"no_placentones {no_placentones}")
 
 	# Structural parameters.
-	set_parameter.set_parameter("velocity-transport", 107, f"central_cavity_transition {central_cavity_transition}")
-	set_parameter.set_parameter("velocity-transport", 108, f"pipe_transition {pipe_transition}")
-	set_parameter.set_parameter("velocity-transport", 109, f"artery_length {artery_length}")
-	set_parameter.set_parameter("velocity-transport", 110, f"artery_width_sm {artery_width_sm}")
-	set_parameter.set_parameter("velocity-transport", 111, f"log_cavity_transition .{str(log_cavity_transition).lower()}.")
-	set_parameter.set_parameter("velocity-transport", 112, f"wall_height_ratio {wall_height_ratio:.4e}")
+	set_parameter.set_parameter("velocity-transport", 108, f"central_cavity_transition {central_cavity_transition}")
+	set_parameter.set_parameter("velocity-transport", 109, f"pipe_transition {pipe_transition}")
+	set_parameter.set_parameter("velocity-transport", 110, f"artery_length {artery_length}")
+	set_parameter.set_parameter("velocity-transport", 111, f"artery_width_sm {artery_width_sm}")
+	set_parameter.set_parameter("velocity-transport", 112, f"log_cavity_transition .{str(log_cavity_transition).lower()}.")
+	set_parameter.set_parameter("velocity-transport", 113, f"wall_height_ratio {wall_height_ratio:.4e}")
 
 	# Parameters per-placentone.
 	if (type(central_cavity_width) == list):
@@ -469,62 +471,62 @@ def set_aptofem_parameters(simulation_no, velocity_model, geometry, central_cavi
 		central_cavity_heights = [central_cavity_height] * no_placentones
 		
 	for i in range(no_placentones):
-		set_parameter.set_parameter("velocity-transport", 114+i, f"central_cavity_width_{i+1} {central_cavity_widths[i]:.4e}")
-		set_parameter.set_parameter("velocity-transport", 122+i, f"central_cavity_height_{i+1} {central_cavity_heights[i]:.4e}")
-		set_parameter.set_parameter("velocity-transport", 130+i, f"vein_location_{i+1}1 {basal_plate_vessel_positions[i][0]:.4e}")
-		set_parameter.set_parameter("velocity-transport", 138+i, f"artery_location_{i+1} {basal_plate_vessel_positions[i][1]:.4e}")
-		set_parameter.set_parameter("velocity-transport", 146+i, f"vein_location_{i+1}2 {basal_plate_vessel_positions[i][2]:.4e}")
+		set_parameter.set_parameter("velocity-transport", 115+i, f"central_cavity_width_{i+1} {central_cavity_widths[i]:.4e}")
+		set_parameter.set_parameter("velocity-transport", 123+i, f"central_cavity_height_{i+1} {central_cavity_heights[i]:.4e}")
+		set_parameter.set_parameter("velocity-transport", 131+i, f"vein_location_{i+1}1 {basal_plate_vessel_positions[i][0]:.4e}")
+		set_parameter.set_parameter("velocity-transport", 139+i, f"artery_location_{i+1} {basal_plate_vessel_positions[i][1]:.4e}")
+		set_parameter.set_parameter("velocity-transport", 147+i, f"vein_location_{i+1}2 {basal_plate_vessel_positions[i][2]:.4e}")
 
 	# Setup time dependence.
-	set_parameter.set_parameter("velocity-transport", 160, f"dirk_final_time {final_time:.4e}")
-	set_parameter.set_parameter("velocity-transport", 161, f"dirk_number_of_timesteps {no_time_steps}")
+	set_parameter.set_parameter("velocity-transport", 161, f"dirk_final_time {final_time:.4e}")
+	set_parameter.set_parameter("velocity-transport", 162, f"dirk_number_of_timesteps {no_time_steps}")
 
 	# Set Newton max iterations, tolerance, and terminate on fail.
-	set_parameter.set_parameter("velocity-transport", 171, f"newton_itns_max {newton_itns_max}")
-	set_parameter.set_parameter("velocity-transport", 172, f"newton_tolerance {newton_tolerance:.4e}")
-	set_parameter.set_parameter("velocity-transport", 173, f"newton_terminate_on_fail .{str(error_on_fail).lower()}.")
+	set_parameter.set_parameter("velocity-transport", 172, f"newton_itns_max {newton_itns_max}")
+	set_parameter.set_parameter("velocity-transport", 173, f"newton_tolerance {newton_tolerance:.4e}")
+	set_parameter.set_parameter("velocity-transport", 174, f"newton_terminate_on_fail .{str(error_on_fail).lower()}.")
 
 	# Linear solver.
-	set_parameter.set_parameter("velocity-transport", 178, f"linear_solver {linear_solver}")
-	set_parameter.set_parameter("velocity-transport", 197, f"linear_solver {linear_solver}")
+	set_parameter.set_parameter("velocity-transport", 179, f"linear_solver {linear_solver}")
+	set_parameter.set_parameter("velocity-transport", 198, f"linear_solver {linear_solver}")
 
 	# Set velocity solution variables depending on problem dimension.
 	if (problem_dim == 2):
-		set_parameter.set_parameter("velocity-transport", 221, f"variable_1 u")
-		set_parameter.set_parameter("velocity-transport", 222, f"variable_2 v")
-		set_parameter.set_parameter("velocity-transport", 223, f"variable_3 p")
-		set_parameter.set_parameter("velocity-transport", 224, f"")
+		set_parameter.set_parameter("velocity-transport", 222, f"variable_1 u")
+		set_parameter.set_parameter("velocity-transport", 223, f"variable_2 v")
+		set_parameter.set_parameter("velocity-transport", 224, f"variable_3 p")
+		set_parameter.set_parameter("velocity-transport", 225, f"")
 
-		set_parameter.set_parameter("velocity-transport", 233, f"variable_1 u")
-		set_parameter.set_parameter("velocity-transport", 234, f"variable_2 v")
-		set_parameter.set_parameter("velocity-transport", 235, f"variable_3 p")
-		set_parameter.set_parameter("velocity-transport", 236, f"")
+		set_parameter.set_parameter("velocity-transport", 234, f"variable_1 u")
+		set_parameter.set_parameter("velocity-transport", 235, f"variable_2 v")
+		set_parameter.set_parameter("velocity-transport", 236, f"variable_3 p")
+		set_parameter.set_parameter("velocity-transport", 237, f"")
 	elif (problem_dim == 3):
-		set_parameter.set_parameter("velocity-transport", 221, f"variable_1 u")
-		set_parameter.set_parameter("velocity-transport", 222, f"variable_2 v")
-		set_parameter.set_parameter("velocity-transport", 223, f"variable_3 w")
-		set_parameter.set_parameter("velocity-transport", 224, f"variable_4 p")
+		set_parameter.set_parameter("velocity-transport", 222, f"variable_1 u")
+		set_parameter.set_parameter("velocity-transport", 223, f"variable_2 v")
+		set_parameter.set_parameter("velocity-transport", 224, f"variable_3 w")
+		set_parameter.set_parameter("velocity-transport", 225, f"variable_4 p")
 
-		set_parameter.set_parameter("velocity-transport", 233, f"variable_1 u")
-		set_parameter.set_parameter("velocity-transport", 234, f"variable_2 v")
-		set_parameter.set_parameter("velocity-transport", 235, f"variable_3 w")
-		set_parameter.set_parameter("velocity-transport", 236, f"variable_4 p")
+		set_parameter.set_parameter("velocity-transport", 234, f"variable_1 u")
+		set_parameter.set_parameter("velocity-transport", 235, f"variable_2 v")
+		set_parameter.set_parameter("velocity-transport", 236, f"variable_3 w")
+		set_parameter.set_parameter("velocity-transport", 237, f"variable_4 p")
 	else:
 		raise ValueError(f"Unknown problem dimension: {problem_dim}")
 	
 	# Set geometry name.
-	set_parameter.set_parameter("velocity-transport", 187, f"write_rhs_filename dg_velocity_{geometry}")
-	set_parameter.set_parameter("velocity-transport", 188, f"write_matrix_filename dg_velocity_{geometry}")
-	set_parameter.set_parameter("velocity-transport", 206, f"write_rhs_filename dg_transport_{geometry}")
-	set_parameter.set_parameter("velocity-transport", 207, f"write_matrix_filename dg_transport_{geometry}")
-	set_parameter.set_parameter("velocity-transport", 216, f"append_filename dg_velocity_{geometry}")
-	set_parameter.set_parameter("velocity-transport", 228, f"append_filename dg_re_velocity_{geometry}")
-	set_parameter.set_parameter("velocity-transport", 240, f"append_filename dg_transport_{geometry}")
-	set_parameter.set_parameter("velocity-transport", 249, f"append_filename dg_permeability_{geometry}")
-	set_parameter.set_parameter("velocity-transport", 258, f"append_filename dg_uptake_{geometry}")
-	set_parameter.set_parameter("velocity-transport", 267, f"append_filename dg_moving_mesh_{geometry}")
-	set_parameter.set_parameter("velocity-transport", 279, f"append_filename dg_velocity_{geometry}")
-	set_parameter.set_parameter("velocity-transport", 283, f"append_filename dg_velocity_{geometry}_uniform-refinement")
+	set_parameter.set_parameter("velocity-transport", 188, f"write_rhs_filename dg_velocity_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 189, f"write_matrix_filename dg_velocity_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 207, f"write_rhs_filename dg_transport_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 208, f"write_matrix_filename dg_transport_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 217, f"append_filename dg_velocity_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 229, f"append_filename dg_re_velocity_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 241, f"append_filename dg_transport_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 250, f"append_filename dg_permeability_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 259, f"append_filename dg_uptake_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 268, f"append_filename dg_moving_mesh_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 280, f"append_filename dg_velocity_{geometry}")
+	set_parameter.set_parameter("velocity-transport", 284, f"append_filename dg_velocity_{geometry}_uniform-refinement")
 
 def setup(clean, terminal_output, compile=True, compile_clean=True, run_type='openmp', verbose_output=False, compile_entry='velocity-transport'):
 	from miscellaneous import output
