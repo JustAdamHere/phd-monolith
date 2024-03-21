@@ -83,7 +83,7 @@ velocity_transport_convergence.run(7, parameters)
 parameters["final_time"]      = 1.0
 parameters["no_time_steps"]   = 2
 parameters["test_type"]       = "transport_time"
-parameters["mesh_resolution"] = 0.02
+parameters["mesh_resolution"] = 0.003
 parameters["moving_mesh"]     = False
 velocity_transport_convergence.run(8, parameters)
 
@@ -98,7 +98,7 @@ velocity_transport_convergence.run(9, parameters)
 parameters["final_time"]         = 1
 parameters["no_time_steps"]      = 2
 parameters["test_type"]          = "mm_transport_time"
-parameters["mesh_resolution"]    = 0.02
+parameters["mesh_resolution"]    = 0.003
 parameters["moving_mesh"]        = True
 parameters["mesh_velocity_type"] = "etienne2009"
 velocity_transport_convergence.run(10, parameters)
