@@ -269,7 +269,99 @@ module flux_output
   'one-outflow_292', &
   'one-outflow_293', &
   ! Sum of all fluxes.
-  'one-sum'
+  'one-sum', &
+  !! VELOCITY VALUES !!
+  ! Inlets.
+  'velocity-outflow-value_111', &
+  'velocity-outflow-value_112', &
+  'velocity-outflow-value_113', &
+  'velocity-outflow-value_114', &
+  'velocity-outflow-value_115', &
+  'velocity-outflow-value_116', &
+  'velocity-outflow-value_117', &
+  ! Basal plate outlets.
+  'velocity-outflow-value_211', &
+  'velocity-outflow-value_212', &
+  'velocity-outflow-value_213', &
+  'velocity-outflow-value_214', &
+  'velocity-outflow-value_215', &
+  'velocity-outflow-value_216', &
+  'velocity-outflow-value_217', &
+  'velocity-outflow-value_218', &
+  'velocity-outflow-value_219', &
+  'velocity-outflow-value_220', &
+  'velocity-outflow-value_221', &
+  'velocity-outflow-value_222', &
+  'velocity-outflow-value_223', &
+  'velocity-outflow-value_224', &
+  ! Marginal sinus outlets.
+  'velocity-outflow-value_230', &
+  'velocity-outflow-value_231', &
+  ! Septal wall outlets.
+  'velocity-outflow-value_241', &
+  'velocity-outflow-value_242', &
+  'velocity-outflow-value_243', &
+  'velocity-outflow-value_251', &
+  'velocity-outflow-value_252', &
+  'velocity-outflow-value_253', &
+  'velocity-outflow-value_261', &
+  'velocity-outflow-value_262', &
+  'velocity-outflow-value_263', &
+  'velocity-outflow-value_271', &
+  'velocity-outflow-value_272', &
+  'velocity-outflow-value_273', &
+  'velocity-outflow-value_281', &
+  'velocity-outflow-value_282', &
+  'velocity-outflow-value_283', &
+  'velocity-outflow-value_291', &
+  'velocity-outflow-value_292', &
+  'velocity-outflow-value_293', &
+  !! TRANSPORT VALUES !!
+  ! Inlets.
+  'transport-outflow-value_111', &
+  'transport-outflow-value_112', &
+  'transport-outflow-value_113', &
+  'transport-outflow-value_114', &
+  'transport-outflow-value_115', &
+  'transport-outflow-value_116', &
+  'transport-outflow-value_117', &
+  ! Basal plate outlets.
+  'transport-outflow-value_211', &
+  'transport-outflow-value_212', &
+  'transport-outflow-value_213', &
+  'transport-outflow-value_214', &
+  'transport-outflow-value_215', &
+  'transport-outflow-value_216', &
+  'transport-outflow-value_217', &
+  'transport-outflow-value_218', &
+  'transport-outflow-value_219', &
+  'transport-outflow-value_220', &
+  'transport-outflow-value_221', &
+  'transport-outflow-value_222', &
+  'transport-outflow-value_223', &
+  'transport-outflow-value_224', &
+  ! Marginal sinus outlets.
+  'transport-outflow-value_230', &
+  'transport-outflow-value_231', &
+  ! Septal wall outlets.
+  'transport-outflow-value_241', &
+  'transport-outflow-value_242', &
+  'transport-outflow-value_243', &
+  'transport-outflow-value_251', &
+  'transport-outflow-value_252', &
+  'transport-outflow-value_253', &
+  'transport-outflow-value_261', &
+  'transport-outflow-value_262', &
+  'transport-outflow-value_263', &
+  'transport-outflow-value_271', &
+  'transport-outflow-value_272', &
+  'transport-outflow-value_273', &
+  'transport-outflow-value_281', &
+  'transport-outflow-value_282', &
+  'transport-outflow-value_283', &
+  'transport-outflow-value_291', &
+  'transport-outflow-value_292', &
+  'transport-outflow-value_293'
 
   flush(file_no)
 

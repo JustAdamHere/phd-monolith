@@ -113,7 +113,6 @@ placenta_width        = 5.5;                               // 220mm
 ms_pipe_width         = 0.075*placentone_width;            // 3  mm
 artery_length         = 0.25*placentone_width;             // 10 mm
 artery_length_diverge = 0.075*placentone_width;            // 3  mm
-vein_width            = 0.0375*placentone_width;           // 1.5mm
 septal_vein_width     = 0.0375*placentone_width;           // 1.5mm
 vein_length           = 0.0375*placentone_width;           // 1.5mm
 
@@ -132,6 +131,11 @@ If (!Exists(artery_width))
 EndIf
 If (!Exists(artery_width_sm))
 	artery_width_sm = 0.0125*placentone_width; // 0.5mm
+EndIf
+
+// Default vein width.
+If (!Exists(vein_width))
+	vein_width = 0.0375*placentone_width; // 1.5mm
 EndIf
 
 // Default cavity size.

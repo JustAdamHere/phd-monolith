@@ -27,7 +27,7 @@ def generate_simple_mesh(simulation_no, geometry, mesh_resolution):
 	subprocess.run(mesh_command + ['-setnumber', 'h', str(mesh_resolution)] + mesh_output, stdout=stdout)
 
 
-def generate_mesh(simulation_no, geometry, mesh_resolution, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, basal_plate_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, no_placentones, vessel_fillet_radius, basal_plate_vessel_locations, septal_vein_locations, equal_wall_heights, generate_outline_mesh):
+def generate_mesh(simulation_no, geometry, mesh_resolution, central_cavity_width, central_cavity_height, central_cavity_transition, artery_length, verbose_output, basal_plate_vessels, septal_veins, marginal_sinus, wall_height_ratio, artery_width, artery_width_sm, vein_width, no_placentones, vessel_fillet_radius, basal_plate_vessel_locations, septal_vein_locations, equal_wall_heights, generate_outline_mesh):
 	import subprocess
 
 	if (geometry == "placentone" or geometry == "placentone-3d"):
@@ -116,6 +116,7 @@ def generate_mesh(simulation_no, geometry, mesh_resolution, central_cavity_width
 	add_option(options, 'central_cavity_transition', central_cavity_transition)
 	add_option(options, 'artery_width',              artery_width)
 	add_option(options, 'artery_width_sm',           artery_width_sm)
+	add_option(options, 'vein_width',                vein_width)
 	add_option(options, 'vessel_fillet_radius',      vessel_fillet_radius)
 
 	# Miscellaneous.
