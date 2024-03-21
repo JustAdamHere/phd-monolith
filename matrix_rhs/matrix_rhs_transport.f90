@@ -184,7 +184,7 @@ module matrix_rhs_transport
         integer                                        :: qk, i, j
         real(db)                                       :: full_dispenal, full_dispenal_old
         real(db)                                       :: diffusion_terms, convection_terms
-        real(db), dimension(facet_data%no_pdes)        :: f, c, un
+        real(db), dimension(facet_data%no_pdes)        :: f, c, cn
         real(db), dimension(facet_data%dim_soln_coeff) :: dispenal_new
         real(db), dimension(facet_data%dim_soln_coeff, facet_data%no_quad_points, facet_data%problem_dim, &
             maxval(facet_data%no_dofs_per_variable1))  :: grad_phi_p
@@ -192,7 +192,7 @@ module matrix_rhs_transport
             maxval(facet_data%no_dofs_per_variable2))  :: grad_phi_m
         real(db)                                       :: current_time
         real(db)                                       :: a_dot_n_p, a_dot_n_m
-        real(db)                                       :: deriv_flux_plus, deriv_flux_minus
+        real(db)                                       :: deriv_flux_plus, deriv_flux_minus, alpha
         integer                                        :: bdry_face
         integer                                        :: element_no
 
@@ -259,8 +259,9 @@ module matrix_rhs_transport
                             neighbour_elements(1), mesh_data)
 
                         a_dot_n_p        = dot_product(u_darcy_velocity_p, face_normals(:, qk))
-                        deriv_flux_plus  = 0.5_db*(a_dot_n_p + abs(a_dot_n_p))
-                        deriv_flux_minus = 0.5_db*(a_dot_n_p - abs(a_dot_n_p))
+                        alpha            = abs(a_dot_n_p)
+                        deriv_flux_plus  = 0.5_db*(a_dot_n_p + alpha)
+                        deriv_flux_minus = 0.5_db*(a_dot_n_p - alpha)
 
                         call anal_soln_transport(c, global_points_face(:, qk), problem_dim, no_pdes, bdry_face, current_time)
 
@@ -304,13 +305,14 @@ module matrix_rhs_transport
                             neighbour_elements(1), mesh_data)
 
                         a_dot_n_p        = dot_product(u_darcy_velocity_p, face_normals(:, qk))
-                        deriv_flux_plus  = 0.5_db*(a_dot_n_p + abs(a_dot_n_p))
-                        deriv_flux_minus = 0.5_db*(a_dot_n_p - abs(a_dot_n_p))
+                        alpha            = abs(a_dot_n_p)
+                        deriv_flux_plus  = 0.5_db*(a_dot_n_p + alpha)
+                        deriv_flux_minus = 0.5_db*(a_dot_n_p - alpha)
 
-                        call neumann_bc_transport(un, global_points_face(:, qk), problem_dim, no_pdes, current_time, face_normals)
+                        call neumann_bc_transport(cn, global_points_face(:, qk), problem_dim, no_pdes, current_time, face_normals)
 
                         do i = 1, no_dofs_per_variable1(1)
-                            diffusion_terms = un(1)*phi_p(1, qk, i)
+                            diffusion_terms = cn(1)*phi_p(1, qk, i)
 
                             face_rhs(1, i) = face_rhs(1, i) + &
                                 integral_weighting(qk)*diffusion_terms
@@ -337,8 +339,9 @@ module matrix_rhs_transport
 
                     a_dot_n_p        = dot_product(u_darcy_velocity_p, face_normals(:, qk))
                     a_dot_n_m        = dot_product(u_darcy_velocity_m, face_normals(:, qk))
-                    deriv_flux_plus  = 0.5_db*(a_dot_n_p + abs(a_dot_n_p+a_dot_n_m))
-                    deriv_flux_minus = 0.5_db*(a_dot_n_m - abs(a_dot_n_p+a_dot_n_m))
+                    alpha            = 0.5_db*abs(a_dot_n_p + a_dot_n_m)
+                    deriv_flux_plus  = 0.5_db*(a_dot_n_p + alpha)
+                    deriv_flux_minus = 0.5_db*(a_dot_n_m - alpha)
 
                     do i = 1, no_dofs_per_variable1(1)
                         do j = 1, no_dofs_per_variable1(1)
