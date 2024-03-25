@@ -87,7 +87,7 @@ def p_positions(W, p0, x_c, t):
 
 # Problem parameters.
 T = 60*16*2/0.1143 # 2*16 minutes, divided by scaling
-N = 1000#100000
+N = 100#100000
 dt = T/N
 t = np.linspace(0, T, N)
 
