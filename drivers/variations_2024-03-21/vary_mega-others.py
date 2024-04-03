@@ -21,11 +21,11 @@ simulations[4] = run_data.import_simulations(max_run_no, output_location_vein_wi
 simulations[5] = run_data.import_simulations(max_run_no, output_location_wall_height)
   
 # Varying parameters.
-parameter_name      = [r"$2r_a$ (mm)", r"$D$ (mm$^2$/s)", r"$R$ (1/s)", r"$k$ ($\log_{10}$) (mm$^2$)", r"$2r_v$ (mm)", r"$h/h_0$"]
+parameter_name      = [r"$2r_a$ (mm)", r"$D$ ($\times 10^{-9}$) (mm$^2$/s)", r"$R$ ($\times 10^{-2}$) (1/s)", r"$k$ ($\log_{10}$) (mm$^2$)", r"$2r_v$ (mm)", r"$h/h_0$"]
 parameter_safe_name = ["artery_width", "oxygen_diffusivity", "oxygen_uptake", "permeability", "vein_width", "wall_height_ratio"]
 artery_width_values       = np.linspace(0.0125, 0.075, 10)*1000*0.04
-oxygen_diffusivity_values = np.linspace(0.1*1.667e-9, 5*1.667e-9, 10)
-oxygen_uptake_values      = np.linspace(0.1*1.667e-2, 5*1.667e-2, 10)
+oxygen_diffusivity_values = np.linspace(0.1*1.667e-9, 5*1.667e-9, 10)*1e9
+oxygen_uptake_values      = np.linspace(0.1*1.667e-2, 5*1.667e-2, 10)*1e2
 permeability_values       = np.linspace(-10, -6, 10)
 vein_width_values         = np.linspace(0.025, 0.075, 10)*1000*0.04
 wall_height_values        = np.linspace((0.0375+2*0.01)/0.1725 + 0.001, 2.0, 10)
@@ -45,7 +45,7 @@ bins_oxygen_diffusivity = [[] for i in range(len(oxygen_diffusivity_values))]
 for i in range(0, max_run_no):
   run_no = i+1
 
-  bin_no = int(np.floor((len(oxygen_diffusivity_values))*(simulations[1][i].parameters["scaling_D"] - oxygen_diffusivity_values[0])/(oxygen_diffusivity_values[-1] - oxygen_diffusivity_values[0])))
+  bin_no = int(np.floor((len(oxygen_diffusivity_values))*(simulations[1][i].parameters["scaling_D"]*1e9 - oxygen_diffusivity_values[0])/(oxygen_diffusivity_values[-1] - oxygen_diffusivity_values[0])))
   if (bin_no == len(oxygen_diffusivity_values)):
     bin_no -= 1
 
@@ -55,7 +55,7 @@ bins_oxygen_uptake = [[] for i in range(len(oxygen_uptake_values))]
 for i in range(0, max_run_no):
   run_no = i+1
 
-  bin_no = int(np.floor((len(oxygen_uptake_values))*(simulations[2][i].parameters["scaling_R"] - oxygen_uptake_values[0])/(oxygen_uptake_values[-1] - oxygen_uptake_values[0])))
+  bin_no = int(np.floor((len(oxygen_uptake_values))*(simulations[2][i].parameters["scaling_R"]*1e2 - oxygen_uptake_values[0])/(oxygen_uptake_values[-1] - oxygen_uptake_values[0])))
   if (bin_no == len(oxygen_uptake_values)):
     bin_no -= 1
 
