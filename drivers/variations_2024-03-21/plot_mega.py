@@ -429,7 +429,7 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
     axes_mini[1][2].plot(no_veins/no_arteries, simulations[sim_no-1].transport_reaction_integral,     'X', markersize=10, linewidth=3, color=colours[i], markeredgecolor='white')
 
   # Style plots.
-  setup_plots.style(fig, axes[0][0], None, r"$\bar{v}$", y_scilimits=[-3, -3] , y_bottom=0, y_top=1e-2, integer_ticks=True)
+  setup_plots.style(fig, axes[0][0], None, r"$\bar{v}(\Omega_\text{IVS})$", y_scilimits=[-3, -3] , y_bottom=0, y_top=1e-2, integer_ticks=True)
   setup_plots.style(fig, axes[1][0], None, r"$v_\text{slow}(V_\text{threshold})$", y_scilimits=None , y_top=102, integer_ticks=True)
   setup_plots.style(fig, axes[2][0], None, r"$\frac{v_\text{flux}(S)}{v_\text{flux}(\Gamma_\text{in})}$ (%)", y_scilimits=None , y_top=145, integer_ticks=True)
   setup_plots.style(fig, axes[3][0], None, r"$v_\text{cross}$", y_scilimits=[-3, -3] , y_bottom=0, y_top=2e-2, integer_ticks=True)
@@ -456,7 +456,7 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   setup_plots.style(fig, axes[6][2], None, None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[7][2], parameter_name[2], None, y_scilimits=[-1, -1], y_bottom=0.95, y_top=1.005, integer_ticks=True, max_major_ticks=4)
 
-  setup_plots.style(fig_mini, axes_mini[0][0], None, r"$\bar{v}$", y_scilimits=[-3, -3] , y_bottom=0, y_top=1e-2, integer_ticks=True)
+  setup_plots.style(fig_mini, axes_mini[0][0], None, r"$\bar{v}(\Omega_\text{IVS})$", y_scilimits=[-3, -3] , y_bottom=0, y_top=1e-2, integer_ticks=True)
   setup_plots.style(fig_mini, axes_mini[1][0], parameter_name[0], r"$\bar{c}$", y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True)
 
   setup_plots.style(fig_mini, axes_mini[0][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=True, max_major_ticks=4)
