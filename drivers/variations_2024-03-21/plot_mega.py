@@ -91,9 +91,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
         for k in range(len(data[3*i+j]["outside_iqr"]["velocity_cross_flow_flux"])):
           for l in range(len(data[3*i+j]["outside_iqr"]["velocity_cross_flow_flux"][k])):
             axes[i][3][j].scatter(parameter_values[3*i+j][k], data[3*i+j]["outside_iqr"]["velocity_cross_flow_flux"][k][l], marker=".", color=f"C0", alpha=1.0/10)
-
-    axes[i][3][j].plot(parameter_values[3*i+j], data[3*i+j]["q50"]["velocity_cross_flow_flux"], linestyle="dashed", color=f"C0")
-    axes[i][3][j].fill_between(parameter_values[3*i+j], data[3*i+j]["q25"]["velocity_cross_flow_flux"], data[3*i+j]["q75"]["velocity_cross_flow_flux"], alpha=0.2, color=f"C0")
+      axes[i][3][j].plot(parameter_values[3*i+j], data[3*i+j]["q50"]["velocity_cross_flow_flux"], linestyle="dashed", color=f"C0")
+      axes[i][3][j].fill_between(parameter_values[3*i+j], data[3*i+j]["q25"]["velocity_cross_flow_flux"], data[3*i+j]["q75"]["velocity_cross_flow_flux"], alpha=0.2, color=f"C0")
 
   # AXES 5: Transport reaction integral.
   for i in range(2):
