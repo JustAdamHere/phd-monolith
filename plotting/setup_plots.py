@@ -31,6 +31,7 @@ def style(figure, axis, x_parameter_name, y_parameter_name, y_scilimits=None, y_
     axis.xaxis.set_major_formatter(plt.FormatStrFormatter('%.3f'))
   axis.xaxis.set_major_locator(plt.MaxNLocator(max_major_ticks, integer=integer_ticks, prune='both'))
   axis.xaxis.set_minor_locator(plt.MaxNLocator(max_minor_ticks, integer=integer_ticks, prune='both'))
+  axis.yaxis.set_minor_locator(plt.MaxNLocator(9))
   if (xlim != None):
     axis.set_xlim(xlim[0], xlim[1])
   if (y_top != None):
