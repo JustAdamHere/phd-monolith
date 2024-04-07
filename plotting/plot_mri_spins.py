@@ -11,6 +11,58 @@ def import_mat(simulation_no, filename_no_ext):
   # from pymatreader import read_mat
   # return read_mat(f"./output/mri-quantities_{filename_no_ext}_{simulation_no}.mat")
 
+def plot_quiver(simulation_no, filename_no_ext):
+  mat_vars = import_mat(simulation_no, filename_no_ext)
+
+  import numpy as np
+  import matplotlib.pyplot as plt
+
+  fig = plt.figure(figsize=(10, 10))
+  ax = fig.add_subplot(111)
+
+  # Colourbar.
+  U = np.sqrt(mat_vars['v_sample'][0][0]**2 + mat_vars['v_sample'][1][0]**2)
+
+  cmap = plt.get_cmap('coolwarm')
+
+  import matplotlib.colors as colors
+  norm = colors.Normalize(vmin=np.min(U), vmax=np.max(U))
+  sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+  sm.set_array([])
+
+  w = 0.8
+  h = 0.03
+
+  w1 = w*(ax.get_position().x1 - ax.get_position().x0)
+  x1 = ax.get_position().x0 + 0.075
+  y1 = ax.get_position().y0 - h
+  
+  cax = fig.add_axes([x1, y1, w1, h])
+  cax.tick_params(labelsize=20)
+  cbar = fig.colorbar(sm, cax=cax, orientation='horizontal', shrink=1.0, location='bottom')
+  cbar.set_label(r'$|\mathbf{u}|$ (m/s)', size=20)
+
+  fig.subplots_adjust(bottom=0.22)
+
+  # Plot.
+  ax.quiver(mat_vars['x_sample'][0][0], mat_vars['x_sample'][1][0], mat_vars['v_sample'][0][0], mat_vars['v_sample'][1][0], U, cmap=cmap, scale=0.12, scale_units='xy', angles='xy', width=0.005, headwidth=8, headaxislength=4, clip_on=False) # headlength=5, headwidth=3
+
+  # Style.
+  if (filename_no_ext == '2D_accelerating_test'):
+    title = f"accelerating flow: $U_1={mat_vars['U_1'][0][0]:g}$, $X={mat_vars['X'][0][0]:.4f}$"
+  elif (filename_no_ext == '2D_rotational_test'):
+    title = f"rotational flow: $U_1={mat_vars['U_1'][0][0]:g}$, $U_2={mat_vars['U_2'][0][0]:g}$"
+  elif (filename_no_ext == '2D_shear_test'):
+    title = f"shear flow: $U_1={mat_vars['U_1'][0][0]:g}$, $U_2={mat_vars['U_2'][0][0]:g}$"
+  ax.set_xlabel(r'$x$', fontsize=20)
+  ax.set_ylabel(r'$y$', fontsize=20)
+  fig.suptitle(r"Velocity field at each $\mathbf{x}_j$", fontsize=36)
+  ax.set_title(f"{title}", fontsize=24, pad=15) # pad = 10
+  ax.tick_params(labelsize=20)
+
+  # Output.
+  fig.savefig(f"./images/mri-spins_quiver_{filename_no_ext}_{simulation_no}.png")
+
 def plot_s_vs_b(simulation_no, filename_no_ext):
   mat_vars = import_mat(simulation_no, filename_no_ext)
 
@@ -72,11 +124,11 @@ def plot_s_vs_b(simulation_no, filename_no_ext):
   fig_sy   .suptitle(r'$S_y/S_{y,0}$ vs $b$', fontsize=36)
   fig_sall.suptitle(r'$S/S_0$ vs $b$', fontsize=36)
   fig_gall.suptitle(r'$S/S_0$ vs $g$', fontsize=36)
-  ax_s   .set_title(f'{title}', fontsize=24)
-  ax_sx  .set_title(f'{title}', fontsize=24)
-  ax_sy  .set_title(f'{title}', fontsize=24)
-  ax_sall.set_title(f'{title}', fontsize=24)
-  ax_gall.set_title(f'{title}', fontsize=24)
+  ax_s   .set_title(f'{title}', fontsize=24, pad=15)
+  ax_sx  .set_title(f'{title}', fontsize=24, pad=15)
+  ax_sy  .set_title(f'{title}', fontsize=24, pad=15)
+  ax_sall.set_title(f'{title}', fontsize=24, pad=15)
+  ax_gall.set_title(f'{title}', fontsize=24, pad=15)
   ax_s   .tick_params(labelsize=20)
   ax_sx  .tick_params(labelsize=20)
   ax_sy  .tick_params(labelsize=20)
@@ -223,8 +275,8 @@ def plot_spins(simulation_no, filename_no_ext):
   ax_b.axis('off')
   fig_avg.legend(handles=[individual_patch, average_patch], fontsize=20, loc='outside lower center')
   fig_avg.suptitle("Spins at $t=t_E$", fontsize=36)
-  ax_avg.set_title(f"{title}", fontsize=24)
+  ax_avg.set_title(f"{title}", fontsize=24, pad=15)
   fig_b.suptitle(fr"$\bar{{M}}(T_{d} + t_E)$ for $b \in [{mat_vars['b'][0][0]:.0f}, {mat_vars['b'][0][b_index]:.0f}]$", fontsize=36)
-  ax_b.set_title(f"{title}", fontsize=24)
+  ax_b.set_title(f"{title}", fontsize=24, pad=15)
   fig_avg.savefig(f"./images/mri-spins_avg_{filename_no_ext}_{simulation_no}.png")
   fig_b.savefig(f"./images/mri-spins_b_{filename_no_ext}_{simulation_no}.png")

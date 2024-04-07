@@ -221,6 +221,7 @@ def run(simulation_no, p):
 		from plotting import plot_mri_spins
 		plot_mri_spins.plot_spins (simulation_no, f'2D_{p["geometry"]}')
 		plot_mri_spins.plot_s_vs_b(simulation_no, f'2D_{p["geometry"]}')
+		plot_mri_spins.plot_quiver(simulation_no, f'2D_{p["geometry"]}')
 
 		output_timer.time(simulation_no, "MRI calculations", p["terminal_output"])
 
