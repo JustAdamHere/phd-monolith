@@ -19,6 +19,7 @@ def plot_quiver(simulation_no, filename_no_ext):
 
   fig = plt.figure(figsize=(10, 10))
   ax = fig.add_subplot(111)
+  ax.clear()
 
   # Colourbar.
   U = np.sqrt(mat_vars['v_sample'][0][0]**2 + mat_vars['v_sample'][1][0]**2)
@@ -39,7 +40,7 @@ def plot_quiver(simulation_no, filename_no_ext):
   
   cax = fig.add_axes([x1, y1, w1, h])
   cax.tick_params(labelsize=20)
-  cbar = fig.colorbar(sm, cax=cax, orientation='horizontal', shrink=1.0, location='bottom')
+  cbar = fig.colorbar(sm, cax=cax, orientation='horizontal', shrink=1.0, location='bottom', ticks=np.linspace(np.min(U), np.max(U), 5))
   cbar.set_label(r'$|\mathbf{u}|$ (m/s)', size=20)
 
   fig.subplots_adjust(bottom=0.22)
@@ -56,12 +57,13 @@ def plot_quiver(simulation_no, filename_no_ext):
     title = f"shear flow: $U_1={mat_vars['U_1'][0][0]:g}$, $U_2={mat_vars['U_2'][0][0]:g}$"
   ax.set_xlabel(r'$x$', fontsize=20)
   ax.set_ylabel(r'$y$', fontsize=20)
-  fig.suptitle(r"Velocity field at each $\mathbf{x}_j$", fontsize=36)
-  ax.set_title(f"{title}", fontsize=24, pad=15) # pad = 10
+  fig.suptitle(r"Velocity field at each $\mathbf{x}_j$", fontsize=36, y=1.0)
+  ax.set_title(f"{title}", fontsize=24, pad=30) # pad = 10
   ax.tick_params(labelsize=20)
 
   # Output.
   fig.savefig(f"./images/mri-spins_quiver_{filename_no_ext}_{simulation_no}.png")
+  plt.close(fig)
 
 def plot_s_vs_b(simulation_no, filename_no_ext):
   mat_vars = import_mat(simulation_no, filename_no_ext)
@@ -77,18 +79,23 @@ def plot_s_vs_b(simulation_no, filename_no_ext):
 
   fig_s = plt.figure(figsize=(10, 10))
   ax_s = fig_s.add_subplot(111)
+  ax_s.clear()
 
   fig_sx = plt.figure(figsize=(10, 10))
   ax_sx = fig_sx.add_subplot(111)
+  ax_sx.clear()
 
   fig_sy = plt.figure(figsize=(10, 10))
   ax_sy = fig_sy.add_subplot(111)
+  ax_sy.clear()
 
   fig_sall = plt.figure(figsize=(10, 10))
   ax_sall = fig_sall.add_subplot(111)
+  ax_sall.clear()
 
   fig_gall = plt.figure(figsize=(10, 10))
   ax_gall = fig_gall.add_subplot(111)
+  ax_gall.clear()
 
   # Plot.
   ax_s   .plot(mat_vars['b'][0],      mat_vars['S'][0][0]  /mat_vars['S'][0][0][0],   'o', c='tab:blue')
@@ -119,11 +126,11 @@ def plot_s_vs_b(simulation_no, filename_no_ext):
   ax_sall.set_ylabel(r'$S/S_0$', fontsize=20)
   ax_sall.legend(handles=handles[0:3], labels=[r'$S/S_0$', r'$S_x/S_{x,0}$', r'$S_y/S_{y,0}$'], fontsize=20, loc='upper right')
   ax_gall.legend(handles=handles[0:3], labels=[r'$S/S_0$', r'$S_x/S_{x,0}$', r'$S_y/S_{y,0}$'], fontsize=20, loc='upper right')
-  fig_s   .suptitle(r'$S/S_0$ vs $b$', fontsize=36)
-  fig_sx .suptitle(r'$S_x/S_{x,0}$ vs $b$', fontsize=36)
-  fig_sy   .suptitle(r'$S_y/S_{y,0}$ vs $b$', fontsize=36)
-  fig_sall.suptitle(r'$S/S_0$ vs $b$', fontsize=36)
-  fig_gall.suptitle(r'$S/S_0$ vs $g$', fontsize=36)
+  fig_s   .suptitle(r'$S/S_0$ vs $b$', fontsize=36, y=1.0)
+  fig_sx .suptitle(r'$S_x/S_{x,0}$ vs $b$', fontsize=36, y=1.0)
+  fig_sy   .suptitle(r'$S_y/S_{y,0}$ vs $b$', fontsize=36, y=1.0)
+  fig_sall.suptitle(r'$S/S_0$ vs $b$', fontsize=36, y=1.0)
+  fig_gall.suptitle(r'$S/S_0$ vs $g$', fontsize=36, y=1.0)
   ax_s   .set_title(f'{title}', fontsize=24, pad=15)
   ax_sx  .set_title(f'{title}', fontsize=24, pad=15)
   ax_sy  .set_title(f'{title}', fontsize=24, pad=15)
@@ -155,6 +162,11 @@ def plot_s_vs_b(simulation_no, filename_no_ext):
   fig_sall.savefig(f"./images/mri-spins_sall-vs-b_{filename_no_ext}_{simulation_no}.png")
   fig_gall.savefig(f"./images/mri-spins_gall-vs-b_{filename_no_ext}_{simulation_no}.png")
 
+  plt.close(fig_s)
+  plt.close(fig_sx)
+  plt.close(fig_sy)
+  plt.close(fig_sall)
+  plt.close(fig_gall)
 
 def plot_spins(simulation_no, filename_no_ext):
   mat_vars = import_mat(simulation_no, filename_no_ext)
@@ -184,9 +196,11 @@ def plot_spins(simulation_no, filename_no_ext):
   # Plot setup.  
   fig_avg = plt.figure(figsize=(10, 10))
   ax_avg = fig_avg.add_subplot(111)
+  ax_avg.clear()
 
   fig_b = plt.figure(figsize=(10, 10))
   ax_b = fig_b.add_subplot(111)
+  ax_b.clear()
 
   # Plot a circle.
   circle_avg = plt.Circle((0.5, 0.5), 0.5, color='k', fill=False)
@@ -239,11 +253,13 @@ def plot_spins(simulation_no, filename_no_ext):
   import matplotlib.patches as mpatches
   if (filename_no_ext == '2D_accelerating_test'):
     d = 'x'
+    c = 'b'
   else:
     d = 'y'
+    c = 'g'
 
   individual_patch = mpatches.Patch(color=[0.5, 0.5, 0.5, 1], label=fr'$M_j(T_{d} + t_E)$')
-  average_patch    = mpatches.Patch(color='g', label=fr'$\bar{{M}}(T_{d} + t_E)$')
+  average_patch    = mpatches.Patch(color=c, label=fr'$\bar{{M}}(T_{d} + t_E)$')
 
   # Colorbar for different b.
   import matplotlib.colors as colors
@@ -274,9 +290,12 @@ def plot_spins(simulation_no, filename_no_ext):
   ax_avg.axis('off')
   ax_b.axis('off')
   fig_avg.legend(handles=[individual_patch, average_patch], fontsize=20, loc='outside lower center')
-  fig_avg.suptitle("Spins at $t=t_E$", fontsize=36)
+  fig_avg.suptitle("Spins at $t=t_E$", fontsize=36, y=1.0)
   ax_avg.set_title(f"{title}", fontsize=24, pad=15)
-  fig_b.suptitle(fr"$\bar{{M}}(T_{d} + t_E)$ for $b \in [{mat_vars['b'][0][0]:.0f}, {mat_vars['b'][0][b_index]:.0f}]$", fontsize=36)
+  fig_b.suptitle(fr"$\bar{{M}}(T_{d} + t_E)$ for $b \in [{mat_vars['b'][0][0]:.0f}, {mat_vars['b'][0][b_index]:.0f}]$", fontsize=36, y=1.0)
   ax_b.set_title(f"{title}", fontsize=24, pad=15)
   fig_avg.savefig(f"./images/mri-spins_avg_{filename_no_ext}_{simulation_no}.png")
   fig_b.savefig(f"./images/mri-spins_b_{filename_no_ext}_{simulation_no}.png")
+
+  plt.close(fig_avg)
+  plt.close(fig_b)
