@@ -11,15 +11,111 @@ def import_mat(simulation_no, filename_no_ext):
   # from pymatreader import read_mat
   # return read_mat(f"./output/mri-quantities_{filename_no_ext}_{simulation_no}.mat")
 
+def plot_s_vs_b(simulation_no, filename_no_ext):
+  mat_vars = import_mat(simulation_no, filename_no_ext)
+
+  import matplotlib.patches as mpatches
+  max_no_patches = 3
+  handles = []
+  for i in range(max_no_patches):
+    handles.append(mpatches.Patch(color=f"C{i}"))
+
+  import numpy as np
+  import matplotlib.pyplot as plt
+
+  fig_s = plt.figure(figsize=(10, 10))
+  ax_s = fig_s.add_subplot(111)
+
+  fig_sx = plt.figure(figsize=(10, 10))
+  ax_sx = fig_sx.add_subplot(111)
+
+  fig_sy = plt.figure(figsize=(10, 10))
+  ax_sy = fig_sy.add_subplot(111)
+
+  fig_sall = plt.figure(figsize=(10, 10))
+  ax_sall = fig_sall.add_subplot(111)
+
+  fig_gall = plt.figure(figsize=(10, 10))
+  ax_gall = fig_gall.add_subplot(111)
+
+  # Plot.
+  ax_s   .plot(mat_vars['b'][0],      mat_vars['S'][0][0]  /mat_vars['S'][0][0][0],   'o', c='tab:blue')
+  ax_sall.plot(mat_vars['b'][0],      mat_vars['S'][0][0]  /mat_vars['S'][0][0][0],   'o', c='tab:blue', label=r'$S/S_0$')
+  ax_gall.plot(mat_vars['b'][0]**0.5, mat_vars['S'][0][0]  /mat_vars['S'][0][0][0],   'o', c='tab:blue', label=r'$S/S_0$')
+  ax_sx  .plot(mat_vars['b'][0],      mat_vars['S_x'][0][0]/mat_vars['S_x'][0][0][0], 'o', c='tab:orange')
+  ax_sall.plot(mat_vars['b'][0],      mat_vars['S_x'][0][0]/mat_vars['S_x'][0][0][0], 'o', c='tab:orange', label=r'$S_x/S_{x,0}$')
+  ax_gall.plot(mat_vars['b'][0]**0.5, mat_vars['S_x'][0][0]/mat_vars['S_x'][0][0][0], 'o', c='tab:orange', label=r'$S_x/S_{x,0}$')
+  ax_sy  .plot(mat_vars['b'][0],      mat_vars['S_y'][0][0]/mat_vars['S_y'][0][0][0], 'o', c='tab:green')
+  ax_sall.plot(mat_vars['b'][0],      mat_vars['S_y'][0][0]/mat_vars['S_y'][0][0][0], 'o', c='tab:green', label=r'$S_y/S_{y,0}$')
+  ax_gall.plot(mat_vars['b'][0]**0.5, mat_vars['S_y'][0][0]/mat_vars['S_y'][0][0][0], 'o', c='tab:green', label=r'$S_y/S_{y,0}$')
+
+  # Style.
+  if (filename_no_ext == '2D_accelerating_test'):
+    title = f"accelerating flow: $U_1={mat_vars['U_1'][0][0]:g}$, $X={mat_vars['X'][0][0]:.4f}$"
+  elif (filename_no_ext == '2D_rotational_test'):
+    title = f"rotational flow: $U_1={mat_vars['U_1'][0][0]:g}$, $U_2={mat_vars['U_2'][0][0]:g}$"
+  elif (filename_no_ext == '2D_shear_test'):
+    title = f"shear flow: $U_1={mat_vars['U_1'][0][0]:g}$, $U_2={mat_vars['U_2'][0][0]:g}$"
+  ax_s   .set_xlabel(r'$b$', fontsize=20)
+  ax_sx  .set_xlabel(r'$b$', fontsize=20)
+  ax_sy  .set_xlabel(r'$b$', fontsize=20)
+  ax_sall.set_xlabel(r'$b$', fontsize=20)
+  ax_gall.set_xlabel(r'$g$', fontsize=20)
+  ax_s   .set_ylabel(r'$S/S_0$', fontsize=20)
+  ax_sx  .set_ylabel(r'$S_x/S_{x,0}$', fontsize=20)
+  ax_sy  .set_ylabel(r'$S_y/S_{y,0}$', fontsize=20)
+  ax_sall.set_ylabel(r'$S/S_0$', fontsize=20)
+  ax_sall.legend(handles=handles[0:3], labels=[r'$S/S_0$', r'$S_x/S_{x,0}$', r'$S_y/S_{y,0}$'], fontsize=20, loc='upper right')
+  ax_gall.legend(handles=handles[0:3], labels=[r'$S/S_0$', r'$S_x/S_{x,0}$', r'$S_y/S_{y,0}$'], fontsize=20, loc='upper right')
+  fig_s   .suptitle(r'$S/S_0$ vs $b$', fontsize=36)
+  fig_sx .suptitle(r'$S_x/S_{x,0}$ vs $b$', fontsize=36)
+  fig_sy   .suptitle(r'$S_y/S_{y,0}$ vs $b$', fontsize=36)
+  fig_sall.suptitle(r'$S/S_0$ vs $b$', fontsize=36)
+  fig_gall.suptitle(r'$S/S_0$ vs $g$', fontsize=36)
+  ax_s   .set_title(f'{title}', fontsize=24)
+  ax_sx  .set_title(f'{title}', fontsize=24)
+  ax_sy  .set_title(f'{title}', fontsize=24)
+  ax_sall.set_title(f'{title}', fontsize=24)
+  ax_gall.set_title(f'{title}', fontsize=24)
+  ax_s   .tick_params(labelsize=20)
+  ax_sx  .tick_params(labelsize=20)
+  ax_sy  .tick_params(labelsize=20)
+  ax_sall.tick_params(labelsize=20)
+  ax_gall.tick_params(labelsize=20)
+  b_range = mat_vars['b'][0][-1] - mat_vars['b'][0][0]
+  g_range = mat_vars['b'][0][-1]**0.5 - mat_vars['b'][0][0]**0.5
+  S_range = 1
+  eps = 0.02
+  ax_s   .set_xlim([-eps*b_range, mat_vars['b'][0][-1] + eps*b_range])
+  ax_sx  .set_xlim([-eps*b_range, mat_vars['b'][0][-1] + eps*b_range])
+  ax_sy  .set_xlim([-eps*b_range, mat_vars['b'][0][-1] + eps*b_range])
+  ax_sall.set_xlim([-eps*b_range, mat_vars['b'][0][-1] + eps*b_range])
+  ax_gall.set_xlim([-eps*g_range, mat_vars['b'][0][-1]**0.5 + eps*g_range])
+  ax_s   .set_ylim ([-eps*S_range, 1 + eps*S_range])
+  ax_sx  .set_ylim([-eps*S_range, 1 + eps*S_range])
+  ax_sy  .set_ylim([-eps*S_range, 1 + eps*S_range])
+  ax_sall.set_ylim([-eps*S_range, 1 + eps*S_range])
+  ax_gall.set_ylim([-eps*S_range, 1 + eps*S_range])
+
+  fig_s  .savefig(f"./images/mri-spins_s-vs-b_{filename_no_ext}_{simulation_no}.png")
+  fig_sx .savefig(f"./images/mri-spins_sx-vs-b_{filename_no_ext}_{simulation_no}.png")
+  fig_sy .savefig(f"./images/mri-spins_sy-vs-b_{filename_no_ext}_{simulation_no}.png")
+  fig_sall.savefig(f"./images/mri-spins_sall-vs-b_{filename_no_ext}_{simulation_no}.png")
+  fig_gall.savefig(f"./images/mri-spins_gall-vs-b_{filename_no_ext}_{simulation_no}.png")
+
+
 def plot_spins(simulation_no, filename_no_ext):
   mat_vars = import_mat(simulation_no, filename_no_ext)
 
   import numpy as np
+  import matplotlib.pyplot as plt
   b_index = 20
   if (filename_no_ext == '2D_accelerating_test'):
     grad_direction = 0
+    cmap = plt.get_cmap('Blues')
   else:
     grad_direction = 1
+    cmap = plt.get_cmap('Greens')
 
   # Radius and coordinates of each molecule's spin.
   r = 0.9/2
@@ -33,8 +129,7 @@ def plot_spins(simulation_no, filename_no_ext):
   arrows_v = y - 0.5
   arrows_mag = np.sqrt(arrows_u**2 + arrows_v**2)
 
-  # Plot setup.
-  import matplotlib.pyplot as plt
+  # Plot setup.  
   fig_avg = plt.figure(figsize=(10, 10))
   ax_avg = fig_avg.add_subplot(111)
 
@@ -60,7 +155,6 @@ def plot_spins(simulation_no, filename_no_ext):
 
   # Plot all average spins.
   max_color = 0.8
-  cmap = plt.get_cmap('Greens')
   #for i in range(mat_vars['b'][0].shape[0]):
   for i in range(b_index+1):
 
@@ -117,7 +211,6 @@ def plot_spins(simulation_no, filename_no_ext):
   cax.tick_params(labelsize=20)
   cbar = fig_b.colorbar(sm, cax=cax, ticks=np.linspace(mat_vars['b'][0][0], mat_vars['b'][0][b_index], 5), orientation='horizontal', shrink=1.0, location='bottom')
   cbar.set_label(r'$b$', size=20)
-
 
   # Output.
   if (filename_no_ext == '2D_accelerating_test'):

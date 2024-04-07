@@ -219,7 +219,8 @@ def run(simulation_no, p):
 		calculate_mri.calculate_mri(simulation_no, p["geometry"], p["no_threads"], p["terminal_output"], p["verbose_output"], p["mri_u1"], p["mri_u2"], p["mri_x"])
 
 		from plotting import plot_mri_spins
-		plot_mri_spins.plot_spins(simulation_no, f'2D_{p["geometry"]}')
+		plot_mri_spins.plot_spins (simulation_no, f'2D_{p["geometry"]}')
+		plot_mri_spins.plot_s_vs_b(simulation_no, f'2D_{p["geometry"]}')
 
 		output_timer.time(simulation_no, "MRI calculations", p["terminal_output"])
 
