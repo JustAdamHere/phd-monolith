@@ -84,28 +84,54 @@ def plot_spins(simulation_no, filename_no_ext):
       ax_avg.quiver(centre_x[0], centre_y[0], x_avg - 0.5, y_avg - 0.5, scale=0.4/r_avg, scale_units='xy', angles='xy', color=color, width=0.02)
 
     # Label the quiver.
-    if i == 0:
-      ax_b.text((x_avg + 0.5)/2, (y_avg + 0.5)/2 + 0.03, f'b={mat_vars["b"][0][i]:.2f}', fontsize=20, color=cmap(max_color), ha='center', va='bottom')
-    if i == b_index:
-      ax_b.text((x_avg + 0.5)/2 - 0.2, (2*y_avg + 1*0.5)/3 + 0.03, f'b={mat_vars["b"][0][i]:.2f}', fontsize=20, color=cmap(max_color), ha='center', va='bottom')
+    # if i == 0:
+    #   ax_b.text((x_avg + 0.5)/2, (y_avg + 0.5)/2 + 0.03, f'b={mat_vars["b"][0][i]:.2f}', fontsize=20, color=cmap(max_color), ha='center', va='bottom')
+    # if i == b_index:
+    #   ax_b.text((x_avg + 0.5)/2 - 0.2, (2*y_avg + 1*0.5)/3 + 0.03, f'b={mat_vars["b"][0][i]:.2f}', fontsize=20, color=cmap(max_color), ha='center', va='bottom')
 
   # Patches for legend.
   import matplotlib.patches as mpatches
-  individual_patch = mpatches.Patch(color=[0.5, 0.5, 0.5, 1], label='Individual spins')
-  average_patch    = mpatches.Patch(color='g', label='Average spin')
+  if (filename_no_ext == '2D_accelerating_test'):
+    d = 'x'
+  else:
+    d = 'y'
+
+  individual_patch = mpatches.Patch(color=[0.5, 0.5, 0.5, 1], label=fr'$M_j(T_{d} + t_E)$')
+  average_patch    = mpatches.Patch(color='g', label=fr'$\bar{{M}}(T_{d} + t_E)$')
 
   # Colorbar for different b.
-  # import matplotlib.colors as colors
-  # norm = colors.Normalize(vmin=mat_vars['b'][0][0], vmax=mat_vars['b'][0][b_index])
-  # sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-  # sm.set_array([])
-  # fig_b.colorbar(sm, ax=ax_b, ticks=np.linspace(0, b_index, b_index+1), label='b', orientation='horizontal')
+  import matplotlib.colors as colors
+  norm = colors.Normalize(vmin=mat_vars['b'][0][0], vmax=mat_vars['b'][0][b_index])
+  sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+  sm.set_array([])
+  #fig_b.colorbar(sm, ax=ax_b, ticks=np.linspace(0, b_index, b_index+1), label='b', orientation='horizontal', shrink=0.6, location='bottom') # pad=-0.2
+
+  w = 0.8
+  h = 0.03
+
+  w1 = w*(ax_b.get_position().x1 - ax_b.get_position().x0)
+  x1 = ax_b.get_position().x0 + 0.075#(1 - w1)/2
+  y1 = ax_b.get_position().y0 - h
+  
+  cax = fig_b.add_axes([x1, y1, w1, h])
+  cax.tick_params(labelsize=20)
+  cbar = fig_b.colorbar(sm, cax=cax, ticks=np.linspace(mat_vars['b'][0][0], mat_vars['b'][0][b_index], 5), orientation='horizontal', shrink=1.0, location='bottom')
+  cbar.set_label(r'$b$', size=20)
+
 
   # Output.
+  if (filename_no_ext == '2D_accelerating_test'):
+    title = f"accelerating flow: $U_1={mat_vars['U_1'][0][0]:g}$, $X={mat_vars['X'][0][0]:.4f}$"
+  elif (filename_no_ext == '2D_rotational_test'):
+    title = f"rotational flow: $U_1={mat_vars['U_1'][0][0]:g}$, $U_2={mat_vars['U_2'][0][0]:g}$"
+  elif (filename_no_ext == '2D_shear_test'):
+    title = f"shear flow: $U_1={mat_vars['U_1'][0][0]:g}$, $U_2={mat_vars['U_2'][0][0]:g}$"
   ax_avg.axis('off')
   ax_b.axis('off')
   fig_avg.legend(handles=[individual_patch, average_patch], fontsize=20, loc='outside lower center')
-  ax_avg.set_title(f"Spins at t={53}ms", fontsize=36)
-  ax_b.set_title(f"Spins at t={53}ms", fontsize=36)
+  fig_avg.suptitle("Spins at $t=t_E$", fontsize=36)
+  ax_avg.set_title(f"{title}", fontsize=24)
+  fig_b.suptitle(fr"$\bar{{M}}(T_{d} + t_E)$ for $b \in [{mat_vars['b'][0][0]:.0f}, {mat_vars['b'][0][b_index]:.0f}]$", fontsize=36)
+  ax_b.set_title(f"{title}", fontsize=24)
   fig_avg.savefig(f"./images/mri-spins_avg_{filename_no_ext}_{simulation_no}.png")
   fig_b.savefig(f"./images/mri-spins_b_{filename_no_ext}_{simulation_no}.png")
