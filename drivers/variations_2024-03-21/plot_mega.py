@@ -25,6 +25,7 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   handles = []
   for i in range(max_no_patches):
     handles.append(mpatches.Patch(color=f"C{i}"))
+  handles.append(mpatches.Patch(color="black"))
 
   # AXES 1: Velocity magnitude integrals.
   for i in range(2):
@@ -47,21 +48,21 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
         for k in range(len(data[3*i+j]["outside_iqr"]["slow_velocity_percentage_everywhere"])):
           for l in range(len(data[3*i+j]["outside_iqr"]["slow_velocity_percentage_everywhere"][k])):
             axes[i][1][j].scatter(parameter_values[3*i+j][k], data[3*i+j]["outside_iqr"]["slow_velocity_percentage_everywhere"][k][l], marker=".", color=f"C1", alpha=1.0/10)
-        for k in range(len(data[3*i+j]["outside_iqr"]["slow_velocity_percentage_dellschaft"])):
-          for l in range(len(data[3*i+j]["outside_iqr"]["slow_velocity_percentage_dellschaft"][k])):
-            axes[i][1][j].scatter(parameter_values[3*i+j][k], data[3*i+j]["outside_iqr"]["slow_velocity_percentage_dellschaft"][k][l], marker=".", color=f"C2", alpha=1.0/10)
         for k in range(len(data[3*i+j]["outside_iqr"]["slow_velocity_percentage_nominal_everywhere"])):
           for l in range(len(data[3*i+j]["outside_iqr"]["slow_velocity_percentage_nominal_everywhere"][k])):
-            axes[i][1][j].scatter(parameter_values[3*i+j][k], data[3*i+j]["outside_iqr"]["slow_velocity_percentage_nominal_everywhere"][k][l], marker=".", color=f"C3", alpha=1.0/10)
+            axes[i][1][j].scatter(parameter_values[3*i+j][k], data[3*i+j]["outside_iqr"]["slow_velocity_percentage_nominal_everywhere"][k][l], marker=".", color=f"C2", alpha=1.0/10)
+        for k in range(len(data[3*i+j]["outside_iqr"]["slow_velocity_percentage_dellschaft"])):
+          for l in range(len(data[3*i+j]["outside_iqr"]["slow_velocity_percentage_dellschaft"][k])):
+            axes[i][1][j].scatter(parameter_values[3*i+j][k], data[3*i+j]["outside_iqr"]["slow_velocity_percentage_dellschaft"][k][l], marker=".", color=f"C3", alpha=1.0/10)
       axes[i][1][j].plot(parameter_values[3*i+j], data[3*i+j]["q50"]["slow_velocity_percentage_ivs"], linestyle="dashed", color="C0")
       axes[i][1][j].plot(parameter_values[3*i+j], data[3*i+j]["q50"]["slow_velocity_percentage_everywhere"], linestyle="dashed", color="C1")
-      axes[i][1][j].plot(parameter_values[3*i+j], data[3*i+j]["q50"]["slow_velocity_percentage_dellschaft"], linestyle="dashed", color="C2")
-      axes[i][1][j].plot(parameter_values[3*i+j], data[3*i+j]["q50"]["slow_velocity_percentage_nominal_everywhere"], linestyle="dashed", color="C3")
+      axes[i][1][j].plot(parameter_values[3*i+j], data[3*i+j]["q50"]["slow_velocity_percentage_nominal_everywhere"], linestyle="dashed", color="C2")
+      axes[i][1][j].plot(parameter_values[3*i+j], data[3*i+j]["q50"]["slow_velocity_percentage_dellschaft"], linestyle="dashed", color="C3")
       axes[i][1][j].fill_between(parameter_values[3*i+j], data[3*i+j]["q25"]["slow_velocity_percentage_ivs"], data[3*i+j]["q75"]["slow_velocity_percentage_ivs"], alpha=0.2, color="C0")
       axes[i][1][j].fill_between(parameter_values[3*i+j], data[3*i+j]["q25"]["slow_velocity_percentage_everywhere"], data[3*i+j]["q75"]["slow_velocity_percentage_everywhere"], alpha=0.2, color="C1")
-      axes[i][1][j].fill_between(parameter_values[3*i+j], data[3*i+j]["q25"]["slow_velocity_percentage_dellschaft"], data[3*i+j]["q75"]["slow_velocity_percentage_dellschaft"], alpha=0.2, color="C2")
-      axes[i][1][j].fill_between(parameter_values[3*i+j], data[3*i+j]["q25"]["slow_velocity_percentage_nominal_everywhere"], data[3*i+j]["q75"]["slow_velocity_percentage_nominal_everywhere"], alpha=0.2, color="C3")
-      axes[i][1][j].legend(handles=handles[0:4], labels=[r"$V_\text{threshold} = \bar{v}(\Omega_\text{IVS})$", r"$V_\text{threshold} = \bar{v}(\Omega)$", r"$V_\text{threshold} = 0.0005$", r"$V_\text{threshold} = 0.0026$"], loc="upper left")
+      axes[i][1][j].fill_between(parameter_values[3*i+j], data[3*i+j]["q25"]["slow_velocity_percentage_nominal_everywhere"], data[3*i+j]["q75"]["slow_velocity_percentage_nominal_everywhere"], alpha=0.2, color="C2")
+      axes[i][1][j].fill_between(parameter_values[3*i+j], data[3*i+j]["q25"]["slow_velocity_percentage_dellschaft"], data[3*i+j]["q75"]["slow_velocity_percentage_dellschaft"], alpha=0.2, color="C3")
+      axes[i][1][j].legend(handles=handles[0:4], labels=[r"$V_\text{threshold} = \bar{v}(\Omega_\text{IVS})$", r"$V_\text{threshold} = \bar{v}(\Omega)$", r"$V_\text{threshold} = 0.0026$", r"$V_\text{threshold} = 0.0005$"], loc="upper left")
 
   # AXES 3: Velocity flux through different veins.
   for i in range(2):
@@ -122,10 +123,11 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
       axes[i][5][j].plot(parameter_values[3*i+j], data[3*i+j]["q50"]["transport_percentage_basal_plate"], linestyle="dashed", color="C0")
       axes[i][5][j].plot(parameter_values[3*i+j], data[3*i+j]["q50"]["transport_percentage_septal_wall"], linestyle="dashed", color="C1")
       axes[i][5][j].plot(parameter_values[3*i+j], data[3*i+j]["q50"]["transport_percentage_marginal_sinus"], linestyle="dashed", color="C2")
+      axes[i][5][j].plot(parameter_values[3*i+j], data[3*i+j]["q50"]["transport_percentage_basal_plate"] + data[3*i+j]["q50"]["transport_percentage_septal_wall"] + data[3*i+j]["q50"]["transport_percentage_marginal_sinus"], linestyle="dashed", color="black")
       axes[i][5][j].fill_between(parameter_values[3*i+j], data[3*i+j]["q25"]["transport_percentage_basal_plate"], data[3*i+j]["q75"]["transport_percentage_basal_plate"], alpha=0.2, color="C0")
       axes[i][5][j].fill_between(parameter_values[3*i+j], data[3*i+j]["q25"]["transport_percentage_septal_wall"], data[3*i+j]["q75"]["transport_percentage_septal_wall"], alpha=0.2, color="C1")
       axes[i][5][j].fill_between(parameter_values[3*i+j], data[3*i+j]["q25"]["transport_percentage_marginal_sinus"], data[3*i+j]["q75"]["transport_percentage_marginal_sinus"], alpha=0.2, color="C2")
-      axes[i][5][j].legend(handles=handles[0:3], labels=[r"$S = \Gamma_\text{out,bp}$", r"$S = \Gamma_\text{out,sw}$", r"$S = \Gamma_\text{out,ms}$"], loc="center left")
+      axes[i][5][j].legend(handles=[handles[0], handles[1], handles[2]], labels=[r"$S = \Gamma_\text{out,bp}$", r"$S = \Gamma_\text{out,sw}$", r"$S = \Gamma_\text{out,ms}$"], loc="center left")
 
   # AXES 7: Kinetic energy flux difference.
   for i in range(2):
@@ -257,6 +259,7 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   handles = []
   for i in range(max_no_patches):
     handles.append(mpatches.Patch(color=f"C{i}"))
+  handles.append(mpatches.Patch(color="black"))
 
   # AXES 1: Velocity magnitude integrals.
   for j in range(3):
@@ -288,22 +291,21 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
       for k in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_everywhere"])):
         for l in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_everywhere"][k])):
           axes[1][j].scatter(parameter_values[j][k], data[0, j]["outside_iqr"]["slow_velocity_percentage_everywhere"][k][l], marker=".", color=f"C1", alpha=1.0/10)
-      for k in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_dellschaft"])):
-        for l in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_dellschaft"][k])):
-          axes[1][j].scatter(parameter_values[j][k], data[0, j]["outside_iqr"]["slow_velocity_percentage_dellschaft"][k][l], marker=".", color=f"C2", alpha=1.0/10)
       for k in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_nominal_everywhere"])):
         for l in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_nominal_everywhere"][k])):
-          axes[1][j].scatter(parameter_values[j][k], data[0, j]["outside_iqr"]["slow_velocity_percentage_nominal_everywhere"][k][l], marker=".", color=f"C3", alpha=1.0/10)
+          axes[1][j].scatter(parameter_values[j][k], data[0, j]["outside_iqr"]["slow_velocity_percentage_nominal_everywhere"][k][l], marker=".", color=f"C2", alpha=1.0/10)
+      for k in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_dellschaft"])):
+        for l in range(len(data[0, j]["outside_iqr"]["slow_velocity_percentage_dellschaft"][k])):
+          axes[1][j].scatter(parameter_values[j][k], data[0, j]["outside_iqr"]["slow_velocity_percentage_dellschaft"][k][l], marker=".", color=f"C3", alpha=1.0/10)
     axes[1][j].plot(parameter_values[j], data[0, j]["q50"]["slow_velocity_percentage_ivs"], linestyle="dashed", color="C0")
     axes[1][j].plot(parameter_values[j], data[0, j]["q50"]["slow_velocity_percentage_everywhere"], linestyle="dashed", color="C1")
-    axes[1][j].plot(parameter_values[j], data[0, j]["q50"]["slow_velocity_percentage_dellschaft"], linestyle="dashed", color="C2")
-    axes[1][j].plot(parameter_values[j], data[0, j]["q50"]["slow_velocity_percentage_nominal_everywhere"], linestyle="dashed", color="C3")
+    axes[1][j].plot(parameter_values[j], data[0, j]["q50"]["slow_velocity_percentage_nominal_everywhere"], linestyle="dashed", color="C2")
+    axes[1][j].plot(parameter_values[j], data[0, j]["q50"]["slow_velocity_percentage_dellschaft"], linestyle="dashed", color="C3")
     axes[1][j].fill_between(parameter_values[j], data[0, j]["q25"]["slow_velocity_percentage_ivs"], data[0, j]["q75"]["slow_velocity_percentage_ivs"], alpha=0.2, color="C0")
     axes[1][j].fill_between(parameter_values[j], data[0, j]["q25"]["slow_velocity_percentage_everywhere"], data[0, j]["q75"]["slow_velocity_percentage_everywhere"], alpha=0.2, color="C1")
-    axes[1][j].fill_between(parameter_values[j], data[0, j]["q25"]["slow_velocity_percentage_dellschaft"], data[0, j]["q75"]["slow_velocity_percentage_dellschaft"], alpha=0.2, color="C2")
-    axes[1][j].fill_between(parameter_values[j], data[0, j]["q25"]["slow_velocity_percentage_nominal_everywhere"], data[0, j]["q75"]["slow_velocity_percentage_nominal_everywhere"], alpha=0.2, color="C3")
-    # axes[1][j].legend(handles=handles[0:4], labels=["IVS", "everywhere", "Dellschaft", "nominal"])
-    axes[1][j].legend(handles=handles[0:4], labels=[r"$V_\text{threshold} = \bar{v}(\Omega_\text{IVS})$", r"$V_\text{threshold} = \bar{v}(\Omega)$", r"$V_\text{threshold} = 0.0005$", r"$V_\text{threshold} = 0.0026$"])
+    axes[1][j].fill_between(parameter_values[j], data[0, j]["q25"]["slow_velocity_percentage_nominal_everywhere"], data[0, j]["q75"]["slow_velocity_percentage_nominal_everywhere"], alpha=0.2, color="C2")
+    axes[1][j].fill_between(parameter_values[j], data[0, j]["q25"]["slow_velocity_percentage_dellschaft"], data[0, j]["q75"]["slow_velocity_percentage_dellschaft"], alpha=0.2, color="C3")
+    axes[1][j].legend(handles=handles[0:4], labels=[r"$V_\text{threshold} = \bar{v}(\Omega_\text{IVS})$", r"$V_\text{threshold} = \bar{v}(\Omega)$", r"$V_\text{threshold} = 0.0026$", r"$V_\text{threshold} = 0.0005$"])
 
   # AXES 3: Velocity flux through different veins.
   for j in range(3):
@@ -374,10 +376,11 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
     axes[5][j].plot(parameter_values[j], data[0, j]["q50"]["transport_percentage_basal_plate"], linestyle="dashed", color="C0")
     axes[5][j].plot(parameter_values[j], data[0, j]["q50"]["transport_percentage_septal_wall"], linestyle="dashed", color="C1")
     axes[5][j].plot(parameter_values[j], data[0, j]["q50"]["transport_percentage_marginal_sinus"], linestyle="dashed", color="C2")
+    axes[5][j].plot(parameter_values[j], data[0, j]["q50"]["transport_percentage_basal_plate"] + data[0, j]["q50"]["transport_percentage_septal_wall"] + data[0, j]["q50"]["transport_percentage_marginal_sinus"], linestyle="dashed", color="black")
     axes[5][j].fill_between(parameter_values[j], data[0, j]["q25"]["transport_percentage_basal_plate"], data[0, j]["q75"]["transport_percentage_basal_plate"], alpha=0.2, color="C0")
     axes[5][j].fill_between(parameter_values[j], data[0, j]["q25"]["transport_percentage_septal_wall"], data[0, j]["q75"]["transport_percentage_septal_wall"], alpha=0.2, color="C1")
     axes[5][j].fill_between(parameter_values[j], data[0, j]["q25"]["transport_percentage_marginal_sinus"], data[0, j]["q75"]["transport_percentage_marginal_sinus"], alpha=0.2, color="C2")
-    axes[5][j].legend(handles=handles[0:3], labels=[r"$S = \Gamma_\text{out,bp}$", r"$S = \Gamma_\text{out,sw}$", r"$S = \Gamma_\text{out,ms}$"], loc='upper right')
+    axes[5][j].legend(handles=[handles[0], handles[1], handles[2]], labels=[r"$S = \Gamma_\text{out,bp}$", r"$S = \Gamma_\text{out,sw}$", r"$S = \Gamma_\text{out,ms}$"], loc='upper right')
 
   # AXES 7: Kinetic energy flux difference.
   for j in range(3):
@@ -434,7 +437,7 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   setup_plots.style(fig, axes[2][0], None, r"$\frac{v_\text{flux}(S)}{v_\text{flux}(\Gamma_\text{in})}$ (%)", y_scilimits=None , y_top=145, integer_ticks=True)
   setup_plots.style(fig, axes[3][0], None, r"$v_\text{cross}$", y_scilimits=[-3, -3] , y_bottom=0, y_top=2e-2, integer_ticks=True)
   setup_plots.style(fig, axes[4][0], None, r"$\bar{c}$", y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True)
-  setup_plots.style(fig, axes[5][0], None, r"$\frac{C_\text{flux}(S)}{C_\text{flux}(\Gamma_\text{in})}$ (%)", y_scilimits=None , y_top=120, integer_ticks=True)
+  setup_plots.style(fig, axes[5][0], None, r"$\frac{C_\text{flux}(S)}{C_\text{flux}(\Gamma_\text{in})}$ (%)", y_scilimits=None , y_top=200, integer_ticks=True)
   setup_plots.style(fig, axes[6][0], None, r"$\frac{E_\text{kinetic}(\Gamma_\text{in}) - E_\text{kinetic}(\Gamma_\text{out})}{E_\text{kinetic}(\Gamma_\text{in})}$", y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=True)
   setup_plots.style(fig, axes[7][0], parameter_name[0], r"$\frac{E_\text{total}(\Gamma_\text{in}) - E_\text{total}(\Gamma_\text{out})}{E_\text{total}(\Gamma_\text{in})}$", y_scilimits=[-1, -1], y_bottom=0.95, y_top=1.005, integer_ticks=True)
 
@@ -443,7 +446,7 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   setup_plots.style(fig, axes[2][1], None, None, y_scilimits=None , y_top=145, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[3][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-2, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[4][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True, max_major_ticks=4)
-  setup_plots.style(fig, axes[5][1], None, None, y_scilimits=None , y_top=120, integer_ticks=True, max_major_ticks=4)
+  setup_plots.style(fig, axes[5][1], None, None, y_scilimits=None , y_top=200, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[6][1], None, None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[7][1], parameter_name[1], None, y_scilimits=[-1, -1], y_bottom=0.95, y_top=1.005, integer_ticks=True, max_major_ticks=4)
 
@@ -452,7 +455,7 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   setup_plots.style(fig, axes[2][2], None, None, y_scilimits=None , y_top=145, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[3][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-2, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[4][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-3, integer_ticks=True, max_major_ticks=4)
-  setup_plots.style(fig, axes[5][2], None, None, y_scilimits=None , y_top=120, integer_ticks=True, max_major_ticks=4)
+  setup_plots.style(fig, axes[5][2], None, None, y_scilimits=None , y_top=200, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[6][2], None, None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=True, max_major_ticks=4)
   setup_plots.style(fig, axes[7][2], parameter_name[2], None, y_scilimits=[-1, -1], y_bottom=0.95, y_top=1.005, integer_ticks=True, max_major_ticks=4)
 
