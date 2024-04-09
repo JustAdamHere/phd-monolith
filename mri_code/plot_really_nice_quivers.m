@@ -11,10 +11,10 @@ velocity_calculation = "mean"; % or "centre";
 colour_voxels = true; % or false;
 coloured_voxels = [...
     672, ... % Rotational.
-    491, ... % Decellerating.
-    1726 ... % Shear.
+    491 ... % Decellerating.
 ];
-voxel_colours = ["#005992", "#db6000", "#008002", "#b30002", "#74499c", "#6c382e", "#c058a0", "#606060"];
+% 1726 ... % Shear.
+voxel_colours = ["#005992", "#008002", "#db6000", "#b30002", "#74499c", "#6c382e", "#c058a0", "#606060"];
 
 % Whether voxels should be displayed.
 show_voxels = true; % or false;
@@ -45,8 +45,6 @@ v = zeros(N_voxels_x, N_voxels_y);
 
 fig = figure(1);
 clf
-fig.Units = 'pixels';
-fig.InnerPosition = [0 0 image_scaling_resolution*x_range image_scaling_resolution*y_range];
 
 % "Hack" that gives us the z indices in this z-slice.
 [~, ~, k] = voxel2indices(N_voxels_x*N_voxels_y, points_per_voxel_x, points_per_voxel_y, 1, N_voxels_x, N_voxels_y);
@@ -186,7 +184,11 @@ elseif (arrow_scaling == "linear")
     output_filename = output_filename + "_linear";
 end
 
-print(fig, '-dpng', strcat('../', 'images/', output_filename, '.png'))
+fig.Units = 'pixels';
+fig.Position = [0 0 image_scaling_resolution*x_range+500 image_scaling_resolution*y_range+500];
+
+%print(fig, '-dpng', strcat('../', 'images/', output_filename, '.png'))
+exportgraphics(fig, strcat('../', 'images/', output_filename, '.png'))
 pause(0.01)
 close(fig)
 

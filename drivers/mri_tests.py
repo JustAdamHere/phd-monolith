@@ -58,6 +58,16 @@ parameters["mri_u1"  ] = -0.01
 parameters["mri_x"   ] = np.log(10)
 velocity_transport.run(5, parameters)
 
+parameters["geometry"] = 'accelerating_test'
+parameters["mri_u1"  ] = 0.005
+parameters["mri_x"   ] = 0.75
+velocity_transport.run(6, parameters)
+
+parameters["geometry"] = 'accelerating_test'
+parameters["mri_u1"  ] = 0.01
+parameters["mri_x"   ] = 1
+velocity_transport.run(7, parameters)
+
 # Save output.
 from miscellaneous import output
 output.save()

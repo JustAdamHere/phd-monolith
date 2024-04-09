@@ -12,7 +12,28 @@ def import_mat(simulation_no, filename_no_ext):
   # return read_mat(f"./output/mri-quantities_{filename_no_ext}_{simulation_no}.mat")
 
 def plot_quiver(simulation_no, filename_no_ext):
+  if (filename_no_ext[-4:] == 'test'):
+    voxel_no = 0
+  else:
+    voxel_no = 672
+    voxel_colour = 'blue'
+    scaling = 50
+    # voxel_no = 491
+    # voxel_colour = 'green'
+    # scaling = 500
+    
   mat_vars = import_mat(simulation_no, filename_no_ext)
+
+  points_per_voxel_x = mat_vars['points_per_voxel_x'][0][0]
+  points_per_voxel_y = mat_vars['points_per_voxel_y'][0][0]
+  N_voxels_x  = mat_vars['N_voxels_x'][0][0]
+  N_voxels_y = mat_vars['N_voxels_y'][0][0]
+
+  i = voxel_no % N_voxels_x
+  j = voxel_no // N_voxels_x
+
+  x_index_range = range(i*points_per_voxel_x, (i+1)*points_per_voxel_x)
+  y_index_range = range(j*points_per_voxel_y, (j+1)*points_per_voxel_y)
 
   import numpy as np
   import matplotlib.pyplot as plt
@@ -22,12 +43,21 @@ def plot_quiver(simulation_no, filename_no_ext):
   ax.clear()
 
   # Colourbar.
-  U = np.sqrt(mat_vars['v_sample'][0][0]**2 + mat_vars['v_sample'][1][0]**2)
+  if (filename_no_ext[-4:] == 'test'):
+    U = np.sqrt(mat_vars['v_sample'][0][0]**2 + mat_vars['v_sample'][1][0]**2)
+  else:
+    U = np.sqrt(np.square(mat_vars['v_sample'][0][0][j*points_per_voxel_y:(j+1)*points_per_voxel_y, i*points_per_voxel_x:(i+1)*points_per_voxel_x]) + np.square(mat_vars['v_sample'][1][0][j*points_per_voxel_y:(j+1)*points_per_voxel_y, i*points_per_voxel_x:(i+1)*points_per_voxel_x]))
+
+  # print(np.min(U))
+  # print(np.max(U))
 
   cmap = plt.get_cmap('coolwarm')
 
   import matplotlib.colors as colors
-  norm = colors.Normalize(vmin=np.min(U), vmax=np.max(U))
+  if (filename_no_ext[-4:] == 'test'):
+    norm = colors.Normalize(vmin=np.min(U), vmax=np.max(U))
+  else:
+    norm = colors.Normalize(vmin=0, vmax=0.1)
   sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
   sm.set_array([])
 
@@ -40,13 +70,21 @@ def plot_quiver(simulation_no, filename_no_ext):
   
   cax = fig.add_axes([x1, y1, w1, h])
   cax.tick_params(labelsize=20)
-  cbar = fig.colorbar(sm, cax=cax, orientation='horizontal', shrink=1.0, location='bottom', ticks=np.linspace(np.min(U), np.max(U), 5))
-  cbar.set_label(r'$|\mathbf{u}|$ (m/s)', size=20)
 
   fig.subplots_adjust(bottom=0.22)
 
   # Plot.
-  ax.quiver(mat_vars['x_sample'][0][0], mat_vars['x_sample'][1][0], mat_vars['v_sample'][0][0], mat_vars['v_sample'][1][0], U, cmap=cmap, scale=0.12, scale_units='xy', angles='xy', width=0.005, headwidth=8, headaxislength=4, clip_on=False) # headlength=5, headwidth=3
+  if (filename_no_ext[-4:] == 'test'):
+    ax.quiver(mat_vars['x_sample'][0][0], mat_vars['x_sample'][1][0], mat_vars['v_sample'][0][0], mat_vars['v_sample'][1][0], U, cmap=cmap, scale=0.12, scale_units='xy', angles='xy', width=0.005, headwidth=8, headaxislength=4, clip_on=False) # headlength=5, headwidth=3
+    cbar = fig.colorbar(sm, cax=cax, orientation='horizontal', shrink=1.0, location='bottom', ticks=np.linspace(np.min(U), np.max(U), 5))
+    cbar.set_label(r'$|\mathbf{u}|$ (m/s)', size=20)
+  else:
+    ax.quiver(mat_vars['x_sample'][0][0][j*points_per_voxel_y:(j+1)*points_per_voxel_y, i*points_per_voxel_x:(i+1)*points_per_voxel_x], mat_vars['x_sample'][1][0][j*points_per_voxel_y:(j+1)*points_per_voxel_y, i*points_per_voxel_x:(i+1)*points_per_voxel_x], mat_vars['v_sample'][0][0][j*points_per_voxel_y:(j+1)*points_per_voxel_y, i*points_per_voxel_x:(i+1)*points_per_voxel_x], mat_vars['v_sample'][1][0][j*points_per_voxel_y:(j+1)*points_per_voxel_y, i*points_per_voxel_x:(i+1)*points_per_voxel_x], U, cmap=cmap, scale=scaling, scale_units='xy', angles='xy', width=0.005, headwidth=8, headaxislength=4, clip_on=False, norm=norm)
+    ax.set_xticks([])
+    ax.set_yticks([])
+    cbar = fig.colorbar(sm, cax=cax, orientation='horizontal', shrink=1.0, location='bottom', ticks=np.linspace(0, 0.1, 5))
+    cbar.set_label(r'$|\mathbf{u}|$ (m/s)', size=20)
+    cbar.set_ticks(np.linspace(0, 0.1, 5))
 
   # Style.
   if (filename_no_ext == '2D_accelerating_test'):
@@ -55,17 +93,29 @@ def plot_quiver(simulation_no, filename_no_ext):
     title = f"rotational flow: $U_1={mat_vars['U_1'][0][0]:g}$, $U_2={mat_vars['U_2'][0][0]:g}$"
   elif (filename_no_ext == '2D_shear_test'):
     title = f"shear flow: $U_1={mat_vars['U_1'][0][0]:g}$, $U_2={mat_vars['U_2'][0][0]:g}$"
+  else:
+    title = f"simulated flow in \quad \quad \quad"
   ax.set_xlabel(r'$x$', fontsize=20)
   ax.set_ylabel(r'$y$', fontsize=20)
   fig.suptitle(r"Velocity field at each $\mathbf{x}_j$", fontsize=36, y=1.0)
   ax.set_title(f"{title}", fontsize=24, pad=30) # pad = 10
+  if (filename_no_ext[-4:] != 'test'):
+    fig.text(0.53, 0.9205, f'{voxel_colour} voxel', fontsize=24, ha='left', color=f"tab:{voxel_colour}")
   ax.tick_params(labelsize=20)
 
   # Output.
-  fig.savefig(f"./images/mri-spins_quiver_{filename_no_ext}_{simulation_no}.png")
+  fig.savefig(f"./images/mri-spins_quiver_{filename_no_ext}_{simulation_no}_{voxel_no}.png")
   plt.close(fig)
 
 def plot_s_vs_b(simulation_no, filename_no_ext):
+  if (filename_no_ext[-4:] == 'test'):
+    voxel_no = 1
+  else:
+    voxel_no = 672
+    voxel_colour = 'blue'
+    # voxel_no = 491
+    # voxel_colour = 'green'
+
   mat_vars = import_mat(simulation_no, filename_no_ext)
 
   import matplotlib.patches as mpatches
@@ -98,15 +148,15 @@ def plot_s_vs_b(simulation_no, filename_no_ext):
   ax_gall.clear()
 
   # Plot.
-  ax_s   .plot(mat_vars['b'][0],      mat_vars['S'][0][0]  /mat_vars['S'][0][0][0],   'o', c='tab:blue')
-  ax_sall.plot(mat_vars['b'][0],      mat_vars['S'][0][0]  /mat_vars['S'][0][0][0],   'o', c='tab:blue', label=r'$S/S_0$')
-  ax_gall.plot(mat_vars['b'][0]**0.5, mat_vars['S'][0][0]  /mat_vars['S'][0][0][0],   'o', c='tab:blue', label=r'$S/S_0$')
-  ax_sx  .plot(mat_vars['b'][0],      mat_vars['S_x'][0][0]/mat_vars['S_x'][0][0][0], 'o', c='tab:orange')
-  ax_sall.plot(mat_vars['b'][0],      mat_vars['S_x'][0][0]/mat_vars['S_x'][0][0][0], 'o', c='tab:orange', label=r'$S_x/S_{x,0}$')
-  ax_gall.plot(mat_vars['b'][0]**0.5, mat_vars['S_x'][0][0]/mat_vars['S_x'][0][0][0], 'o', c='tab:orange', label=r'$S_x/S_{x,0}$')
-  ax_sy  .plot(mat_vars['b'][0],      mat_vars['S_y'][0][0]/mat_vars['S_y'][0][0][0], 'o', c='tab:green')
-  ax_sall.plot(mat_vars['b'][0],      mat_vars['S_y'][0][0]/mat_vars['S_y'][0][0][0], 'o', c='tab:green', label=r'$S_y/S_{y,0}$')
-  ax_gall.plot(mat_vars['b'][0]**0.5, mat_vars['S_y'][0][0]/mat_vars['S_y'][0][0][0], 'o', c='tab:green', label=r'$S_y/S_{y,0}$')
+  ax_sx  .plot(mat_vars['b'][0],      mat_vars['S_x'][voxel_no-1][0]/mat_vars['S_x'][voxel_no-1][0][0], 'o', c='tab:blue')
+  ax_sall.plot(mat_vars['b'][0],      mat_vars['S_x'][voxel_no-1][0]/mat_vars['S_x'][voxel_no-1][0][0], 'o', c='tab:blue', label=r'$S_x/S_{x,0}$')
+  ax_gall.plot(mat_vars['b'][0]**0.5, mat_vars['S_x'][voxel_no-1][0]/mat_vars['S_x'][voxel_no-1][0][0], 'o', c='tab:blue', label=r'$S_x/S_{x,0}$')
+  ax_sy  .plot(mat_vars['b'][0],      mat_vars['S_y'][voxel_no-1][0]/mat_vars['S_y'][voxel_no-1][0][0], 'o', c='tab:green')
+  ax_sall.plot(mat_vars['b'][0],      mat_vars['S_y'][voxel_no-1][0]/mat_vars['S_y'][voxel_no-1][0][0], 'o', c='tab:green', label=r'$S_y/S_{y,0}$')
+  ax_gall.plot(mat_vars['b'][0]**0.5, mat_vars['S_y'][voxel_no-1][0]/mat_vars['S_y'][voxel_no-1][0][0], 'o', c='tab:green', label=r'$S_y/S_{y,0}$')
+  ax_s   .plot(mat_vars['b'][0],      mat_vars['S'][voxel_no-1][0]  /mat_vars['S'][voxel_no-1][0][0],   'o', c='tab:orange')
+  ax_sall.plot(mat_vars['b'][0],      mat_vars['S'][voxel_no-1][0]  /mat_vars['S'][voxel_no-1][0][0],   'o', c='tab:orange', label=r'$S/S_0$')
+  ax_gall.plot(mat_vars['b'][0]**0.5, mat_vars['S'][voxel_no-1][0]  /mat_vars['S'][voxel_no-1][0][0],   'o', c='tab:orange', label=r'$S/S_0$')
 
   # Style.
   if (filename_no_ext == '2D_accelerating_test'):
@@ -115,6 +165,8 @@ def plot_s_vs_b(simulation_no, filename_no_ext):
     title = f"rotational flow: $U_1={mat_vars['U_1'][0][0]:g}$, $U_2={mat_vars['U_2'][0][0]:g}$"
   elif (filename_no_ext == '2D_shear_test'):
     title = f"shear flow: $U_1={mat_vars['U_1'][0][0]:g}$, $U_2={mat_vars['U_2'][0][0]:g}$"
+  else:
+    title = f"simulated flow in \quad \quad \quad"
   ax_s   .set_xlabel(r'$b$', fontsize=20)
   ax_sx  .set_xlabel(r'$b$', fontsize=20)
   ax_sy  .set_xlabel(r'$b$', fontsize=20)
@@ -124,8 +176,8 @@ def plot_s_vs_b(simulation_no, filename_no_ext):
   ax_sx  .set_ylabel(r'$S_x/S_{x,0}$', fontsize=20)
   ax_sy  .set_ylabel(r'$S_y/S_{y,0}$', fontsize=20)
   ax_sall.set_ylabel(r'$S/S_0$', fontsize=20)
-  ax_sall.legend(handles=handles[0:3], labels=[r'$S/S_0$', r'$S_x/S_{x,0}$', r'$S_y/S_{y,0}$'], fontsize=20, loc='upper right')
-  ax_gall.legend(handles=handles[0:3], labels=[r'$S/S_0$', r'$S_x/S_{x,0}$', r'$S_y/S_{y,0}$'], fontsize=20, loc='upper right')
+  ax_sall.legend(handles=[handles[1], handles[0], handles[2]], labels=[r'$S/S_0$', r'$S_x/S_{x,0}$', r'$S_y/S_{y,0}$'], fontsize=20, loc='upper right')
+  ax_gall.legend(handles=[handles[1], handles[0], handles[2]], labels=[r'$S/S_0$', r'$S_x/S_{x,0}$', r'$S_y/S_{y,0}$'], fontsize=20, loc='upper right')
   fig_s   .suptitle(r'$S/S_0$ vs $b$', fontsize=36, y=1.0)
   fig_sx .suptitle(r'$S_x/S_{x,0}$ vs $b$', fontsize=36, y=1.0)
   fig_sy   .suptitle(r'$S_y/S_{y,0}$ vs $b$', fontsize=36, y=1.0)
@@ -136,6 +188,12 @@ def plot_s_vs_b(simulation_no, filename_no_ext):
   ax_sy  .set_title(f'{title}', fontsize=24, pad=15)
   ax_sall.set_title(f'{title}', fontsize=24, pad=15)
   ax_gall.set_title(f'{title}', fontsize=24, pad=15)
+  if (filename_no_ext[-4:] != 'test'):
+    fig_s   .text(0.53, 0.901, f'{voxel_colour} voxel', fontsize=24, ha='left', color=f"tab:{voxel_colour}")
+    fig_sx  .text(0.53, 0.901, f'{voxel_colour} voxel', fontsize=24, ha='left', color=f"tab:{voxel_colour}")
+    fig_sy  .text(0.53, 0.901, f'{voxel_colour} voxel', fontsize=24, ha='left', color=f"tab:{voxel_colour}")
+    fig_sall.text(0.53, 0.901, f'{voxel_colour} voxel', fontsize=24, ha='left', color=f"tab:{voxel_colour}")
+    fig_gall.text(0.53, 0.901, f'{voxel_colour} voxel', fontsize=24, ha='left', color=f"tab:{voxel_colour}")
   ax_s   .tick_params(labelsize=20)
   ax_sx  .tick_params(labelsize=20)
   ax_sy  .tick_params(labelsize=20)
@@ -156,11 +214,11 @@ def plot_s_vs_b(simulation_no, filename_no_ext):
   ax_sall.set_ylim([-eps*S_range, 1 + eps*S_range])
   ax_gall.set_ylim([-eps*S_range, 1 + eps*S_range])
 
-  fig_s  .savefig(f"./images/mri-spins_s-vs-b_{filename_no_ext}_{simulation_no}.png")
-  fig_sx .savefig(f"./images/mri-spins_sx-vs-b_{filename_no_ext}_{simulation_no}.png")
-  fig_sy .savefig(f"./images/mri-spins_sy-vs-b_{filename_no_ext}_{simulation_no}.png")
-  fig_sall.savefig(f"./images/mri-spins_sall-vs-b_{filename_no_ext}_{simulation_no}.png")
-  fig_gall.savefig(f"./images/mri-spins_gall-vs-b_{filename_no_ext}_{simulation_no}.png")
+  fig_s  .savefig(f"./images/mri-spins_s-vs-b_{filename_no_ext}_{simulation_no}_{voxel_no}.png")
+  fig_sx .savefig(f"./images/mri-spins_sx-vs-b_{filename_no_ext}_{simulation_no}_{voxel_no}.png")
+  fig_sy .savefig(f"./images/mri-spins_sy-vs-b_{filename_no_ext}_{simulation_no}_{voxel_no}.png")
+  fig_sall.savefig(f"./images/mri-spins_sall-vs-b_{filename_no_ext}_{simulation_no}_{voxel_no}.png")
+  fig_gall.savefig(f"./images/mri-spins_gall-vs-b_{filename_no_ext}_{simulation_no}_{voxel_no}.png")
 
   plt.close(fig_s)
   plt.close(fig_sx)
@@ -173,13 +231,17 @@ def plot_spins(simulation_no, filename_no_ext):
 
   import numpy as np
   import matplotlib.pyplot as plt
-  b_index = 20
   if (filename_no_ext == '2D_accelerating_test'):
     grad_direction = 0
     cmap = plt.get_cmap('Blues')
   else:
     grad_direction = 1
     cmap = plt.get_cmap('Greens')
+
+  if (filename_no_ext == '2D_rotational_test'):
+    b_index = 571#193#94
+  else:
+    b_index = 20
 
   # Radius and coordinates of each molecule's spin.
   r = 0.9/2
@@ -238,10 +300,10 @@ def plot_spins(simulation_no, filename_no_ext):
 
     color = list(cmap(max_color*float(i+1)/b_index))
     color[-1] = 0.5 + 0.5*float(i)/b_index
-    ax_b.quiver(centre_x[0], centre_y[0], x_avg - 0.5, y_avg - 0.5, scale=0.4/r_avg, scale_units='xy', angles='xy', color=color, width=0.02)
+    ax_b.quiver(centre_x[0], centre_y[0], x_avg - 0.5, y_avg - 0.5, scale=0.9, scale_units='xy', angles='xy', color=color, width=0.02)
 
     if (i == b_index):
-      ax_avg.quiver(centre_x[0], centre_y[0], x_avg - 0.5, y_avg - 0.5, scale=0.4/r_avg, scale_units='xy', angles='xy', color=color, width=0.02)
+      ax_avg.quiver(centre_x[0], centre_y[0], x_avg - 0.5, y_avg - 0.5, scale=0.9, scale_units='xy', angles='xy', color=color, width=0.02)
 
     # Label the quiver.
     # if i == 0:
@@ -290,9 +352,9 @@ def plot_spins(simulation_no, filename_no_ext):
   ax_avg.axis('off')
   ax_b.axis('off')
   fig_avg.legend(handles=[individual_patch, average_patch], fontsize=20, loc='outside lower center')
-  fig_avg.suptitle("Spins at $t=t_E$", fontsize=36, y=1.0)
+  fig_avg.suptitle(f"Spins at $t=t_E$ for $b={mat_vars['b'][0][b_index]:g}$", fontsize=36, y=1.0)
   ax_avg.set_title(f"{title}", fontsize=24, pad=15)
-  fig_b.suptitle(fr"$\bar{{M}}(T_{d} + t_E)$ for $b \in [{mat_vars['b'][0][0]:.0f}, {mat_vars['b'][0][b_index]:.0f}]$", fontsize=36, y=1.0)
+  fig_b.suptitle(fr"$\bar{{M}}(T_{d} + t_E)$ for $b \in [{mat_vars['b'][0][0]:.0f}, {mat_vars['b'][0][b_index]:g}]$", fontsize=36, y=1.0)
   ax_b.set_title(f"{title}", fontsize=24, pad=15)
   fig_avg.savefig(f"./images/mri-spins_avg_{filename_no_ext}_{simulation_no}.png")
   fig_b.savefig(f"./images/mri-spins_b_{filename_no_ext}_{simulation_no}.png")
