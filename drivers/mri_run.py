@@ -48,6 +48,7 @@ parameters["run_mesh_generation"        ] = True
 parameters["run_aptofem_simulation"     ] = True
 parameters["run_set_aptofem_parameters" ] = True
 parameters["oscillation_detection"      ] = True
+parameters["generate_outline_mesh"      ] = True
 
 # File handling.
 parameters["compress_output"] = False

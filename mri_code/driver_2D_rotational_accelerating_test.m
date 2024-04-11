@@ -3,7 +3,7 @@
 % clf
 
 % Filename of solution file.
-filename_no_ext = '2D_rotational_test';
+filename_no_ext = '2D_rotational_accelerating_test';
 
 % Dimension of problem.
 dim = 2;
@@ -45,7 +45,7 @@ setup_quantities
 v_interpolant    = cell(dim, 1);
 % v_interpolant{1} = @(x, y) -0.01*y./sqrt(x.^2 + y.^2);
 % v_interpolant{2} = @(x, y)  0.01*x./sqrt(x.^2 + y.^2);
-v_interpolant{1} = @(x, y) -U_1*y;
+v_interpolant{1} = @(x, y) -U_1*y*exp(X*(x-1));
 v_interpolant{2} = @(x, y)  U_2*x;
 
 % Evaluate velocity at sample points.
