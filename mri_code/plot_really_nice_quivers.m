@@ -14,7 +14,8 @@ coloured_voxels = [...
     491 ... % Decellerating.
 ];
 % 1726 ... % Shear.
-voxel_colours = ["#005992", "#008002", "#db6000", "#b30002", "#74499c", "#6c382e", "#c058a0", "#606060"];
+voxel_colours = ["#005992", "#008002"];%, "#db6000", "#b30002", "#74499c", "#6c382e", "#c058a0", "#606060"];
+colour_dictionary = dictionary(coloured_voxels, voxel_colours);
 
 % Whether voxels should be displayed.
 show_voxels = true; % or false;
@@ -78,9 +79,8 @@ if (show_voxels)
         y_lower = y_voxel(1)   - dy/2;
         y_upper = y_voxel(end) + dy/2;
 
-        if ismember(voxel_xy, coloured_voxels)
-            coloured_voxel_count = coloured_voxel_count + 1;
-            rectangle('Position', [x_lower y_lower (x_upper-x_lower) (y_upper-y_lower)], 'EdgeColor', [0.2 0.2 0.2], 'FaceColor', voxel_colours(coloured_voxel_count))
+        if ismember(voxel_xy-1, coloured_voxels)
+            rectangle('Position', [x_lower y_lower (x_upper-x_lower) (y_upper-y_lower)], 'EdgeColor', [0.2 0.2 0.2], 'FaceColor', colour_dictionary(voxel_xy-1))
         else
             rectangle('Position', [x_lower y_lower (x_upper-x_lower) (y_upper-y_lower)], 'EdgeColor', [0.2 0.2 0.2])
         end

@@ -4,8 +4,8 @@ scan = niftiread('../../../Dropbox/Documents/PhD/Miscellaneous/2022-06-27 George
 slice_n = 5;
 x_val = 190;
 y_val = 140;
-x_val2 = 186;
-y_val2 = 141;
+x_val2 = 192;
+y_val2 = 139;
 x_range = x_val-25:x_val+25;
 y_range = y_val-25:y_val+25;
 

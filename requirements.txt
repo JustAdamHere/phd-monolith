@@ -7,3 +7,4 @@ scipy
 jsbeautifier
 tabulate
 mat73
+nibabel
