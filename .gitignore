@@ -6,3 +6,5 @@ output/*
 *.pyc
 
 .vscode/
+
+*.nii

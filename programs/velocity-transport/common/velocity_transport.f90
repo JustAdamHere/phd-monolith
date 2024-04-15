@@ -780,7 +780,9 @@ program velocity_transport
         if (moving_mesh) then
             call move_mesh(mesh_data, prev_mesh_data, problem_dim, current_time, time_step, aptofem_stored_keys)
 
-            call update_geometry(current_time, time_step, geometry_name)
+            if (geometry_name(1:6) /= "square") then
+                call update_geometry(current_time, time_step, geometry_name)
+            end if
 
 #ifdef OPENMP        
 !$OMP PARALLEL PRIVATE(thread_no)

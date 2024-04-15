@@ -26,7 +26,7 @@ parameters['scaling_k']   = 1.0
 parameters['scaling_mu']  = 1.0
 parameters['scaling_rho'] = 1.0
 
-parameters['zero_velocity_reaction_coefficient'] = True
+parameters['zero_velocity_reaction_coefficient'] = False
 
 parameters["newton_tolerance"] = 1e-10
 

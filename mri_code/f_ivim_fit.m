@@ -19,6 +19,8 @@
 
 function f_fit = f_ivim_fit(S,b)
 
+    b_110_index = find(b==110);
+
     %Fit works in three stages; two mono exponential decays and one final
     %bi-exponential fit
     mono_exp = @(x,x_data) x(1).*exp(-x(2).*x_data);
@@ -33,7 +35,7 @@ function f_fit = f_ivim_fit(S,b)
     DS_fit_ub = [40000    1000*1e-3];%upper bound
     DS_fit_x0 = [22000     100*1e-3];%initial guess
 
-    DS_fit = lsqcurvefit(mono_exp,DS_fit_x0,b(1:9),double(S(1:9)),DS_fit_lb,DS_fit_ub,options);
+    DS_fit = lsqcurvefit(mono_exp,DS_fit_x0,b(1:b_110_index),double(S(1:b_110_index)),DS_fit_lb,DS_fit_ub,options);
 
 
     %Second fit high b-values to a mono-exponential decay to estimate D
@@ -42,7 +44,7 @@ function f_fit = f_ivim_fit(S,b)
     D_fit_ub = [40000     25*1e-3];%upper bound
     D_fit_x0 = [22000      2*1e-3];%intial guess
 
-    D_fit = lsqcurvefit(mono_exp,D_fit_x0,b(10:end),double(S(10:end)),D_fit_lb,D_fit_ub,options);
+    D_fit = lsqcurvefit(mono_exp,D_fit_x0,b((b_110_index+1):end),double(S((b_110_index+1):end)),D_fit_lb,D_fit_ub,options);
 
     %Finally fit full data to IVIM model, using mono-exp fit as initial
     %guesses
