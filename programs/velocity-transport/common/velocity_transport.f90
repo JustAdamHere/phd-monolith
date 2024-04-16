@@ -334,7 +334,16 @@ program velocity_transport
             end if
 
             ! Set velocity amplitude.
-            call Carson_velocity_amplitude(solution_velocity%current_time)
+            if (trim(inlet_velocity_amplitude) == 'carson') then
+                call Carson_velocity_amplitude(solution_velocity%current_time)
+            else if (trim(inlet_velocity_amplitude) == 'boileau') then
+                call Boileau_velocity_amplitude(solution_velocity%current_time)
+            else if (trim(inlet_velocity_amplitude) == 'constant') then
+                current_velocity_amplitude = 1.0_db
+            else
+                print *, "ERROR: Unknown inlet velocity oscillation type."
+                error stop
+            end if
 
             ! if (fe_space_velocity == 'DG') then
 
@@ -877,15 +886,21 @@ program velocity_transport
         !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         if (.not. velocity_ss .and. compute_velocity) then
             ! Set velocity amplitude.
-            ! call Carson_velocity_amplitude(current_time)
-            ! current_velocity_amplitude = 1.0_db
+            if (trim(inlet_velocity_amplitude) == 'carson') then
+                call Carson_velocity_amplitude(solution_velocity%current_time)
+            else if (trim(inlet_velocity_amplitude) == 'boileau') then
+                call Boileau_velocity_amplitude(solution_velocity%current_time)
+            else if (trim(inlet_velocity_amplitude) == 'constant') then
+                current_velocity_amplitude = 1.0_db
+            else
+                print *, "ERROR: Unknown inlet velocity oscillation type."
+                error stop
+            end if
 
             ! Reset preconditioner to one specified in file.
             if (linear_solver == 'petsc') then
                 call pop_petsc_options()
             end if
-
-            !! TODO: Need to think about how we pass through fe_basis_info_old
 
             call dirk_single_time_step(solution_velocity, mesh_data, fe_solver_routines_velocity, 'solver_velocity', &
                 aptofem_stored_keys, sp_matrix_rhs_data_velocity, scheme_data_velocity, dirk_scheme_velocity, &

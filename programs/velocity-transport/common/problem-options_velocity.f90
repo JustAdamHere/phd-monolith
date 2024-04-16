@@ -9,6 +9,7 @@ module problem_options_velocity
         current_velocity_amplitude
     logical          :: large_boundary_v_penalisation
     character(len=2) :: fe_space_velocity
+    character(len=8) :: inlet_velocity_amplitude
     integer          :: no_reynold_ramp_steps
 
 contains
@@ -39,6 +40,8 @@ contains
         call get_aptofem_key_definition('reynold_ramp_start_ratio', reynold_ramp_start_ratio, section_name, &
             aptofem_stored_keys, ierr)
         call get_aptofem_key_definition('reynold_ramp_step_base', reynold_ramp_step_base, section_name, &
+            aptofem_stored_keys, ierr)
+        call get_aptofem_key_definition('inlet_velocity_amplitude', inlet_velocity_amplitude, section_name, &
             aptofem_stored_keys, ierr)
     end subroutine
 

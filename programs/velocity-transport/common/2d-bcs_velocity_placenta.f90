@@ -114,8 +114,9 @@ module placenta_2d_bcs_velocity
         amplitude = 1.0_db
       end if
 
+      amplitude = amplitude * current_velocity_amplitude
+
       r    = sqrt((global_point(1) - centre_bc(1))**2 + (global_point(2) - centre_bc(2))**2)
-      ! u    = current_velocity_amplitude * calculate_poiseuille_flow(r, artery_width_sm/2.0_db)
       u    = amplitude * calculate_poiseuille_flow(r, artery_width_sm/2.0_db)
       u(1) = -u(1) * cos(theta_bc)
       u(2) =  u(2) * sin(theta_bc)
