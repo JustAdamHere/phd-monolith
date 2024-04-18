@@ -548,6 +548,13 @@ def setup(clean, terminal_output, compile=True, compile_clean=True, run_type='op
 
 	from miscellaneous import output, set_run_numbers, clean_directory
 
+	# Make output and images directories if they don't exist.
+	import os
+	if not os.path.exists('output'):
+		os.makedirs('output')
+	if not os.path.exists('images'):
+		os.makedirs('images')
+
 	if clean:
 		# Clean outputs.
 		output.output("Cleaning output directory", terminal_output, end="... ", flush=True)

@@ -778,10 +778,12 @@ program velocity_transport
 ! #else
 !             call setup_previous_velocity(mesh_data, solution_velocity)
 ! #endif            
-        if (compute_velocity) then
-            call setup_previous_velocity(solution_velocity)
+        if (moving_mesh) then
+            if (compute_velocity) then
+                call setup_previous_velocity(solution_velocity)
+            end if
+            call setup_previous_mesh    (mesh_data)
         end if
-        call setup_previous_mesh    (mesh_data)
 
         !!!!!!!!!!!!!
         ! MOVE MESH !

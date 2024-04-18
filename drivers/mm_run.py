@@ -49,7 +49,7 @@ parameters["plot"]            = True
 parameters["basal_plate_vessels"] = [[0, 1, 1], [1, 1, 0], [1, 1, 0], [0, 1, 1], [1, 1, 0], [0, 1, 1]]
 
 # Mesh resolution.
-h_background = 0.02
+h_background = 1#0.02
 # h = [ \
 #   h_vein_top      = h_background/10,
 #   h_vein_bottom   =	h_background/10,
@@ -73,16 +73,16 @@ parameters["mesh_resolution"] = h
 
 # Simulation.
 parameters["compute_error_norms"        ] = True
-parameters["compute_permeability"       ] = True
-parameters["compute_transport"          ] = True
-parameters["compute_uptake"             ] = True
+parameters["compute_permeability"       ] = False
+parameters["compute_transport"          ] = False
+parameters["compute_uptake"             ] = False
 parameters["compute_velocity"           ] = True
 parameters["compute_velocity_average"   ] = False
 parameters["compute_velocity_sample"    ] = False
 parameters["run_mesh_generation"        ] = True
 parameters["run_aptofem_simulation"     ] = True
 parameters["run_set_aptofem_parameters" ] = True
-parameters["oscillation_detection"      ] = True
+parameters["oscillation_detection"      ] = False
 
 # File handling.
 parameters["compress_output"] = False
@@ -101,7 +101,7 @@ parameters["rerun_with_reynold_steps"] = False
 # Run type.
 parameters["run_type"]      = 'openmp'
 parameters["linear_solver"] = 'mumps'
-parameters["no_threads"]    = 2
+parameters["no_threads"]    = 4
 
 ##################
 # SIMULATION RUN #
