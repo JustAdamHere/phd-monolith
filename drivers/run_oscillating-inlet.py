@@ -29,60 +29,33 @@ parameters["scaling_D"]   = 1.667e-9 # m^2/s
 parameters["scaling_R"]   = 1.667e-2 # m^2/s
 
 # Moving mesh.
-parameters["moving_mesh"]   = True
-# parameters["final_time"]    = 60*16*2/0.1143 # 2*16 minutes, divided by scaling (i.e. L/U)
-parameters["final_time"]    = 2*60*(15.262237762237763-13.47902097902098)/0.1143
-parameters["no_time_steps"] = 30 #100 # dt = 167.97
-# parameters["mesh_velocity_type"] = "constant"
-# parameters["mesh_velocity_scaling"] = -0.00014784630713920598#-1.7072299067926404e-05
-parameters["mesh_velocity_type"] = "oscillating_sine"
-parameters["mesh_velocity_scaling"] = -0.00024016960112953193#-1.7072299067926404e-05
-parameters["solid_wall_mesh_velocity"] = True
-parameters["normalise_inlet_velocity"] = True
+parameters["moving_mesh"]   = False
+parameters["no_time_steps"] = 20*5
+parameters["final_time"]    = 0.6672*5 # L/U = 0.04/0.35 = 0.1143 s
+# Carson period:  0.99638 - 0.32918 = 0.6672
+# Boileau period: 1.0
+parameters["inlet_velocity_amplitude"] = "carson"
 
 # Output.
 parameters["terminal_output"] = True
 parameters["verbose_output"]  = True
 parameters["plot"]            = True
 
-# Turn off some veins.
-parameters["basal_plate_vessels"] = [[0, 1, 1], [1, 1, 0], [1, 1, 0], [0, 1, 1], [1, 1, 0], [0, 1, 1]]
-
 # Mesh resolution.
-h_background = 1#0.02
-# h = [ \
-#   h_vein_top      = h_background/10,
-#   h_vein_bottom   =	h_background/10,
-#   h_artery_top    = h_background/10,
-#   h_artery_middle = h_background/10,
-#   h_artery_bottom = h_background/10,
-#   h_cavity_inner  = h_background/10,
-#   h_cavity_outer  = h_background/2]
-# h = [
-#   h_background,
-#   h_background/10,
-#   h_background/10,
-#   h_background/10,
-#   h_background/10,
-#   0.0005,
-#   h_background/10,
-#   h_background/2]
-h = h_background
-
-parameters["mesh_resolution"] = h
+parameters["mesh_resolution"] = 0.005
 
 # Simulation.
 parameters["compute_error_norms"        ] = True
-parameters["compute_permeability"       ] = False
-parameters["compute_transport"          ] = False
-parameters["compute_uptake"             ] = False
+parameters["compute_permeability"       ] = True
+parameters["compute_transport"          ] = True
+parameters["compute_uptake"             ] = True
 parameters["compute_velocity"           ] = True
-parameters["compute_velocity_average"   ] = False
-parameters["compute_velocity_sample"    ] = False
+parameters["compute_velocity_average"   ] = True
+parameters["compute_velocity_sample"    ] = True
 parameters["run_mesh_generation"        ] = True
 parameters["run_aptofem_simulation"     ] = True
 parameters["run_set_aptofem_parameters" ] = True
-parameters["oscillation_detection"      ] = False
+parameters["oscillation_detection"      ] = True
 
 # File handling.
 parameters["compress_output"] = False
@@ -101,7 +74,10 @@ parameters["rerun_with_reynold_steps"] = False
 # Run type.
 parameters["run_type"]      = 'openmp'
 parameters["linear_solver"] = 'mumps'
-parameters["no_threads"]    = 4
+parameters["no_threads"]    = 20
+
+# Turn off some veins.
+parameters["basal_plate_vessels"] = [[0, 1, 1], [1, 1, 0], [1, 1, 0], [0, 1, 1], [1, 1, 0], [0, 1, 1]]
 
 ##################
 # SIMULATION RUN #

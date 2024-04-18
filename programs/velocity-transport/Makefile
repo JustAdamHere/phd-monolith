@@ -51,18 +51,22 @@ FFLAGS = -O3 -Wno-argument-mismatch -cpp -DARPACK -DMETIS_5_64 -DMUMPS -DSPARSKI
 
 $(OBJ_DIR)/%.o: ./common/%.f90
 	@echo "Compiling $<... "
+	@mkdir -p $(OBJ_DIR)
 	@($(FC) $(FFLAGS) $(MODFLAGS) -J$(MOD_DIR) -c $< -o $@ $(AptoFEM) -lpthread)
 
 $(OBJ_DIR)/%.o: ../../matrix_rhs/%.f90
 	@echo "Compiling $<... "
+	@mkdir -p $(OBJ_DIR)
 	@($(FC) $(FFLAGS) $(MODFLAGS) -J$(MOD_DIR) -c $< -o $@ $(AptoFEM) -lpthread)
 
 $(OBJ_DIR)/%.o: ./comparison/%.f90
 	@echo "Compiling $<... "
+	@mkdir -p $(OBJ_DIR)
 	@($(FC) $(FFLAGS) $(MODFLAGS) -J$(MOD_DIR) -c $< -o $@ $(AptoFEM) -lpthread)
 
 $(OBJ_DIR)/%.o: ./convergence/%.f90
 	@echo "Compiling $<... "
+	@mkdir -p $(OBJ_DIR)
 	@($(FC) $(FFLAGS) $(MODFLAGS) -J$(MOD_DIR) -c $< -o $@ $(AptoFEM) -lpthread)
 
 velocity-transport :: $(MAIN_OBJECTS)

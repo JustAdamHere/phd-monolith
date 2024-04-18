@@ -6,3 +6,7 @@ output/*
 *.pyc
 
 .vscode/
+
+*.nii
+
+temp/*

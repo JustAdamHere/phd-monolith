@@ -72,7 +72,10 @@ parameters["rerun_with_reynold_steps"] = False
 # Run type.
 parameters["run_type"]      = 'openmp'
 parameters["linear_solver"] = 'mumps'
-parameters["no_threads"]    = 20
+parameters["no_threads"]    = 4
+
+# Turn off some veins.
+parameters["basal_plate_vessels"] = [[0, 1, 1], [1, 1, 0], [1, 1, 0], [0, 1, 1], [1, 1, 0], [0, 1, 1]]
 
 ##################
 # SIMULATION RUN #
