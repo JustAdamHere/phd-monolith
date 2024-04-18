@@ -8,3 +8,5 @@ output/*
 .vscode/
 
 *.nii
+
+temp/*
