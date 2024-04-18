@@ -58,6 +58,8 @@ module problem_options_geometry
             calculate_mesh_velocity => calculate_mesh_velocity_oscillating_sine
         else if (trim(mesh_velocity_type) == 'oscillating_sine_x') then
             calculate_mesh_velocity => calculate_mesh_velocity_oscillating_sine_x
+        else if (trim(mesh_velocity_type) == 'constant') then
+            calculate_mesh_velocity => calculate_mesh_velocity_constant
         else if (trim(mesh_velocity_type) == 'etienne2009') then
             calculate_mesh_velocity => calculate_mesh_velocity_etienne2009
         else
@@ -742,6 +744,33 @@ module problem_options_geometry
         
         calculate_mesh_velocity_oscillating_sine_x(1) = x*sin(2.0_db*pi*mesh_time)
         calculate_mesh_velocity_oscillating_sine_x(2) = 0.0_db
+        
+    end function
+
+    function calculate_mesh_velocity_constant(coord, problem_dim, mesh_time)
+        use param
+        
+        implicit none
+        
+        integer, intent(in)                          :: problem_dim
+        real(db), dimension(problem_dim), intent(in) :: coord
+        real(db), intent(in)                         :: mesh_time
+        real(db), dimension(problem_dim)             :: calculate_mesh_velocity_constant
+        
+        real(db) :: x, y, t
+
+        x = coord(1) - move_mesh_centre(1)
+        y = coord(2) - move_mesh_centre(2)
+
+        t = mesh_time/final_local_time
+        
+        if (t < 0.5_db) then
+            calculate_mesh_velocity_constant(1) = mesh_velocity_scaling*x
+            calculate_mesh_velocity_constant(2) = mesh_velocity_scaling*y
+        else
+            calculate_mesh_velocity_constant(1) = -mesh_velocity_scaling*x
+            calculate_mesh_velocity_constant(2) = -mesh_velocity_scaling*y
+        end if
         
     end function
 
