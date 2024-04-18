@@ -30,10 +30,13 @@ parameters["scaling_R"]   = 1.667e-2 # m^2/s
 
 # Moving mesh.
 parameters["moving_mesh"]   = True
-parameters["final_time"]    = 60*16*2/0.1143 # 2*16 minutes, divided by scaling (i.e. L/U)
-parameters["no_time_steps"] = 100 # dt = 167.97
+# parameters["final_time"]    = 60*16*2/0.1143 # 2*16 minutes, divided by scaling (i.e. L/U)
+parameters["final_time"]    = 2*60*(15.262237762237763-13.47902097902098)/0.1143
+parameters["no_time_steps"] = 30 #100 # dt = 167.97
+# parameters["mesh_velocity_type"] = "constant"
+# parameters["mesh_velocity_scaling"] = -0.00014784630713920598#-1.7072299067926404e-05
 parameters["mesh_velocity_type"] = "oscillating_sine"
-parameters["mesh_velocity_scaling"] = -1.9755859375e-05/parameters["scaling_U"] # Nondimensional 
+parameters["mesh_velocity_scaling"] = -0.00024016960112953193#-1.7072299067926404e-05
 parameters["solid_wall_mesh_velocity"] = True
 parameters["normalise_inlet_velocity"] = True
 
@@ -41,6 +44,9 @@ parameters["normalise_inlet_velocity"] = True
 parameters["terminal_output"] = True
 parameters["verbose_output"]  = True
 parameters["plot"]            = True
+
+# Turn off some veins.
+parameters["basal_plate_vessels"] = [[0, 1, 1], [1, 1, 0], [1, 1, 0], [0, 1, 1], [1, 1, 0], [0, 1, 1]]
 
 # Mesh resolution.
 h_background = 0.02
@@ -95,7 +101,7 @@ parameters["rerun_with_reynold_steps"] = False
 # Run type.
 parameters["run_type"]      = 'openmp'
 parameters["linear_solver"] = 'mumps'
-parameters["no_threads"]    = 20
+parameters["no_threads"]    = 2
 
 ##################
 # SIMULATION RUN #

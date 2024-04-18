@@ -36,7 +36,7 @@ A_max = chord_area
 print(f"Initial 2D area: A_max={A_max}")
 
 # 3D volume reduction.
-volume_reduction = 0.35
+volume_reduction = 0.3410526315789474#0.35
 area_reduction = 1 - (1-volume_reduction)**(2/3)
 V_min = V_max*(1-volume_reduction)
 A_min = A_max*(1-area_reduction)
@@ -69,8 +69,8 @@ x_c = np.array([placenta_width/2, placenta_height/2])
 
 # Oscillating domain velocity.
 def w(W, x, x_c, t):
-  #return W*np.sin(2*np.pi*t)*(x - x_c)
-  return np.where(t<0.5, W*(x - x_c), -W*(x - x_c))
+  return W*np.sin(2*np.pi*t)*(x - x_c)
+  #return np.where(t<0.5, W*(x - x_c), -W*(x - x_c))
 
 # Displacement at t=0.5 and t=1.
 def p_positions(W, p0, x_c, t):
@@ -86,8 +86,10 @@ def p_positions(W, p0, x_c, t):
   return [x_mid, x_end]
 
 # Problem parameters.
-T = 60*16*2/0.1143 # 2*16 minutes, divided by scaling
-N = 100#100000
+#T = 60*16*2/0.1143 # 2*16 minutes, divided by scaling
+#T = 2*60*(15.262237762237763-14.055944055944057)/0.1143
+T = 2*60*(15.262237762237763-13.47902097902098)/0.1143
+N = 30#100000
 dt = T/N
 t = np.linspace(0, T, N)
 
