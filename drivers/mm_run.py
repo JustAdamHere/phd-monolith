@@ -31,12 +31,10 @@ parameters["scaling_R"]   = 1.667e-2 # m^2/s
 # Moving mesh.
 parameters["moving_mesh"]   = True
 # parameters["final_time"]    = 60*16*2/0.1143 # 2*16 minutes, divided by scaling (i.e. L/U)
-parameters["final_time"]    = 2*60*(15.262237762237763-13.47902097902098)/0.1143
-parameters["no_time_steps"] = 30 #100 # dt = 167.97
-# parameters["mesh_velocity_type"] = "constant"
-# parameters["mesh_velocity_scaling"] = -0.00014784630713920598#-1.7072299067926404e-05
+parameters["final_time"]    = 2*60*(16.117274167987322-14.3114)/0.1143
+parameters["no_time_steps"] = 100 # dt = 18.959
 parameters["mesh_velocity_type"] = "oscillating_sine"
-parameters["mesh_velocity_scaling"] = -0.00024016960112953193#-1.7072299067926404e-05
+parameters["mesh_velocity_scaling"] = -0.00022962480937681578
 parameters["solid_wall_mesh_velocity"] = True
 parameters["normalise_inlet_velocity"] = True
 
@@ -49,7 +47,7 @@ parameters["plot"]            = True
 parameters["basal_plate_vessels"] = [[0, 1, 1], [1, 1, 0], [1, 1, 0], [0, 1, 1], [1, 1, 0], [0, 1, 1]]
 
 # Mesh resolution.
-h_background = 1#0.02
+h_background = 0.005
 # h = [ \
 #   h_vein_top      = h_background/10,
 #   h_vein_bottom   =	h_background/10,
@@ -73,9 +71,9 @@ parameters["mesh_resolution"] = h
 
 # Simulation.
 parameters["compute_error_norms"        ] = True
-parameters["compute_permeability"       ] = False
-parameters["compute_transport"          ] = False
-parameters["compute_uptake"             ] = False
+parameters["compute_permeability"       ] = True
+parameters["compute_transport"          ] = True
+parameters["compute_uptake"             ] = True
 parameters["compute_velocity"           ] = True
 parameters["compute_velocity_average"   ] = False
 parameters["compute_velocity_sample"    ] = False
@@ -101,7 +99,7 @@ parameters["rerun_with_reynold_steps"] = False
 # Run type.
 parameters["run_type"]      = 'openmp'
 parameters["linear_solver"] = 'mumps'
-parameters["no_threads"]    = 4
+parameters["no_threads"]    = 8
 
 ##################
 # SIMULATION RUN #

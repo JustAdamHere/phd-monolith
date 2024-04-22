@@ -9,7 +9,7 @@ data = np.array([
   [15.594294770206023, -20.810810810810814],
   [15.832012678288432, -29.729729729729726],
   [16.117274167987322, -33.78378378378379]
-])
+]).round(1)
 
 # Discarded data taht we don't use.
 discarded_data1 = np.array([
@@ -18,7 +18,7 @@ discarded_data1 = np.array([
   [14.096671949286847, -10.000000000000007],
   [14.477020602218701, -8.648648648648653]
 ])
-discarded_data1 = np.append(discarded_data1, data[0]).reshape(-1, 2)
+discarded_data1 = np.append(discarded_data1, data[0]).reshape(-1, 2).round(1)
 discarded_data2 = np.array([
   [16.37876386687797, -30.81081081081082],
   [16.61648177496038, -27.567567567567565],
@@ -35,34 +35,40 @@ discarded_data2 = np.array([
   [19.730586370839937, -14.864864864864863],
   [19.992076069730583, -10.40540540540541],
 ])
-discarded_data2 = np.append(data[-1], discarded_data2).reshape(-1, 2)
+discarded_data2 = np.append(data[-1], discarded_data2).reshape(-1, 2).round(1)
 
 # Estimate of where zero volume would be given a linear approximation between the first and last data points.
-zero_volume_intercept = 14.3114
-zero_volume_periodic = data[-1, 0] + (data[-1, 0] - 14.3114)
+zero_volume_intercept = np.round(14.3114, 1)
+zero_volume_periodic = np.round(data[-1, 0] + (data[-1, 0] - 14.3114), 1)
 
-# Sinusoidal curve between the min and max volume points.
-t = np.linspace(zero_volume_intercept, zero_volume_periodic, 100)
-v = -data[-1, 1]*(np.cos(2*np.pi*(t-zero_volume_intercept)/(zero_volume_periodic-zero_volume_intercept)) - 1)/2
+# Equivalent 2D area change.
+#  From ./plotting/mm_velocity.py: 
+#   3D volume change 33.78378378378379% => 2D area change 24.029863475917455%.
+area_change = np.round(-24.029863475917455, 1)
 
 # Plot
 import matplotlib.patheffects as pe
 fig, ax = plt.subplots()
-ax.plot([zero_volume_intercept, data[-1, 0]], [0, data[-1, 1]], 'r--', label='Linear approximation')
+ax.plot([zero_volume_intercept, data[-1, 0]], [0, data[-1, 1]], 'r--', label='Linear volume approximation')
+ax.plot([zero_volume_intercept, data[-1, 0]], [0, area_change], 'g--', label='Linear area approximation')
+ax.plot(data[-1, 0], area_change, 'go', label=r'$\tilde{A}_\text{max}$ (estimated maximum area)')
 ax.plot([data[-1, 0], zero_volume_periodic], [data[-1, 1], 0], 'r--')
-ax.plot(data[:, 0], data[:, 1], 'o-', label='Raw data', color='C0', linewidth=3, path_effects=[pe.Stroke(linewidth=3, foreground='white'), pe.Normal()])
-ax.plot(t, v, 'g--', label='Sinusoidal approximation')
-ax.plot(discarded_data1[:, 0], discarded_data1[:, 1], 'o-', label='Unused raw data', alpha=0.5, color='C0')
+ax.plot([data[-1, 0], zero_volume_periodic], [area_change, 0], 'g--')
+ax.plot(data[:, 0], data[:, 1], 'o-', label='Volume data', color='C0', linewidth=3, path_effects=[pe.Stroke(linewidth=3, foreground='white'), pe.Normal()])
+ax.plot(discarded_data1[:, 0], discarded_data1[:, 1], 'o-', label='Discarded volume data', alpha=0.5, color='C0')
 ax.plot(discarded_data2[:, 0], discarded_data2[:, 1], 'o-', alpha=0.5, color='C0')
-ax.plot(zero_volume_intercept, 0, 'ro', label='Estimated zero volume')
+ax.plot(zero_volume_intercept, 0, 'ro', label=r'Estimated zero volume')
 ax.plot(zero_volume_periodic, 0, 'ro')
 
 # Style plot.
 handles, labels = ax.get_legend_handles_labels()
-order = [1, 3, 4, 0, 2]
+order = [3, 4, 5, 0, 2, 1]
 ax.legend([handles[idx] for idx in order],[labels[idx] for idx in order]) # Reorders legend entries.
 ax.set_xlabel('t (minutes)')
-ax.set_ylabel('Volume (%)')
-ax.set_title('Approximate volume change over time')
+ax.set_ylabel('Change from initial (%)')
+ax.set_title('Approximate area or volume change over time')
 ax.set_xlim([zero_volume_intercept-0.1, zero_volume_periodic+0.1])
-ax.set_ylim([-35, 2])
+ax.set_ylim([-35, 10])
+ax.minorticks_on()
+
+fig.show()

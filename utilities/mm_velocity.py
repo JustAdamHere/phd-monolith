@@ -36,13 +36,13 @@ A_max = chord_area
 print(f"Initial 2D area: A_max={A_max}")
 
 # 3D volume reduction.
-volume_reduction = 0.3410526315789474#0.35
+volume_reduction = 0.3378378378378379#0.35
 area_reduction = 1 - (1-volume_reduction)**(2/3)
 V_min = V_max*(1-volume_reduction)
 A_min = A_max*(1-area_reduction)
 
 print(f"3D volume reduction by {100*volume_reduction}%: V_min={V_min}")
-print(f"2D area reduction by {100*area_reduction:.2f}%: A_min={A_min}")
+print(f"2D area reduction by {100*area_reduction}%: A_min={A_min}")
 
 # Corresponding cap height and radius, assuming they remain proportional.
 k1 = a_max/h_max
@@ -83,13 +83,13 @@ def p_positions(W, p0, x_c, t):
     p += dt*w(W, p, x_c, t[i])
   x_end = p
 
-  return [x_mid, x_end]
+  return x_mid, x_end
 
 # Problem parameters.
 #T = 60*16*2/0.1143 # 2*16 minutes, divided by scaling
 #T = 2*60*(15.262237762237763-14.055944055944057)/0.1143
-T = 2*60*(15.262237762237763-13.47902097902098)/0.1143
-N = 30#100000
+T = 2*60*(16.117274167987322-14.3114)/0.1143
+N = 100#100000
 dt = T/N
 t = np.linspace(0, T, N)
 
@@ -102,35 +102,42 @@ W_min = -1e-3
 print(f"Initial velocity bounds: [{W_min}, {W_max}]")
 
 def get_reduced_area(W, p, x_c, t, r_max, h_max):
-  x = p_positions(W, p, x_c, t/T)[0]
-  s = p - x
-  h = x[1] - s[1]
+  x_mid, x_end = p_positions(W, p, x_c, t/T)
+
+  s = p - x_mid
+  h = x_mid[1] - s[1]
   k5 = r_max/h_max
   r = h*k5
   A = get_segment_area(h, r)
 
-  return A
+  s_end = p - x_end
+  h_end = x_end[1] - s_end[1]
+  r_end = h_end*k5
+
+  A_end = get_segment_area(h_end, r_end)
+
+  return A, A_end
 
 # Do bisection.
-A_test_min = get_reduced_area(W_min, p, x_c, t, r_max, h_max)
-A_test_max = get_reduced_area(W_max, p, x_c, t, r_max, h_max)
+A_test_min, _ = get_reduced_area(W_min, p, x_c, t, r_max, h_max)
+A_test_max, _ = get_reduced_area(W_max, p, x_c, t, r_max, h_max)
 
 print(f"Initial reduced area bounds: [{A_test_min}, {A_test_max}]")
 
 W = (W_min + W_max)/2
-A = get_reduced_area(W, p, x_c, t, r_max, h_max)
+A, A_end = get_reduced_area(W, p, x_c, t, r_max, h_max)
 N_itns = 0
-while ((np.abs(A_min - A) > 1e-5) and (N_itns < 100)):
+while ((np.abs(A_min - A) > 1e-10) and (N_itns < 100)):
   N_itns += 1
   W = (W_min + W_max)/2
-  A = get_reduced_area(W, p, x_c, t, r_max, h_max)
+  A, A_end = get_reduced_area(W, p, x_c, t, r_max, h_max)
   if (A < A_min):
     W_min = W
     A_test_min = A
   else:
     W_max = W
     A_test_max = A
-  print(f"Iteration {N_itns}: W={W}, A={A}")
+  print(f"Iteration {N_itns}: W={W}, A={A}, A_end_diff_percentage={100*(A_end-A_max)/A_max}")
 
 print(f"Complete in {N_itns} iterations")
-print(f"Final domain velocity: {W}, area: {A}, target area: {A_min}, diff = {A - A_min}")
+print(f"Final domain velocity: {W}, area: {A}, target area: {A_min}, diff = {A - A_min}, A_end_diff_percentage={100*(A_end-A_max)/A_max}")
