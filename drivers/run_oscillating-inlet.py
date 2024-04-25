@@ -31,7 +31,7 @@ parameters["scaling_R"]   = 1.667e-2 # m^2/s
 # Moving mesh.
 parameters["moving_mesh"]   = False
 parameters["no_time_steps"] = 20*5
-parameters["final_time"]    = 0.6672*5 # L/U = 0.04/0.35 = 0.1143 s
+parameters["final_time"]    = 0.6672*5/0.1143 # L/U = 0.04/0.35 = 0.1143 s
 # Carson period:  0.99638 - 0.32918 = 0.6672
 # Boileau period: 1.0
 parameters["inlet_velocity_amplitude"] = "carson"

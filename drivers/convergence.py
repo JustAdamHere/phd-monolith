@@ -23,7 +23,7 @@ parameters["no_threads"]    = 20
 parameters["plot"] = True
 
 # Clean and compile.
-velocity_transport.setup(clean=True, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True, compile_entry='velocity-transport_convergence')
+velocity_transport.setup(clean=False, terminal_output=True, compile=True, compile_clean=False, run_type=parameters["run_type"], verbose_output=True, compile_entry='velocity-transport_convergence')
 
 # Run the simulations.
 parameters["geometry"] = "square_analytic"
@@ -46,7 +46,7 @@ velocity_transport_convergence.run(2, parameters)
 parameters["final_time"]      = 1.0
 parameters["no_time_steps"]   = 2
 parameters["test_type"]       = "velocity_time"
-parameters["mesh_resolution"] = 0.1
+parameters["mesh_resolution"] = 0.05
 parameters["moving_mesh"]     = False
 velocity_transport_convergence.run(3, parameters)
 

@@ -40,7 +40,7 @@ def run(simulation_no, p):
 	##################
 	from programs import velocity_transport
 	output_timer.time(simulation_no, "AptoFEM simulation", p["terminal_output"])
-	velocity_transport.set_aptofem_parameters(simulation_no, p["velocity_model"], p["geometry"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["pipe_transition"], p["artery_length"], p["artery_width_sm"], p["log_cavity_transition"], p["scaling_L"], p["scaling_U"], p["scaling_mu"], p["scaling_rho"], p["scaling_k"], p["scaling_D"], p["scaling_R"], p["velocity_space"], velocity_ss, p["velocity_ic_from_ss"], p["transport_ic_from_ss"], p["compute_velocity"], p["compute_transport"], p["compute_permeability"], p["compute_uptake"], p["large_boundary_v_penalisation"], p["moving_mesh"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_time_steps"], p["final_time"], p["no_placentones"], p["no_threads"], p["run_type"], p["no_reynold_ramp_steps"], p["reynold_ramp_start_ratio"], p["reynold_ramp_step_base"], p["linear_solver"], p["wall_height_ratio"], p["basal_plate_vessel_positions"], p["rerun_with_reynold_steps"], p["mesh_velocity_type"], p["newton_itns_max"], p["newton_tolerance"], p["compute_error_norms"], p["zero_velocity_reaction_coefficient"], p["solid_wall_mesh_velocity"], p["normalise_inlet_velocity"], p["mesh_velocity_scaling"])
+	velocity_transport.set_aptofem_parameters(simulation_no, p["velocity_model"], p["geometry"], p["central_cavity_width"], p["central_cavity_height"], p["central_cavity_transition"], p["pipe_transition"], p["artery_length"], p["artery_width_sm"], p["log_cavity_transition"], p["scaling_L"], p["scaling_U"], p["scaling_mu"], p["scaling_rho"], p["scaling_k"], p["scaling_D"], p["scaling_R"], p["velocity_space"], velocity_ss, p["velocity_ic_from_ss"], p["transport_ic_from_ss"], p["compute_velocity"], p["compute_transport"], p["compute_permeability"], p["compute_uptake"], p["large_boundary_v_penalisation"], p["moving_mesh"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_time_steps"], p["final_time"], p["no_placentones"], p["no_threads"], p["run_type"], p["no_reynold_ramp_steps"], p["reynold_ramp_start_ratio"], p["reynold_ramp_step_base"], p["linear_solver"], p["wall_height_ratio"], p["basal_plate_vessel_positions"], p["rerun_with_reynold_steps"], p["mesh_velocity_type"], p["newton_itns_max"], p["newton_tolerance"], p["compute_error_norms"], p["zero_velocity_reaction_coefficient"], p["solid_wall_mesh_velocity"], p["normalise_inlet_velocity"], p["mesh_velocity_scaling"], p["inlet_velocity_amplitude"])
 	_, errors, error_ratios = aptofem_simple_simulation(simulation_no, p["velocity_model"], p["geometry"], p["verbose_output"], p["terminal_output"], p["no_threads"], p["run_type"], p["test_type"], p["no_tests"])
 	output_timer.time(simulation_no, "AptoFEM simulation", p["terminal_output"])
 
@@ -61,8 +61,7 @@ def run(simulation_no, p):
 	########
 	# PLOT #
 	########
-	# Just plot velocity errors for now.
-	if (p["plot"] and "velocity" in p["test_type"]):
+	if (p["plot"]):
 		if (p["test_type"][-5:] == "space"):
 			plot_spatial  = True
 			plot_temporal = False
@@ -71,7 +70,7 @@ def run(simulation_no, p):
 			plot_temporal = True
 
 		from plotting import plot_convergence
-		plot_convergence.plot(simulation_no, errors, plot_spatial, plot_temporal)
+		plot_convergence.plot(simulation_no, errors, plot_spatial, plot_temporal, is_transport=("transport" in p["test_type"]))
 
 def aptofem_simple_simulation(simulation_no, velocity_model, geometry, verbose_output, terminal_output, no_threads, run_type, test_type, no_tests):
 	from miscellaneous import set_parameter, set_run_numbers, output, raise_error
