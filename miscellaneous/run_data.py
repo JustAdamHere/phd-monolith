@@ -40,7 +40,7 @@ class class_run_data:
     self.slow_velocity_percentage_nominal_everywhere = svp[5]/one[1]
 
     # Transport reaction integral.
-    self.transport_reaction_integral = tri # <-- Already multiplied by the reaction coefficient.
+    self.transport_reaction_integral = tri/one[1] # <-- Already multiplied by the reaction coefficient.
 
     # Kinetic energy flux.
     ke_in  = 0.0

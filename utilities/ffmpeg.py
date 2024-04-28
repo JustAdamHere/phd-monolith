@@ -1,6 +1,6 @@
 base_dir = '/mnt/c/Users/adam/Git'
-project_name = 'phd-monolith/placenta-velocity'
-file_name    = 'velocity'
+project_name = 'phd-monolith/placenta-moving-mesh'
+file_name    = 'mm-placenta-velocity'
 frame_rate   = 10
 
 source = ''

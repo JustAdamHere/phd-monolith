@@ -1,4 +1,6 @@
-import matplotlib.pyplot as plt
+import matplotlib as mpl
+mpl.rcParams['figure.dpi'] = 600
+plt = mpl.pyplot
 import numpy as np
 
 # Data that we use in simulation.
@@ -49,11 +51,18 @@ area_change = np.round(-24.029863475917455, 1)
 # Plot
 import matplotlib.patheffects as pe
 fig, ax = plt.subplots()
+
+# Snapshots.
+snapshots = [0, 25, 50, 95, 100]
+t = np.linspace(14.3, 17.9, 101)
+ax.vlines(t[snapshots], -35, 10, colors='gray', linestyles='dotted', alpha=0.5, label='Snapshots in time')
+
+# Data.
 ax.plot([zero_volume_intercept, data[-1, 0]], [0, data[-1, 1]], 'r--', label='Linear volume approximation')
-ax.plot([zero_volume_intercept, data[-1, 0]], [0, area_change], 'g--', label='Linear area approximation')
-ax.plot(data[-1, 0], area_change, 'go', label=r'$\tilde{A}_\text{max}$ (estimated maximum area)')
+# ax.plot([zero_volume_intercept, data[-1, 0]], [0, area_change], 'g--', label='Linear area approximation')
+ax.plot(data[-1, 0], area_change, 'gx', label=r'$\Delta_2$ (estimated maximum area)', markeredgewidth=2, markersize=10)
 ax.plot([data[-1, 0], zero_volume_periodic], [data[-1, 1], 0], 'r--')
-ax.plot([data[-1, 0], zero_volume_periodic], [area_change, 0], 'g--')
+# ax.plot([data[-1, 0], zero_volume_periodic], [area_change, 0], 'g--')
 ax.plot(data[:, 0], data[:, 1], 'o-', label='Volume data', color='C0', linewidth=3, path_effects=[pe.Stroke(linewidth=3, foreground='white'), pe.Normal()])
 ax.plot(discarded_data1[:, 0], discarded_data1[:, 1], 'o-', label='Discarded volume data', alpha=0.5, color='C0')
 ax.plot(discarded_data2[:, 0], discarded_data2[:, 1], 'o-', alpha=0.5, color='C0')
@@ -62,7 +71,7 @@ ax.plot(zero_volume_periodic, 0, 'ro')
 
 # Style plot.
 handles, labels = ax.get_legend_handles_labels()
-order = [3, 4, 5, 0, 2, 1]
+order = [3, 4, 5, 1, 2, 0]
 ax.legend([handles[idx] for idx in order],[labels[idx] for idx in order]) # Reorders legend entries.
 ax.set_xlabel('t (minutes)')
 ax.set_ylabel('Change from initial (%)')

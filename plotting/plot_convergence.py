@@ -106,7 +106,7 @@ def plot(simulation_no, errors, spatial_convergence, temporal_convergence, is_tr
     plt.title('Temporal convergence')
     plt.savefig(f'./images/temporal_convergence_{simulation_no}.png', bbox_inches='tight', dpi=300)
 
-def plot_combined(errors_velocity_space, errors_transport_space, errors_velocity_time, errors_transport_time):
+def plot_combined(errors_velocity_space, errors_transport_space, errors_velocity_time, errors_transport_time, prepend='', title_append=''):
   import matplotlib.pyplot as plt
   import numpy as np
 
@@ -176,13 +176,13 @@ def plot_combined(errors_velocity_space, errors_transport_space, errors_velocity
     plt.text((tri_x[0]+tri_x[1])/2, 0.9*tri_y[0], f'1', fontsize=18, ha='center', va='top')
 
   # Style.
-  plt.xlabel(r'$\sqrt{N_\text{DoF}}$')
+  plt.xlabel(r'$\sqrt{N_\mathrm{DoF}}$')
   plt.ylabel('Error')
   plt.xlim([10**np.floor(np.log10(velocity_DoFs[0]**(0.5))), 10**np.ceil(np.log10(velocity_DoFs[-1]**(0.5)))])
   plt.ylim([10**np.floor(np.log10(np.min(x_velocity_norms[0:no_norms_velocity]))), 10**np.ceil(np.log10(np.max(x_velocity_norms[0:no_norms_velocity])))])
   plt.legend()
-  plt.title('Spatial convergence')
-  plt.savefig(f'./images/spatial_convergence.png', bbox_inches='tight', dpi=300)
+  plt.title(f'Spatial convergence{title_append}')
+  plt.savefig(f'./images/{prepend}spatial_convergence.png', bbox_inches='tight', dpi=300)
 
   # Temporal convergence.
   plt.figure(2, figsize=(5, 4))
@@ -207,8 +207,8 @@ def plot_combined(errors_velocity_space, errors_transport_space, errors_velocity
   plt.xlim([10**np.floor(np.log10(Nt[0])), 10**np.ceil(np.log10(Nt[-1]))])
   plt.ylim([10**np.floor(np.log10(np.min(t_velocity_norms[0:no_norms_velocity]))), 10**np.ceil(np.log10(np.max(t_velocity_norms[0:no_norms_velocity])))])
   plt.legend()
-  plt.title('Temporal convergence')
-  plt.savefig(f'./images/temporal_convergence.png', bbox_inches='tight', dpi=300)
+  plt.title(f'Temporal convergence{title_append}')
+  plt.savefig(f'./images/{prepend}temporal_convergence.png', bbox_inches='tight', dpi=300)
 
   # if temporal_convergence:
   #   plt.figure(2, figsize=(5, 4))
@@ -229,6 +229,7 @@ def plot_combined(errors_velocity_space, errors_transport_space, errors_velocity
   #   plt.savefig(f'./images/temporal_convergence_{simulation_no}.png', bbox_inches='tight', dpi=300)
 
 def plot_from_data():
+  # Non-moving mesh.
   velocity_spatial   = 2
   velocity_temporal  = 3
   transport_spatial  = 7
@@ -241,3 +242,17 @@ def plot_from_data():
   tt, _ = get_norms.get_transport_norms("velocity-transport_convergence", "square_analytic", transport_temporal)
 
   plot_combined(vs, ts, vt, tt)
+
+  # Moving mesh.
+  velocity_spatial   = 4
+  velocity_temporal  = 5
+  transport_spatial  = 9
+  transport_temporal = 10
+
+  from miscellaneous import get_norms
+  vs, _ = get_norms.get_velocity_norms("velocity-transport_convergence", "square_analytic", velocity_spatial)
+  vt, _ = get_norms.get_velocity_norms("velocity-transport_convergence", "square_analytic", velocity_temporal)
+  ts, _ = get_norms.get_transport_norms("velocity-transport_convergence", "square_analytic", transport_spatial)
+  tt, _ = get_norms.get_transport_norms("velocity-transport_convergence", "square_analytic", transport_temporal)
+
+  plot_combined(vs, ts, vt, tt, 'mm_', ' with moving mesh')
