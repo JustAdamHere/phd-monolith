@@ -2101,8 +2101,8 @@ module jacobi_residual_nsb_mm
     cal_alpha = max( &
       abs(2.0_db*dot_product(u1(1:problem_dim), normal) - dot_product(mesh_velocity, normal)), &
       abs(2.0_db*dot_product(u2(1:problem_dim), normal) - dot_product(mesh_velocity, normal)), &
-      abs(dot_product(u1(1:problem_dim), normal)), &
-      abs(dot_product(u2(1:problem_dim), normal))  &
+      abs(       dot_product(u1(1:problem_dim), normal) - dot_product(mesh_velocity, normal)), &
+      abs(       dot_product(u2(1:problem_dim), normal) - dot_product(mesh_velocity, normal))  &
     )
 
   end function cal_alpha
