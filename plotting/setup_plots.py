@@ -29,11 +29,20 @@ def style(figure, axis, x_parameter_name, y_parameter_name, y_scilimits=None, y_
     axis.xaxis.set_major_formatter(plt.FormatStrFormatter('%d'))
   else:
     axis.xaxis.set_major_formatter(plt.FormatStrFormatter('%.1f'))
-  axis.xaxis.set_major_locator(plt.MaxNLocator(max_major_ticks, integer=integer_ticks, prune='both'))
-  axis.xaxis.set_minor_locator(plt.MaxNLocator(max_minor_ticks, integer=integer_ticks, prune='both'))
+  if (max_major_ticks == 0):
+    axis.xaxis.set_major_locator(plt.NullLocator())
+  else:
+    axis.xaxis.set_major_locator(plt.MaxNLocator(max_major_ticks, integer=integer_ticks, prune='both'))
+  if (max_minor_ticks == 0):
+    axis.xaxis.set_minor_locator(plt.NullLocator())
+  else:
+    axis.xaxis.set_minor_locator(plt.MaxNLocator(max_minor_ticks, integer=integer_ticks, prune='both'))
   if (y_max_major_ticks != None):
     axis.yaxis.set_major_locator(plt.MaxNLocator(y_max_major_ticks))
-  axis.yaxis.set_minor_locator(plt.MaxNLocator(y_max_minor_ticks))
+  if (y_max_minor_ticks == 0):
+    axis.yaxis.set_minor_locator(plt.NullLocator())
+  else:
+    axis.yaxis.set_minor_locator(plt.MaxNLocator(y_max_minor_ticks))
   if (xlim != None):
     axis.set_xlim(xlim[0], xlim[1])
   if (y_top != None):
