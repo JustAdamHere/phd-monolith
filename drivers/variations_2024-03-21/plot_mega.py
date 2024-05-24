@@ -235,7 +235,7 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
       plt.setp(axes2[i][j].get_yticklabels(), visible=False)
       axes2[i][j].set_xticks([])
       axes2[i][j].set_yticks([])
-      axes2[i][j].annotate("No plot", xy=(0.5, 0.5), xycoords="axes fraction", ha="center", va="center", fontsize=12)
+      axes2[i][j].annotate("No variation", xy=(0.5, 0.5), xycoords="axes fraction", ha="center", va="center", fontsize=12)
   for i in [2, 3]:
     for j in [0, 1]:
       plt.setp(axes4[i][j].spines.values(), visible=False)
@@ -243,7 +243,7 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
       plt.setp(axes4[i][j].get_yticklabels(), visible=False)
       axes4[i][j].set_xticks([])
       axes4[i][j].set_yticks([])
-      axes4[i][j].annotate("No plot", xy=(0.5, 0.5), xycoords="axes fraction", ha="center", va="center", fontsize=12)
+      axes4[i][j].annotate("No variation", xy=(0.5, 0.5), xycoords="axes fraction", ha="center", va="center", fontsize=12)
 
   # Decide where to save plots.
   if subfolder == None:
@@ -487,7 +487,7 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
 
   # Plot indiviudal simulations on mini axes.
   simulation_nos = [90, 70, 122, 444]
-  colours = ["tab:orange", "tab:purple", "tab:green", "tab:red"]
+  colours = ["tab:pink", "tab:purple", "tab:green", "tab:red"]
   for i in range(4):
     sim_no = simulation_nos[i]
 
