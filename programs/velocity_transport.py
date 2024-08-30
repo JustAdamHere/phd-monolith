@@ -148,7 +148,7 @@ def run(simulation_no, p):
 			output_timer.time(simulation_no, "AptoFEM simulation", p["terminal_output"], clear_existing=True)
 			result = aptofem_simulation(simulation_no, p["velocity_model"], p["geometry"], p["terminal_output"], p["verbose_output"], p["error_on_fail"], p["no_threads"], p["run_type"])
 			if (result == False and p["rerun_with_reynold_steps"]):
-				output.output(f"!! Rerunning with more Reynold steps due to failure !!", p["terminal_output"])
+				output.output(f"\n!! Rerunning with more Reynold steps due to failure !!", p["terminal_output"])
 				p["no_reynold_ramp_steps"] *= 2
 				output.output(f"!! New number of Reynold ramp steps: {p['no_reynold_ramp_steps']} !!", p["terminal_output"])
 				continue
