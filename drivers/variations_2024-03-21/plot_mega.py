@@ -3,22 +3,24 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
 
   print(f"\rPlotting simulations...", end="")
 
-  assert(len(parameter_values) == 6)
-  assert(len(simulation_bins) == 6)
-  assert(len(simulations) == 6)
+  no_parameters = 7
+
+  assert(len(parameter_values) == no_parameters)
+  assert(len(simulation_bins) == no_parameters)
+  assert(len(simulations) == no_parameters)
 
   # Setup plots.
   from plotting import setup_plots
   fig1, axes1 = setup_plots.setup_megaplot(1, 4, 3, figsize=(10, 12))
-  fig2, axes2 = setup_plots.setup_megaplot(2, 4, 3, figsize=(10, 12))
+  fig2, axes2 = setup_plots.setup_megaplot(2, 4, 4, figsize=(13, 12))
   fig3, axes3 = setup_plots.setup_megaplot(3, 4, 3, figsize=(10, 12))
-  fig4, axes4 = setup_plots.setup_megaplot(4, 4, 3, figsize=(10, 12))
+  fig4, axes4 = setup_plots.setup_megaplot(4, 4, 4, figsize=(13, 12))
   figs = [fig1, fig2, fig3, fig4]
   axes = [axes1, axes2, axes3, axes4]
 
   # Get data to plot.
-  data = np.zeros(6, dtype=object)
-  for j in range(6):
+  data = np.zeros(no_parameters, dtype=object)
+  for j in range(no_parameters):
     data[j] = setup_plots.get_data(len(simulation_bins[j]), simulation_bins[j], simulations[j])
 
   # Patches for legends.
@@ -29,10 +31,14 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
     handles.append(mpatches.Patch(color=f"C{i}"))
   handles.append(mpatches.Patch(color="black"))
 
+  ## The following loops are looped with:
+  # i \in {0, 1}: splits the graphs into the first 4 measures and last 4 measures.
+  # j \in {0, 1, 2, 3}: selects which parameter is being plotted on x-axis.
+
   # AXES 1: Velocity magnitude integrals.
   for i in range(2):
-    for j in range(3):
-      if (i, j) == (1, 0) or (i, j) == (1, 1):
+    for j in range(4):
+      if (i, j) == (1, 0) or (i, j) == (1, 1) or (i, j) == (0, 3):
         continue
 
       if plot_outliers:
@@ -45,8 +51,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
 
   # AXES 2: Slow velocity percentages.
   for i in range(2):
-    for j in range(3):
-      if (i, j) == (1, 0) or (i, j) == (1, 1):
+    for j in range(4):
+      if (i, j) == (1, 0) or (i, j) == (1, 1) or (i, j) == (0, 3):
         continue
 
       if plot_outliers:
@@ -74,8 +80,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
 
   # AXES 3: Velocity flux through different veins.
   for i in range(2):
-    for j in range(3):
-      if (i, j) == (1, 0) or (i, j) == (1, 1):
+    for j in range(4):
+      if (i, j) == (1, 0) or (i, j) == (1, 1) or (i, j) == (0, 3):
         continue
 
       if plot_outliers:
@@ -98,8 +104,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
 
   # AXES 4: Cross-flux velocity.
   for i in range(2):
-    for j in range(3):
-      if (i, j) == (1, 0) or (i, j) == (1, 1):
+    for j in range(4):
+      if (i, j) == (1, 0) or (i, j) == (1, 1) or (i, j) == (0, 3):
         continue
 
       if plot_outliers:
@@ -111,7 +117,10 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
 
   # AXES 5: Transport reaction integral.
   for i in range(2):
-    for j in range(3):
+    for j in range(4):
+      if (i, j) == (0, 3):
+        continue
+
       if plot_outliers:
         for k in range(len(data[3*i+j]["outside_iqr"]["transport_reaction_integral"])):
           for l in range(len(data[3*i+j]["outside_iqr"]["transport_reaction_integral"][k])):
@@ -122,7 +131,10 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
 
   # AXES 6: Concentration flux through different veins.
   for i in range(2):
-    for j in range(3):
+    for j in range(4):
+      if (i, j) == (0, 3):
+        continue
+
       if plot_outliers:
         for k in range(len(data[3*i+j]["outside_iqr"]["transport_percentage_basal_plate"])):
           for l in range(len(data[3*i+j]["outside_iqr"]["transport_percentage_basal_plate"][k])):
@@ -145,8 +157,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
 
   # AXES 7: Kinetic energy flux difference.
   for i in range(2):
-    for j in range(3):
-      if (i, j) == (1, 0) or (i, j) == (1, 1):
+    for j in range(4):
+      if (i, j) == (1, 0) or (i, j) == (1, 1) or (i, j) == (0, 3):
         continue
 
       if plot_outliers:
@@ -159,8 +171,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
 
   # AXES 8: Total energy flux difference.
   for i in range(2):
-    for j in range(3):
-      if (i, j) == (1, 0) or (i, j) == (1, 1):
+    for j in range(4):
+      if (i, j) == (1, 0) or (i, j) == (1, 1) or (i, j) == (0, 3):
         continue
 
       if plot_outliers:
@@ -226,6 +238,15 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   setup_plots.style(fig4, axes4[2][2], None, None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=True, max_major_ticks=5)
   setup_plots.style(fig4, axes4[3][2], parameter_name[5], None, y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=True, max_major_ticks=5, y_max_minor_ticks=6)
 
+  setup_plots.style(fig2, axes2[0][3], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=0)
+  setup_plots.style(fig2, axes2[1][3], None, None, y_scilimits=None , y_bottom=0, y_top=70, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=0)
+  setup_plots.style(fig2, axes2[2][3], None, None, y_scilimits=None , y_bottom=0, y_top=102, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=0)
+  setup_plots.style(fig2, axes2[3][3], parameter_name[6], None, y_scilimits=[-3, -3], y_bottom=0, y_top=3e-3, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=0)
+  setup_plots.style(fig4, axes4[0][3], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1.2e-3, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=13)
+  setup_plots.style(fig4, axes4[1][3], None, None, y_scilimits=None , y_bottom=0, y_top=102, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=11)
+  setup_plots.style(fig4, axes4[2][3], None, None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=0)
+  setup_plots.style(fig4, axes4[3][3], parameter_name[6], None, y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=0)
+
   # Hide irrelevant plots.
   import matplotlib.pyplot as plt
   for i in [0, 1, 2, 3]:
@@ -254,8 +275,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   # Save.
   fig1.savefig(f"{images_folder}/mega1_{parameter_safe_name[0]}_{parameter_safe_name[1]}_{parameter_safe_name[2]}.png", dpi=300)
   fig3.savefig(f"{images_folder}/mega2_{parameter_safe_name[0]}_{parameter_safe_name[1]}_{parameter_safe_name[2]}.png", dpi=300)
-  fig2.savefig(f"{images_folder}/mega1_{parameter_safe_name[3]}_{parameter_safe_name[4]}_{parameter_safe_name[5]}.png", dpi=300)
-  fig4.savefig(f"{images_folder}/mega2_{parameter_safe_name[3]}_{parameter_safe_name[4]}_{parameter_safe_name[5]}.png", dpi=300)
+  fig2.savefig(f"{images_folder}/mega1_{parameter_safe_name[3]}_{parameter_safe_name[4]}_{parameter_safe_name[5]}_{parameter_safe_name[6]}.png", dpi=300)
+  fig4.savefig(f"{images_folder}/mega2_{parameter_safe_name[3]}_{parameter_safe_name[4]}_{parameter_safe_name[5]}_{parameter_safe_name[6]}.png", dpi=300)
 
   # Done.
   print(f"\rPlotting simulations... Done.", end="\r\n")
@@ -263,7 +284,7 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   # Print number of subsamples in each bin.
   from tabulate import tabulate
   rows = []
-  for j in range(6):
+  for j in range(no_parameters):
     no_per_bin = [len(simulation_bins[j][k]) for k in range(0, len(simulation_bins[j]))]
     no_simulations = sum(no_per_bin)
     rows.append([parameter_name[j], no_simulations, np.mean(no_per_bin), np.median(no_per_bin), np.std(no_per_bin), np.min(no_per_bin), np.max(no_per_bin), no_per_bin])
