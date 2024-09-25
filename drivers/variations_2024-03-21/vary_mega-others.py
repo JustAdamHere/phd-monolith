@@ -24,7 +24,7 @@ simulations[5] = run_data.import_simulations(max_run_no, output_location_permeab
 simulations[6] = run_data.import_simulations(max_run_no, output_location_inlet_velocity)
   
 # Varying parameters.
-parameter_name      = [r"$2r_a$ (mm)", r"$2r_v$ (mm)", r"$h/h_0$", r"$D$ ($\times 10^{-9}$) (mm$^2$/s)", r"$R$ ($\times 10^{-2}$) (1/s)", r"$k$ ($\log_{10}$) (mm$^2$)", r"$U$ (m/s)"]
+parameter_name      = [r"$2r_a$ (mm)", r"$2r_v$ (mm)", r"$h/h_0$", r"$D$ ($\times 10^{-9}$) (mm$^2$/s)", r"$R$ ($\times 10^{-2}$) (1/s)", r"$k$ ($\log_{10}$) (mm$^2$)", r"$U$ ($\times 10^{-1}$) (m/s)"]
 parameter_safe_name = ["artery_width", "vein_width", "wall_height_ratio", "oxygen_diffusivity", "oxygen_uptake", "permeability", "inlet_velocity"]
 artery_width_values       = np.linspace(0.0125, 0.075, 10)*1000*0.04
 vein_width_values         = np.linspace(0.025, 0.075, 10)*1000*0.04
@@ -32,7 +32,7 @@ wall_height_values        = np.linspace((0.0375+2*0.01)/0.1725 + 0.001, 2.0, 10)
 oxygen_diffusivity_values = np.linspace(0.1*1.667e-9, 5*1.667e-9, 10)*1e9
 oxygen_uptake_values      = np.linspace(0.1*1.667e-2, 5*1.667e-2, 10)*1e2
 permeability_values       = np.linspace(-10, -6, 10)
-inlet_velocity_values     = np.linspace(0.1, 1.0, 10)
+inlet_velocity_values     = np.linspace(0.1, 1.0, 10)*1e1
 parameter_values = [artery_width_values, vein_width_values, wall_height_values, oxygen_diffusivity_values, oxygen_uptake_values, permeability_values, inlet_velocity_values]
 
 bins_artery_width = [[] for i in range(len(artery_width_values))]
@@ -97,7 +97,7 @@ bins_inlet_velocity = [[] for i in range(len(inlet_velocity_values))]
 for i in range(0, max_run_no):
   run_no = i+1
 
-  bin_no = int(np.floor((len(inlet_velocity_values))*(simulations[6][i].parameters["scaling_U"] - inlet_velocity_values[0])/(inlet_velocity_values[-1] - inlet_velocity_values[0])))
+  bin_no = int(np.floor((len(inlet_velocity_values))*(simulations[6][i].parameters["scaling_U"]*1e1 - inlet_velocity_values[0])/(inlet_velocity_values[-1] - inlet_velocity_values[0])))
   if (bin_no == len(inlet_velocity_values)):
     bin_no -= 1
 
@@ -106,13 +106,20 @@ for i in range(0, max_run_no):
 ##############################
 ## Quick check on weird outliers.
 ##############################
-import tabulate
-rows = []
-for bin_no in bins_inlet_velocity[8]:
-  rows.append([bin_no, simulations[6][bin_no-1].parameters["scaling_U"], simulations[6][bin_no-1].abs_velocity_cross_flow_flux])
-rows.sort(key=lambda x: x[2])
-print(tabulate.tabulate(rows))
+# import tabulate
+# rows = []
+# for bin_no in bins_inlet_velocity[8]:
+#   rows.append([bin_no, simulations[6][bin_no-1].parameters["scaling_U"], simulations[6][bin_no-1].abs_velocity_cross_flow_flux])
+# rows.sort(key=lambda x: x[2])
+# print(tabulate.tabulate(rows))
 ##############################
+
+# import tabulate
+# rows = []
+# for sim in simulations[5]:
+#   rows.append([sim.sim_no, sim.pressure_energy_flux, sim.kinetic_energy_flux])
+# rows.sort(key=lambda x: x[1])
+# print(tabulate.tabulate(rows))
 
 # Plot the data.
 import plot_mega

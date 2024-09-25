@@ -89,6 +89,10 @@ class class_run_data:
     # self.total_energy_flux = self.kinetic_energy_flux + (mu*U/L)*U*(pe_in - pe_out)
     # self.total_energy_flux = (rho*U**3*ke_in + (mu*U/L)*U*pe_in - rho*U**3*ke_out - (mu*U/L)*U*pe_out)/(rho*U**3*ke_in + (mu*U/L)*U*pe_in)
     # self.total_energy_flux = (ke_in + mu/(L*U*rho)*pe_in - ke_out - mu/(L*U*rho)*pe_out)/(ke_in + mu/(L*U*rho)*pe_in)
+    
+    #self.pressure_energy_flux = (mu*U/L*U*pe_in - mu*U/L*U*pe_out)/(mu*U/L*U*pe_in) 
+    self.pressure_energy_flux = (pe_in - pe_out)/(pe_in) 
+    
     self.total_energy_flux = (rho*U**3*ke_in + mu*U/L*U*pe_in - rho*U**3*ke_out - mu*U/L*U*pe_out)/(rho*U**3*ke_in + mu*U/L*U*pe_in)
 
     # Velocity cross flow flux.

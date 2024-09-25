@@ -103,6 +103,7 @@ def get_data(no_bins, simulation_bins, simulations):
   # 4
   kinetic_energy_flux = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
   # 5
+  pressure_energy_flux = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
   total_energy_flux = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
   # 6
   velocity_cross_flow_flux = [np.zeros(len(simulation_bins[i])) for i in range(no_bins)]
@@ -125,6 +126,7 @@ def get_data(no_bins, simulation_bins, simulations):
   average_slow_velocity_percentage_nominal_everywhere = []
   average_transport_reaction_integral                 = []
   average_kinetic_energy_flux                         = []
+  average_pressure_energy_flux                        = []
   average_total_energy_flux                           = []
   average_velocity_cross_flow_flux                    = []
   average_transport_flux                              = []
@@ -147,6 +149,7 @@ def get_data(no_bins, simulation_bins, simulations):
       slow_velocity_percentage_nominal_everywhere [i][j] = simulations[run_no-1].slow_velocity_percentage_nominal_everywhere
       transport_reaction_integral                 [i][j] = simulations[run_no-1].transport_reaction_integral
       kinetic_energy_flux                         [i][j] = simulations[run_no-1].kinetic_energy_flux
+      pressure_energy_flux                        [i][j] = simulations[run_no-1].pressure_energy_flux
       total_energy_flux                           [i][j] = simulations[run_no-1].total_energy_flux
       velocity_cross_flow_flux                    [i][j] = simulations[run_no-1].abs_velocity_cross_flow_flux
       transport_flux                              [i][j] = simulations[run_no-1].transport_flux
@@ -167,6 +170,7 @@ def get_data(no_bins, simulation_bins, simulations):
       average_slow_velocity_percentage_nominal_everywhere .append(np.mean(slow_velocity_percentage_nominal_everywhere [i])),
       average_transport_reaction_integral                 .append(np.mean(transport_reaction_integral                 [i])),
       average_kinetic_energy_flux                         .append(np.mean(kinetic_energy_flux                         [i])),
+      average_pressure_energy_flux                        .append(np.mean(pressure_energy_flux                        [i])),
       average_total_energy_flux                           .append(np.mean(total_energy_flux                           [i])),
       average_velocity_cross_flow_flux                    .append(np.mean(velocity_cross_flow_flux                    [i])),
       average_transport_flux                              .append(np.mean(transport_flux                              [i])),
@@ -185,6 +189,7 @@ def get_data(no_bins, simulation_bins, simulations):
       average_slow_velocity_percentage_nominal_everywhere .append(float('nan'))
       average_transport_reaction_integral                 .append(float('nan'))
       average_kinetic_energy_flux                         .append(float('nan'))
+      average_pressure_energy_flux                        .append(float('nan'))
       average_total_energy_flux                           .append(float('nan'))
       average_velocity_cross_flow_flux                    .append(float('nan'))
       average_transport_flux                              .append(float('nan'))
@@ -204,6 +209,7 @@ def get_data(no_bins, simulation_bins, simulations):
   q25_slow_velocity_percentage_nominal_everywhere = percentiles(slow_velocity_percentage_nominal_everywhere, 25)
   q25_transport_reaction_integral                 = percentiles(transport_reaction_integral                , 25)
   q25_kinetic_energy_flux                         = percentiles(kinetic_energy_flux                        , 25)
+  q25_pressure_energy_flux                        = percentiles(pressure_energy_flux                       , 25)
   q25_total_energy_flux                           = percentiles(total_energy_flux                          , 25)
   q25_velocity_cross_flow_flux                    = percentiles(velocity_cross_flow_flux                   , 25)
   q25_transport_flux                              = percentiles(transport_flux                             , 25)
@@ -223,6 +229,7 @@ def get_data(no_bins, simulation_bins, simulations):
   q50_slow_velocity_percentage_nominal_everywhere = percentiles(slow_velocity_percentage_nominal_everywhere, 50)
   q50_transport_reaction_integral                 = percentiles(transport_reaction_integral                , 50)
   q50_kinetic_energy_flux                         = percentiles(kinetic_energy_flux                        , 50)
+  q50_pressure_energy_flux                        = percentiles(pressure_energy_flux                       , 50)
   q50_total_energy_flux                           = percentiles(total_energy_flux                          , 50)
   q50_velocity_cross_flow_flux                    = percentiles(velocity_cross_flow_flux                   , 50)
   q50_transport_flux                              = percentiles(transport_flux                             , 50)
@@ -242,6 +249,7 @@ def get_data(no_bins, simulation_bins, simulations):
   q75_slow_velocity_percentage_nominal_everywhere = percentiles(slow_velocity_percentage_nominal_everywhere, 75)
   q75_transport_reaction_integral                 = percentiles(transport_reaction_integral                , 75)
   q75_kinetic_energy_flux                         = percentiles(kinetic_energy_flux                        , 75)
+  q75_pressure_energy_flux                        = percentiles(pressure_energy_flux                       , 75)
   q75_total_energy_flux                           = percentiles(total_energy_flux                          , 75)
   q75_velocity_cross_flow_flux                    = percentiles(velocity_cross_flow_flux                   , 75)
   q75_transport_flux                              = percentiles(transport_flux                             , 75)
@@ -261,6 +269,7 @@ def get_data(no_bins, simulation_bins, simulations):
   iqr_slow_velocity_percentage_nominal_everywhere = iqr(q25_slow_velocity_percentage_nominal_everywhere , q75_slow_velocity_percentage_nominal_everywhere)
   iqr_transport_reaction_integral                 = iqr(q25_transport_reaction_integral                 , q75_transport_reaction_integral                )
   iqr_kinetic_energy_flux                         = iqr(q25_kinetic_energy_flux                         , q75_kinetic_energy_flux                        )
+  iqr_pressure_energy_flux                        = iqr(q25_pressure_energy_flux                        , q75_pressure_energy_flux                       )
   iqr_total_energy_flux                           = iqr(q25_total_energy_flux                           , q75_total_energy_flux                          )
   iqr_velocity_cross_flow_flux                    = iqr(q25_velocity_cross_flow_flux                    , q75_velocity_cross_flow_flux                   )
   iqr_transport_flux                              = iqr(q25_transport_flux                              , q75_transport_flux                             )
@@ -281,6 +290,7 @@ def get_data(no_bins, simulation_bins, simulations):
       'slow_velocity_percentage_nominal_everywhere' : slow_velocity_percentage_nominal_everywhere ,
       'transport_reaction_integral'                 : transport_reaction_integral                 ,
       'kinetic_energy_flux'                         : kinetic_energy_flux                         ,
+      'pressure_energy_flux'                        : pressure_energy_flux                        ,
       'total_energy_flux'                           : total_energy_flux                           ,
       'velocity_cross_flow_flux'                    : velocity_cross_flow_flux                    ,
       'transport_flux'                              : transport_flux                              ,
@@ -300,6 +310,7 @@ def get_data(no_bins, simulation_bins, simulations):
       'slow_velocity_percentage_nominal_everywhere' : average_slow_velocity_percentage_nominal_everywhere ,
       'transport_reaction_integral'                 : average_transport_reaction_integral                 ,
       'kinetic_energy_flux'                         : average_kinetic_energy_flux                         ,
+      'pressure_energy_flux'                        : average_pressure_energy_flux                        ,
       'total_energy_flux'                           : average_total_energy_flux                           ,
       'velocity_cross_flow_flux'                    : average_velocity_cross_flow_flux                    ,
       'transport_flux'                              : average_transport_flux                              ,
@@ -319,6 +330,7 @@ def get_data(no_bins, simulation_bins, simulations):
       'slow_velocity_percentage_nominal_everywhere' : q25_slow_velocity_percentage_nominal_everywhere,
       'transport_reaction_integral'                 : q25_transport_reaction_integral                ,
       'kinetic_energy_flux'                         : q25_kinetic_energy_flux                        ,
+      'pressure_energy_flux'                        : q25_pressure_energy_flux                       ,
       'total_energy_flux'                           : q25_total_energy_flux                          ,
       'velocity_cross_flow_flux'                    : q25_velocity_cross_flow_flux                   ,
       'transport_flux'                              : q25_transport_flux                             ,
@@ -338,6 +350,7 @@ def get_data(no_bins, simulation_bins, simulations):
       'slow_velocity_percentage_nominal_everywhere' : q50_slow_velocity_percentage_nominal_everywhere,
       'transport_reaction_integral'                 : q50_transport_reaction_integral                ,
       'kinetic_energy_flux'                         : q50_kinetic_energy_flux                        ,
+      'pressure_energy_flux'                        : q50_pressure_energy_flux                       ,
       'total_energy_flux'                           : q50_total_energy_flux                          ,
       'velocity_cross_flow_flux'                    : q50_velocity_cross_flow_flux                   ,
       'transport_flux'                              : q50_transport_flux                             ,
@@ -357,6 +370,7 @@ def get_data(no_bins, simulation_bins, simulations):
       'slow_velocity_percentage_nominal_everywhere' : q75_slow_velocity_percentage_nominal_everywhere,
       'transport_reaction_integral'                 : q75_transport_reaction_integral                ,
       'kinetic_energy_flux'                         : q75_kinetic_energy_flux                        ,
+      'pressure_energy_flux'                        : q75_pressure_energy_flux                       ,
       'total_energy_flux'                           : q75_total_energy_flux                          ,
       'velocity_cross_flow_flux'                    : q75_velocity_cross_flow_flux                   ,
       'transport_flux'                              : q75_transport_flux                             ,
@@ -376,6 +390,7 @@ def get_data(no_bins, simulation_bins, simulations):
       'slow_velocity_percentage_nominal_everywhere' : iqr_slow_velocity_percentage_nominal_everywhere ,
       'transport_reaction_integral'                 : iqr_transport_reaction_integral                 ,
       'kinetic_energy_flux'                         : iqr_kinetic_energy_flux                         ,
+      'pressure_energy_flux'                        : iqr_pressure_energy_flux                        ,
       'total_energy_flux'                           : iqr_total_energy_flux                           ,
       'velocity_cross_flow_flux'                    : iqr_velocity_cross_flow_flux                    ,
       'transport_flux'                              : iqr_transport_flux                              ,
@@ -395,6 +410,7 @@ def get_data(no_bins, simulation_bins, simulations):
       'slow_velocity_percentage_nominal_everywhere' : q25_slow_velocity_percentage_nominal_everywhere - 1.5*iqr_slow_velocity_percentage_nominal_everywhere,
       'transport_reaction_integral'                 : q25_transport_reaction_integral                 - 1.5*iqr_transport_reaction_integral,
       'kinetic_energy_flux'                         : q25_kinetic_energy_flux                         - 1.5*iqr_kinetic_energy_flux,
+      'pressure_energy_flux'                        : q25_pressure_energy_flux                        - 1.5*iqr_pressure_energy_flux,
       'total_energy_flux'                           : q25_total_energy_flux                           - 1.5*iqr_total_energy_flux,
       'velocity_cross_flow_flux'                    : q25_velocity_cross_flow_flux                    - 1.5*iqr_velocity_cross_flow_flux,
       'transport_flux'                              : q25_transport_flux                              - 1.5*iqr_transport_flux,
@@ -414,6 +430,7 @@ def get_data(no_bins, simulation_bins, simulations):
       'slow_velocity_percentage_nominal_everywhere' : q75_slow_velocity_percentage_nominal_everywhere + 1.5*iqr_slow_velocity_percentage_nominal_everywhere,
       'transport_reaction_integral'                 : q75_transport_reaction_integral                 + 1.5*iqr_transport_reaction_integral,
       'kinetic_energy_flux'                         : q75_kinetic_energy_flux                         + 1.5*iqr_kinetic_energy_flux,
+      'pressure_energy_flux'                        : q75_pressure_energy_flux                        + 1.5*iqr_pressure_energy_flux,
       'total_energy_flux'                           : q75_total_energy_flux                           + 1.5*iqr_total_energy_flux,
       'velocity_cross_flow_flux'                    : q75_velocity_cross_flow_flux                    + 1.5*iqr_velocity_cross_flow_flux,
       'transport_flux'                              : q75_transport_flux                              + 1.5*iqr_transport_flux,
@@ -433,6 +450,7 @@ def get_data(no_bins, simulation_bins, simulations):
       'slow_velocity_percentage_nominal_everywhere' : outliers(slow_velocity_percentage_nominal_everywhere, q25_slow_velocity_percentage_nominal_everywhere, q75_slow_velocity_percentage_nominal_everywhere),
       'transport_reaction_integral'                 : outliers(transport_reaction_integral                , q25_transport_reaction_integral                , q75_transport_reaction_integral                ),
       'kinetic_energy_flux'                         : outliers(kinetic_energy_flux                        , q25_kinetic_energy_flux                        , q75_kinetic_energy_flux                        ),
+      'pressure_energy_flux'                        : outliers(pressure_energy_flux                       , q25_pressure_energy_flux                       , q75_pressure_energy_flux                       ),
       'total_energy_flux'                           : outliers(total_energy_flux                          , q25_total_energy_flux                          , q75_total_energy_flux                          ),
       'velocity_cross_flow_flux'                    : outliers(velocity_cross_flow_flux                   , q25_velocity_cross_flow_flux                   , q75_velocity_cross_flow_flux                   ),
       'transport_flux'                              : outliers(transport_flux                             , q25_transport_flux                             , q75_transport_flux                             ),
@@ -452,6 +470,7 @@ def get_data(no_bins, simulation_bins, simulations):
       'slow_velocity_percentage_nominal_everywhere' : outside_iqr(slow_velocity_percentage_nominal_everywhere, q25_slow_velocity_percentage_nominal_everywhere, q75_slow_velocity_percentage_nominal_everywhere),
       'transport_reaction_integral'                 : outside_iqr(transport_reaction_integral                , q25_transport_reaction_integral                , q75_transport_reaction_integral                ),
       'kinetic_energy_flux'                         : outside_iqr(kinetic_energy_flux                        , q25_kinetic_energy_flux                        , q75_kinetic_energy_flux                        ),
+      'pressure_energy_flux'                        : outside_iqr(pressure_energy_flux                       , q25_pressure_energy_flux                       , q75_pressure_energy_flux                       ),
       'total_energy_flux'                           : outside_iqr(total_energy_flux                          , q25_total_energy_flux                          , q75_total_energy_flux                          ),
       'velocity_cross_flow_flux'                    : outside_iqr(velocity_cross_flow_flux                   , q25_velocity_cross_flow_flux                   , q75_velocity_cross_flow_flux                   ),
       'transport_flux'                              : outside_iqr(transport_flux                             , q25_transport_flux                             , q75_transport_flux                             ),

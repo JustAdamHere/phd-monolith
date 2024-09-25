@@ -13,8 +13,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   from plotting import setup_plots
   fig1, axes1 = setup_plots.setup_megaplot(1, 4, 3, figsize=(10, 12))
   fig2, axes2 = setup_plots.setup_megaplot(2, 4, 4, figsize=(13, 12))
-  fig3, axes3 = setup_plots.setup_megaplot(3, 4, 3, figsize=(10, 12))
-  fig4, axes4 = setup_plots.setup_megaplot(4, 4, 4, figsize=(13, 12))
+  fig3, axes3 = setup_plots.setup_megaplot(3, 3, 3, figsize=(10, 10))
+  fig4, axes4 = setup_plots.setup_megaplot(4, 3, 4, figsize=(13, 10))
   figs = [fig1, fig2, fig3, fig4]
   axes = [axes1, axes2, axes3, axes4]
 
@@ -170,18 +170,18 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
       axes[i+2][2][j].fill_between(parameter_values[3*i+j], data[3*i+j]["q25"]["kinetic_energy_flux"], data[3*i+j]["q75"]["kinetic_energy_flux"], alpha=0.2, color=f"C0")  
 
   # AXES 8: Total energy flux difference.
-  for i in range(2):
-    for j in range(4):
-      if (i, j) == (1, 0) or (i, j) == (1, 1) or (i, j) == (0, 3):
-        continue
+  # for i in range(2):
+  #   for j in range(4):
+  #     if (i, j) == (1, 0) or (i, j) == (1, 1) or (i, j) == (0, 3):
+  #       continue
 
-      if plot_outliers:
-        for k in range(len(data[3*i+j]["outside_iqr"]["total_energy_flux"])):
-          for l in range(len(data[3*i+j]["outside_iqr"]["total_energy_flux"][k])):
-            axes[i+2][3][j].scatter(parameter_values[3*i+j][k], data[3*i+j]["data"]["total_energy_flux"][k][l], marker=".", color=f"C0", alpha=1.0/10)
+  #     if plot_outliers:
+  #       for k in range(len(data[3*i+j]["outside_iqr"]["pressure_energy_flux"])):
+  #         for l in range(len(data[3*i+j]["outside_iqr"]["pressure_energy_flux"][k])):
+  #           axes[i+2][3][j].scatter(parameter_values[3*i+j][k], data[3*i+j]["data"]["pressure_energy_flux"][k][l], marker=".", color=f"C0", alpha=1.0/10)
 
-      axes[i+2][3][j].plot(parameter_values[3*i+j], data[3*i+j]["q50"]["total_energy_flux"], linestyle="dashed", color=f"C0")
-      axes[i+2][3][j].fill_between(parameter_values[3*i+j], data[3*i+j]["q25"]["total_energy_flux"], data[3*i+j]["q75"]["total_energy_flux"], alpha=0.2, color=f"C0")
+  #     axes[i+2][3][j].plot(parameter_values[3*i+j], data[3*i+j]["q50"]["pressure_energy_flux"], linestyle="dashed", color=f"C0")
+  #     axes[i+2][3][j].fill_between(parameter_values[3*i+j], data[3*i+j]["q25"]["pressure_energy_flux"], data[3*i+j]["q75"]["pressure_energy_flux"], alpha=0.2, color=f"C0")
 
   # Style plots.
   setup_plots.style(fig1, axes1[0][0], None, r"$\bar{v}$", y_scilimits=[-3, -3] , y_bottom=0, y_top=1e-2, integer_ticks=False, max_major_ticks=2, max_minor_ticks=6, y_max_minor_ticks=11)
@@ -190,8 +190,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   setup_plots.style(fig1, axes1[3][0], parameter_name[0], r"$v_\text{cross}$", y_scilimits=[-3, -3] , y_bottom=0, y_top=3e-3, integer_ticks=False, max_major_ticks=2, max_minor_ticks=6, y_max_minor_ticks=7)
   setup_plots.style(fig3, axes3[0][0], None, r"$\bar{c}$", y_scilimits=[-3, -3], y_bottom=0, y_top=1.2e-3, integer_ticks=False, max_major_ticks=2, max_minor_ticks=6, y_max_minor_ticks=13)
   setup_plots.style(fig3, axes3[1][0], None, r"$\frac{C_\text{flux}(S)}{C_\text{flux}(\Gamma_\text{in})}$ (%)", y_scilimits=None , y_bottom=0, y_top=102, integer_ticks=False, max_major_ticks=2, max_minor_ticks=6, y_max_minor_ticks=11)
-  setup_plots.style(fig3, axes3[2][0], None, r"$\frac{E_\text{kinetic}(\Gamma_\text{in}) - E_\text{kinetic}(\Gamma_\text{out})}{E_\text{kinetic}(\Gamma_\text{in})}$", y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=False, max_major_ticks=2, max_minor_ticks=6)
-  setup_plots.style(fig3, axes3[3][0], parameter_name[0], r"$\frac{E_\text{total}(\Gamma_\text{in}) - E_\text{total}(\Gamma_\text{out})}{E_\text{total}(\Gamma_\text{in})}$", y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=False, max_major_ticks=2, max_minor_ticks=6, y_max_minor_ticks=6)
+  setup_plots.style(fig3, axes3[2][0], parameter_name[0], r"$\frac{E_\text{kinetic}(\Gamma_\text{in}) - E_\text{kinetic}(\Gamma_\text{out})}{E_\text{kinetic}(\Gamma_\text{in})}$", y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=False, max_major_ticks=2, max_minor_ticks=6)
+  # setup_plots.style(fig3, axes3[3][0], parameter_name[0], r"$\frac{E_\text{total}(\Gamma_\text{in}) - E_\text{total}(\Gamma_\text{out})}{E_\text{total}(\Gamma_\text{in})}$", y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=False, max_major_ticks=2, max_minor_ticks=6, y_max_minor_ticks=6)
 
   setup_plots.style(fig1, axes1[0][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=False, max_major_ticks=2, max_minor_ticks=5, y_max_minor_ticks=11)
   setup_plots.style(fig1, axes1[1][1], None, None, y_scilimits=None , y_bottom=0, y_top=70, integer_ticks=False, max_major_ticks=2, max_minor_ticks=5, y_max_minor_ticks=8)
@@ -199,8 +199,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   setup_plots.style(fig1, axes1[3][1], parameter_name[1], None, y_scilimits=[-3, -3], y_bottom=0, y_top=3e-3, integer_ticks=False, max_major_ticks=2, max_minor_ticks=5, y_max_minor_ticks=7)
   setup_plots.style(fig3, axes3[0][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1.2e-3, integer_ticks=False, max_major_ticks=2, max_minor_ticks=5, y_max_minor_ticks=13)
   setup_plots.style(fig3, axes3[1][1], None, None, y_scilimits=None , y_bottom=0, y_top=102, integer_ticks=False, max_major_ticks=2, max_minor_ticks=5, y_max_minor_ticks=11)
-  setup_plots.style(fig3, axes3[2][1], None, None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=False, max_major_ticks=2, max_minor_ticks=5)
-  setup_plots.style(fig3, axes3[3][1], parameter_name[1], None, y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=False, max_major_ticks=2, max_minor_ticks=5, y_max_minor_ticks=6)
+  setup_plots.style(fig3, axes3[2][1], parameter_name[1], None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=False, max_major_ticks=2, max_minor_ticks=5)
+  # setup_plots.style(fig3, axes3[3][1], parameter_name[1], None, y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=False, max_major_ticks=2, max_minor_ticks=5, y_max_minor_ticks=6)
 
   setup_plots.style(fig1, axes1[0][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=False, max_major_ticks=2, max_minor_ticks=4, y_max_minor_ticks=11)
   setup_plots.style(fig1, axes1[1][2], None, None, y_scilimits=None , y_bottom=0, y_top=70, integer_ticks=False, max_major_ticks=2, max_minor_ticks=4, y_max_minor_ticks=8)
@@ -208,8 +208,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   setup_plots.style(fig1, axes1[3][2], parameter_name[2], None, y_scilimits=[-3, -3], y_bottom=0, y_top=3e-3, integer_ticks=False, max_major_ticks=2, max_minor_ticks=4, y_max_minor_ticks=7)
   setup_plots.style(fig3, axes3[0][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1.2e-3, integer_ticks=False, max_major_ticks=2, max_minor_ticks=4, y_max_minor_ticks=13)
   setup_plots.style(fig3, axes3[1][2], None, None, y_scilimits=None , y_bottom=0, y_top=102, integer_ticks=False, max_major_ticks=2, max_minor_ticks=4, y_max_minor_ticks=11)
-  setup_plots.style(fig3, axes3[2][2], None, None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=False, max_major_ticks=2, max_minor_ticks=4)
-  setup_plots.style(fig3, axes3[3][2], parameter_name[2], None, y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=False, max_major_ticks=2, max_minor_ticks=4, y_max_minor_ticks=6)
+  setup_plots.style(fig3, axes3[2][2], parameter_name[2], None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=False, max_major_ticks=2, max_minor_ticks=4)
+  # setup_plots.style(fig3, axes3[3][2], parameter_name[2], None, y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=False, max_major_ticks=2, max_minor_ticks=4, y_max_minor_ticks=6)
 
   setup_plots.style(fig2, axes2[0][0], None, r"$\bar{v}$", y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=False, max_major_ticks=2, max_minor_ticks=0, y_max_minor_ticks=0)
   setup_plots.style(fig2, axes2[1][0], None, r"$v_\text{slow}(V_\text{threshold})$ (%)", y_scilimits=None , y_bottom=0, y_top=70, integer_ticks=False, max_major_ticks=2, max_minor_ticks=0, y_max_minor_ticks=0)
@@ -217,8 +217,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   setup_plots.style(fig2, axes2[3][0], parameter_name[3], r"$v_\text{cross}$", y_scilimits=[-3, -3], y_bottom=0, y_top=3e-3, integer_ticks=False, max_major_ticks=2, max_minor_ticks=0, y_max_minor_ticks=0)
   setup_plots.style(fig4, axes4[0][0], None, r"$\bar{c}$", y_scilimits=[-3, -3], y_bottom=0, y_top=1.2e-3, integer_ticks=False, max_major_ticks=2, max_minor_ticks=10, y_max_minor_ticks=13)
   setup_plots.style(fig4, axes4[1][0], None, r"$\frac{C_\text{flux}(S)}{C_\text{flux}(\Gamma_\text{in})}$ (%)", y_scilimits=None , y_bottom=0, y_top=102, integer_ticks=False, max_major_ticks=2, max_minor_ticks=10, y_max_minor_ticks=11)
-  setup_plots.style(fig4, axes4[2][0], None, r"$\frac{E_\text{kinetic}(\Gamma_\text{in}) - E_\text{kinetic}(\Gamma_\text{out})}{E_\text{kinetic}(\Gamma_\text{in})}$", y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=False, max_major_ticks=2, max_minor_ticks=0, y_max_minor_ticks=0)
-  setup_plots.style(fig4, axes4[3][0], parameter_name[3], r"$\frac{E_\text{total}(\Gamma_\text{in}) - E_\text{total}(\Gamma_\text{out})}{E_\text{total}(\Gamma_\text{in})}$", y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=False, max_major_ticks=2, max_minor_ticks=0, y_max_minor_ticks=0)
+  setup_plots.style(fig4, axes4[2][0], parameter_name[3], r"$\frac{E_\text{kinetic}(\Gamma_\text{in}) - E_\text{kinetic}(\Gamma_\text{out})}{E_\text{kinetic}(\Gamma_\text{in})}$", y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=False, max_major_ticks=2, max_minor_ticks=0, y_max_minor_ticks=0)
+  # setup_plots.style(fig4, axes4[3][0], parameter_name[3], r"$\frac{E_\text{total}(\Gamma_\text{in}) - E_\text{total}(\Gamma_\text{out})}{E_\text{total}(\Gamma_\text{in})}$", y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=False, max_major_ticks=2, max_minor_ticks=0, y_max_minor_ticks=0)
 
   setup_plots.style(fig2, axes2[0][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=False, max_major_ticks=2, max_minor_ticks=0, y_max_minor_ticks=0)
   setup_plots.style(fig2, axes2[1][1], None, None, y_scilimits=None , y_bottom=0, y_top=70, integer_ticks=False, max_major_ticks=2, max_minor_ticks=0, y_max_minor_ticks=0)
@@ -226,8 +226,8 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   setup_plots.style(fig2, axes2[3][1], parameter_name[4], None, y_scilimits=[-3, -3], y_bottom=0, y_top=3e-3, integer_ticks=False, max_major_ticks=2, max_minor_ticks=0, y_max_minor_ticks=0)
   setup_plots.style(fig4, axes4[0][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1.2e-3, integer_ticks=False, max_major_ticks=2, max_minor_ticks=10, y_max_minor_ticks=0)
   setup_plots.style(fig4, axes4[1][1], None, None, y_scilimits=None , y_bottom=0, y_top=102, integer_ticks=False, max_major_ticks=2, max_minor_ticks=10, y_max_minor_ticks=0)
-  setup_plots.style(fig4, axes4[2][1], None, None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=False, max_major_ticks=2, max_minor_ticks=0, y_max_minor_ticks=0)
-  setup_plots.style(fig4, axes4[3][1], parameter_name[4], None, y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=False, max_major_ticks=2, max_minor_ticks=0, y_max_minor_ticks=0)
+  setup_plots.style(fig4, axes4[2][1], parameter_name[4], None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=False, max_major_ticks=2, max_minor_ticks=0, y_max_minor_ticks=0)
+  # setup_plots.style(fig4, axes4[3][1], parameter_name[4], None, y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=False, max_major_ticks=2, max_minor_ticks=0, y_max_minor_ticks=0)
 
   setup_plots.style(fig2, axes2[0][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=True, max_major_ticks=5, y_max_minor_ticks=11)
   setup_plots.style(fig2, axes2[1][2], None, None, y_scilimits=None , y_bottom=0, y_top=70, integer_ticks=True, max_major_ticks=5, y_max_minor_ticks=8)
@@ -235,17 +235,17 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
   setup_plots.style(fig2, axes2[3][2], parameter_name[5], None, y_scilimits=[-3, -3], y_bottom=0, y_top=3e-3, integer_ticks=True, max_major_ticks=5, y_max_minor_ticks=7)
   setup_plots.style(fig4, axes4[0][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1.2e-3, integer_ticks=True, max_major_ticks=5, y_max_minor_ticks=13)
   setup_plots.style(fig4, axes4[1][2], None, None, y_scilimits=None , y_bottom=0, y_top=102, integer_ticks=True, max_major_ticks=5, y_max_minor_ticks=11)
-  setup_plots.style(fig4, axes4[2][2], None, None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=True, max_major_ticks=5)
-  setup_plots.style(fig4, axes4[3][2], parameter_name[5], None, y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=True, max_major_ticks=5, y_max_minor_ticks=6)
+  setup_plots.style(fig4, axes4[2][2], parameter_name[5], None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=True, max_major_ticks=5)
+  # setup_plots.style(fig4, axes4[3][2], parameter_name[5], None, y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=True, max_major_ticks=5, y_max_minor_ticks=6)
 
-  setup_plots.style(fig2, axes2[0][3], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=0)
-  setup_plots.style(fig2, axes2[1][3], None, None, y_scilimits=None , y_bottom=0, y_top=70, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=0)
-  setup_plots.style(fig2, axes2[2][3], None, None, y_scilimits=None , y_bottom=0, y_top=102, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=0)
-  setup_plots.style(fig2, axes2[3][3], parameter_name[6], None, y_scilimits=[-3, -3], y_bottom=0, y_top=3e-3, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=0)
-  setup_plots.style(fig4, axes4[0][3], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1.2e-3, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=13)
-  setup_plots.style(fig4, axes4[1][3], None, None, y_scilimits=None , y_bottom=0, y_top=102, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=11)
-  setup_plots.style(fig4, axes4[2][3], None, None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=0)
-  setup_plots.style(fig4, axes4[3][3], parameter_name[6], None, y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=False, max_major_ticks=3, max_minor_ticks=11, y_max_minor_ticks=0)
+  setup_plots.style(fig2, axes2[0][3], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=True, max_major_ticks=5, max_minor_ticks=11, y_max_minor_ticks=0)
+  setup_plots.style(fig2, axes2[1][3], None, None, y_scilimits=None , y_bottom=0, y_top=70, integer_ticks=True, max_major_ticks=5, max_minor_ticks=11, y_max_minor_ticks=0)
+  setup_plots.style(fig2, axes2[2][3], None, None, y_scilimits=None , y_bottom=0, y_top=102, integer_ticks=True, max_major_ticks=5, max_minor_ticks=11, y_max_minor_ticks=0)
+  setup_plots.style(fig2, axes2[3][3], parameter_name[6], None, y_scilimits=[-3, -3], y_bottom=0, y_top=3e-3, integer_ticks=True, max_major_ticks=5, max_minor_ticks=11, y_max_minor_ticks=0)
+  setup_plots.style(fig4, axes4[0][3], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1.2e-3, integer_ticks=True, max_major_ticks=5, max_minor_ticks=11, y_max_minor_ticks=13)
+  setup_plots.style(fig4, axes4[1][3], None, None, y_scilimits=None , y_bottom=0, y_top=102, integer_ticks=True, max_major_ticks=5, max_minor_ticks=11, y_max_minor_ticks=11)
+  setup_plots.style(fig4, axes4[2][3], parameter_name[6], None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=True, max_major_ticks=5, max_minor_ticks=11, y_max_minor_ticks=0)
+  # setup_plots.style(fig4, axes4[3][3], parameter_name[6], None, y_scilimits=None, y_bottom=0.95, y_top=1.001, integer_ticks=False, max_major_ticks=5, max_minor_ticks=11, y_max_minor_ticks=0)
 
   # Hide irrelevant plots.
   import matplotlib.pyplot as plt
@@ -257,7 +257,7 @@ def plot_others(simulations, simulation_bins, parameter_values, parameter_name, 
       axes2[i][j].set_xticks([])
       axes2[i][j].set_yticks([])
       axes2[i][j].annotate("No variation", xy=(0.5, 0.5), xycoords="axes fraction", ha="center", va="center", fontsize=12)
-  for i in [2, 3]:
+  for i in [2]:
     for j in [0, 1]:
       plt.setp(axes4[i][j].spines.values(), visible=False)
       plt.setp(axes4[i][j].get_xticklabels(), visible=False)
@@ -310,7 +310,7 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   figs[1], axes[1] = setup_plots.setup_megaplot(2, 1, 3, figsize=(10, 4))
   figs[2], axes[2] = setup_plots.setup_megaplot(3, 2, 3, figsize=(10, 6))
   figs[3], axes[3] = setup_plots.setup_megaplot(4, 1, 3, figsize=(10, 3))
-  figs[4], axes[4] = setup_plots.setup_megaplot(5, 2, 3, figsize=(10, 6))
+  figs[4], axes[4] = setup_plots.setup_megaplot(5, 1, 3, figsize=(10, 3))
 
   # Get data to plot.
   data = np.zeros((2, 3), dtype=object)
@@ -493,18 +493,18 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   axes[4][0][1].legend(handles=[handles[0], handles[1]], labels=[r"any $N_\text{A}$", r"$N_\text{A} = 6$"], loc="lower right")
 
   # AXES 8: Total energy flux difference.
-  for j in range(3):
-    for i in range(2):
-      if not (j == 2 and i > 0):
-        if plot_outliers:
-          for k in range(len(data[i, j]["outside_iqr"]["total_energy_flux"])):
-            for l in range(len(data[i, j]["outside_iqr"]["total_energy_flux"][k])):
-              axes[4][1][j].scatter(parameter_values[j][k], data[i, j]["data"]["total_energy_flux"][k][l], marker=".", color=f"C{i}", alpha=1.0/10)
+  # for j in range(3):
+  #   for i in range(2):
+  #     if not (j == 2 and i > 0):
+  #       if plot_outliers:
+  #         for k in range(len(data[i, j]["outside_iqr"]["pressure_energy_flux"])):
+  #           for l in range(len(data[i, j]["outside_iqr"]["pressure_energy_flux"][k])):
+  #             axes[4][1][j].scatter(parameter_values[j][k], data[i, j]["data"]["pressure_energy_flux"][k][l], marker=".", color=f"C{i}", alpha=1.0/10)
 
-        axes[4][1][j].plot(parameter_values[j], data[i, j]["q50"]["total_energy_flux"], linestyle="dashed", color=f"C{i}")
-        axes[4][1][j].fill_between(parameter_values[j], data[i, j]["q25"]["total_energy_flux"], data[i, j]["q75"]["total_energy_flux"], alpha=0.2, color=f"C{i}")
-  axes[4][1][0].legend(handles=handles[0:2], labels=[r"any $N_\text{V}$", r"$N_\text{V} = 27$"], loc="lower right")
-  axes[4][1][1].legend(handles=handles[0:2], labels=[r"any $N_\text{A}$", r"$N_\text{A} = 6$"], loc="lower right")
+  #       axes[4][1][j].plot(parameter_values[j], data[i, j]["q50"]["pressure_energy_flux"], linestyle="dashed", color=f"C{i}")
+  #       axes[4][1][j].fill_between(parameter_values[j], data[i, j]["q25"]["pressure_energy_flux"], data[i, j]["q75"]["pressure_energy_flux"], alpha=0.2, color=f"C{i}")
+  # axes[4][1][0].legend(handles=handles[0:2], labels=[r"any $N_\text{V}$", r"$N_\text{V} = 27$"], loc="lower right")
+  # axes[4][1][1].legend(handles=handles[0:2], labels=[r"any $N_\text{A}$", r"$N_\text{A} = 6$"], loc="lower right")
 
   # Plot indiviudal simulations on mini axes.
   simulation_nos = [90, 70, 122, 444]
@@ -530,8 +530,8 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   setup_plots.style(figs[2], axes[2][0][0], None, r"$\frac{v_\text{flux}(S)}{v_\text{flux}(\Gamma_\text{in})}$ (%)", y_scilimits=None , y_top=102, integer_ticks=True, y_max_minor_ticks=11, y_max_major_ticks=6)
   setup_plots.style(figs[2], axes[2][1][0], parameter_name[0], r"$\frac{C_\text{flux}(S)}{C_\text{flux}(\Gamma_\text{in})}$ (%)", y_scilimits=None , y_top=102, integer_ticks=True, y_max_minor_ticks=11, y_max_major_ticks=6)
   setup_plots.style(figs[3], axes[3][0][0], parameter_name[0], r"$v_\text{cross}$", y_scilimits=[-3, -3] , y_bottom=0, y_top=2e-2, integer_ticks=True, y_max_minor_ticks=9)
-  setup_plots.style(figs[4], axes[4][0][0], None, r"$\frac{E_\text{kinetic}(\Gamma_\text{in}) - E_\text{kinetic}(\Gamma_\text{out})}{E_\text{kinetic}(\Gamma_\text{in})}$", y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=True)
-  setup_plots.style(figs[4], axes[4][1][0], parameter_name[0], r"$\frac{E_\text{total}(\Gamma_\text{in}) - E_\text{total}(\Gamma_\text{out})}{E_\text{total}(\Gamma_\text{in})}$", y_scilimits=[0, 0], y_bottom=0.95, y_top=1.001, integer_ticks=True, y_max_minor_ticks=6)
+  setup_plots.style(figs[4], axes[4][0][0], parameter_name[0], r"$\frac{E_\text{kinetic}(\Gamma_\text{in}) - E_\text{kinetic}(\Gamma_\text{out})}{E_\text{kinetic}(\Gamma_\text{in})}$", y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=True)
+  # setup_plots.style(figs[4], axes[4][1][0], parameter_name[0], r"$\frac{E_\text{total}(\Gamma_\text{in}) - E_\text{total}(\Gamma_\text{out})}{E_\text{total}(\Gamma_\text{in})}$", y_scilimits=[0, 0], y_bottom=0.95, y_top=1.001, integer_ticks=True, y_max_minor_ticks=6)
 
   setup_plots.style(figs[0], axes[0][0][1], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=True, max_major_ticks=4, y_max_minor_ticks=11, y_max_major_ticks=6)
   setup_plots.style(figs[0], axes[0][1][1], parameter_name[1], None, y_scilimits=[-4, -4], y_bottom=0, y_top=5e-4, integer_ticks=True, max_major_ticks=4, y_max_minor_ticks=11, y_max_major_ticks=6)
@@ -539,8 +539,8 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   setup_plots.style(figs[2], axes[2][0][1], None, None, y_scilimits=None , y_top=102, integer_ticks=True, max_major_ticks=4, y_max_minor_ticks=11, y_max_major_ticks=6)
   setup_plots.style(figs[2], axes[2][1][1], parameter_name[1], None, y_scilimits=None , y_top=102, integer_ticks=True, max_major_ticks=4, y_max_minor_ticks=11, y_max_major_ticks=6)
   setup_plots.style(figs[3], axes[3][0][1], parameter_name[1], None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-2, integer_ticks=True, max_major_ticks=4, y_max_minor_ticks=9)
-  setup_plots.style(figs[4], axes[4][0][1], None, None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=True, max_major_ticks=4)
-  setup_plots.style(figs[4], axes[4][1][1], parameter_name[1], None, y_scilimits=[0, 0], y_bottom=0.95, y_top=1.001, integer_ticks=True, max_major_ticks=4, y_max_minor_ticks=6)
+  setup_plots.style(figs[4], axes[4][0][1], parameter_name[1], None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=True, max_major_ticks=4)
+  # setup_plots.style(figs[4], axes[4][1][1], parameter_name[1], None, y_scilimits=[0, 0], y_bottom=0.95, y_top=1.001, integer_ticks=True, max_major_ticks=4, y_max_minor_ticks=6)
 
   setup_plots.style(figs[0], axes[0][0][2], None, None, y_scilimits=[-3, -3], y_bottom=0, y_top=1e-2, integer_ticks=True, max_major_ticks=4, y_max_minor_ticks=11, y_max_major_ticks=6)
   setup_plots.style(figs[0], axes[0][1][2], parameter_name[2], None, y_scilimits=[-4, -4], y_bottom=0, y_top=5e-4, integer_ticks=True, max_major_ticks=4, y_max_minor_ticks=11, y_max_major_ticks=6)
@@ -548,8 +548,8 @@ def plot_vessels(simulations, simulation_bins, parameter_values, parameter_name,
   setup_plots.style(figs[2], axes[2][0][2], None, None, y_scilimits=None , y_top=102, integer_ticks=True, max_major_ticks=4, y_max_minor_ticks=11, y_max_major_ticks=6)
   setup_plots.style(figs[2], axes[2][1][2], parameter_name[2], None, y_scilimits=None , y_top=102, integer_ticks=True, max_major_ticks=4, y_max_minor_ticks=11, y_max_major_ticks=6)
   setup_plots.style(figs[3], axes[3][0][2], parameter_name[2], None, y_scilimits=[-3, -3], y_bottom=0, y_top=2e-2, integer_ticks=True, max_major_ticks=4, y_max_minor_ticks=9)
-  setup_plots.style(figs[4], axes[4][0][2], None, None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=True, max_major_ticks=4)
-  setup_plots.style(figs[4], axes[4][1][2], parameter_name[2], None, y_scilimits=[0, 0], y_bottom=0.95, y_top=1.001, integer_ticks=True, max_major_ticks=4, y_max_minor_ticks=6)
+  setup_plots.style(figs[4], axes[4][0][2], parameter_name[2], None, y_scilimits=None, y_bottom=0.6, y_top=1.02, integer_ticks=True, max_major_ticks=4)
+  # setup_plots.style(figs[4], axes[4][1][2], parameter_name[2], None, y_scilimits=[0, 0], y_bottom=0.95, y_top=1.001, integer_ticks=True, max_major_ticks=4, y_max_minor_ticks=6)
 
   # Decide where to save plots.
   if subfolder == None:
